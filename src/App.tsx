@@ -9,6 +9,7 @@ function App() {
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+    console.log("HOLAAAAA")
     setGreetMsg(await invoke("greet", { name }));
   }
 
