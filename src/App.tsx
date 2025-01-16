@@ -8,9 +8,8 @@ function App() {
   const [name, setName] = useState("");
 
   async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    console.log("HOLAAAAA")
-    setGreetMsg(await invoke("greet", { name }));
+    if (name.length)
+      setGreetMsg(await invoke("greet", { name }));
   }
 
   return (
