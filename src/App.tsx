@@ -7,6 +7,9 @@ function App() {
   return (
     <main className="container">
       <WindowControls />
+      <div>
+        HISTORY - CHANGES - [ ] - [ ] - [ ]
+      </div>
       <MainLayout />
     </main>
   );

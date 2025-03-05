@@ -1,0 +1,33 @@
+.accordion {
+  display: flex;
+  width: 100%;
+  user-select: none;
+}
+
+.accordion ul {
+  list-style-type: none;
+}
+
+.accordionHeader {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  transition: 0.3s ease;
+}
+
+.accordionHeader:hover {
+  background-color: var(--darker-bg);
+}
+
+.icon {
+  transition: 0.1s ease;
+}
+
+.close {}
+
+.open {
+  transform: rotate(90deg);
+}
+
+.accordionContent {}

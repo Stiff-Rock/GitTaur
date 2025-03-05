@@ -1,4 +1,5 @@
 :root {
+  /* COLORS */
   --primary-bg: #1E1E1E;
 
   --secondary-bg: #252526;
@@ -24,4 +25,7 @@
   /* Fondo semitransparente para modales */
   --modal-overlay: rgba(0, 0, 0, 0.5);
 
+  /* FONT SIZES */
+  --font-size-title: 24px;
+  --font-size-subtitle: 20px;
 }

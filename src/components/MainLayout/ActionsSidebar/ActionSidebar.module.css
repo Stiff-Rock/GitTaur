@@ -1,7 +1,30 @@
 .actionSidebar {
   display: flex;
   flex-direction: column;
-  align-items: center;
   background-color: var(--secondary-bg);
   height: 100%;
+  padding: 10px;
+}
+
+.actionsContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.actionsContainer span {
+  font-size: var(--font-size-subtitle);
+  margin: 10px;
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.actionButtons button {
+  height: 20px;
 }
