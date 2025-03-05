@@ -1,0 +1,27 @@
+:root {
+  --primary-bg: #1E1E1E;
+
+  --secondary-bg: #252526;
+
+  --darker-bg: #141414;
+
+  --primary-text: #D4D4D4;
+
+  --border-color: #3C3C3C;
+
+  /* Fondo de pestañas y toolbar */
+  --toolbar-bg: #2C2C2C;
+
+  /* Color para estados activos (texto, íconos, etc.) */
+  --active-color: #50FA7B;
+
+  /* Fondo del botón de configuración y elementos relacionados */
+  --config-button-bg: #6272A4;
+
+  /* Color blanco (por ejemplo, para el texto en botones de configuración) */
+  --white: #ffffff;
+
+  /* Fondo semitransparente para modales */
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+
+}

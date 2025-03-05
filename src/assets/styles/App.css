@@ -1,0 +1,28 @@
+@font-face {
+  font-family: 'CaskaydiaMonoNerdFont';
+  src: url('../fonts/CaskaydiaMonoNerdFont.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+html {
+  font-family: 'CaskaydiaMonoNerdFont';
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+body {
+  background-color: var(--primary-bg);
+}

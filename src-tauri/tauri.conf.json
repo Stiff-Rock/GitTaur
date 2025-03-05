@@ -13,9 +13,12 @@
     "windows": [
       {
         "title": "gittaur",
-        "width": 800,
-        "height": 600,
-        "center": true
+        "width": 1100,
+        "height": 700,
+        "minHeight": 0,
+        "minWidth": 0,
+        "center": true,
+        "decorations": false
       }
     ],
     "security": {

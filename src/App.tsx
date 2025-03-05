@@ -1,14 +1,13 @@
-import "./App.css";
-import ButtonCloneRepository from "./components/ButtonCloneRepository";
-import ButtonCreateRepository from "./components/ButtonCreateRepository";
-import ButtonOpenRepository from "./components/ButtonOpenRepository";
+import "./assets/styles/variables.css";
+import "./assets/styles/App.css"
+import WindowControls from "./components/TitleBar/WindowControls";
+import MainLayout from "./components/MainLayout/MainLayout"
 
 function App() {
   return (
     <main className="container">
-      <ButtonCreateRepository />
-      <ButtonOpenRepository />
-      <ButtonCloneRepository />
+      <WindowControls />
+      <MainLayout />
     </main>
   );
 }

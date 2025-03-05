@@ -1,0 +1,10 @@
+.appMain {
+  height: 100%;
+  display: flex;
+}
+
+.resizeHandle {
+  width: 1px;
+  background-color: var(--darker-bg);
+  cursor: col-resize;
+}
