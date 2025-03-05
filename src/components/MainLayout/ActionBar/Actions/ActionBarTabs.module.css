@@ -1,0 +1,25 @@
+.tabs {
+  display: flex;
+}
+
+.tab {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 140px;
+  background-color: var(--secondary-bg);
+  border-right: 1px solid var(--darker-bg);
+  cursor: pointer;
+}
+
+.tab span {
+  margin-left: 10px;
+}
+
+.tab.active {
+  background-color: var(--lighter-bg);
+}
+
+.inactive {
+  color: var(--secondary-text);
+}

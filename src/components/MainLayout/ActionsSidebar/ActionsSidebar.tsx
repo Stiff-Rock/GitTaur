@@ -1,34 +1,32 @@
 import React from 'react';
 import styles from './ActionSidebar.module.css';
 import Accordion from '../../Common/Accordion/Accordion';
+import { GoTag, GoCloud, GoDeviceDesktop } from "react-icons/go";
 
 const ActionsSidebar: React.FC = () => {
-  const localItems = ['Item 1', 'Item 2', 'Item 3'];
-  const remoteItems = ['Branch A', 'Branch B'];
+  const items = ['Item 1', 'Item 2', 'Item 3'];
 
   return (
     <div className={`${styles.actionSidebar}`}>
-
-      <div className={`${styles.actionsContainer}`}>
-        <span>Repository</span>
-        <div className={`${styles.actionButtons}`}>
-          <button />
-          <button />
-          <button />
-        </div>
-      </div>
-
-      <Accordion title="Local" >
+      <Accordion title="Local" icon={<GoDeviceDesktop />} >
         <ul>
-          {localItems.map((item, index) => (
+          {items.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>
       </Accordion>
 
-      <Accordion title="Remote" >
+      <Accordion title="Remote" icon={<GoCloud />}>
         <ul>
-          {remoteItems.map((item, index) => (
+          {items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      </Accordion>
+
+      <Accordion title="Tags" icon={<GoTag />}>
+        <ul>
+          {items.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>

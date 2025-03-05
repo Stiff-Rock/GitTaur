@@ -1,0 +1,7 @@
+.actionBar {
+  display: flex;
+  flex-direction: row;
+  height: 50px;
+  background-color: var(--secondary-bg);
+  border-bottom: 1px solid var(--darker-bg);
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import "../../assets/styles/variables.css";
 import styles from "./TitleBar.module.css";
-import { GoX, GoDash, GoScreenFull, GoScreenNormal } from "react-icons/go";
+import { GoX, GoDash, GoScreenFull, GoScreenNormal, GoCodespaces } from "react-icons/go";
 
 const WindowControls: React.FC = () => {
   const appWindow = getCurrentWindow();

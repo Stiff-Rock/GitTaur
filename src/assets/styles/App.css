@@ -7,6 +7,7 @@
 
 html {
   font-family: 'CaskaydiaMonoNerdFont';
+  color: var(--primary-text);
 }
 
 html,
