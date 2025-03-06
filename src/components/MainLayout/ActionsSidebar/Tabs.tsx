@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import styles from './ActionBarTabs.module.css';
+import styles from './Tabs.module.css';
 import { GoHistory, GoChecklist, GoFileDiff } from "react-icons/go";
 
-const ActionBarTabs: React.FC = () => {
+const Tabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState('history');
 
   useEffect(() => {
@@ -30,4 +30,4 @@ const ActionBarTabs: React.FC = () => {
   );
 };
 
-export default ActionBarTabs;
+export default Tabs;

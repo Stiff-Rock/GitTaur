@@ -24,7 +24,7 @@
 
 .accordionHeader:hover {
   border-radius: 5px;
-  background-color: var(--darker-bg);
+  background-color: var(--border-color);
 }
 
 .arrow {
@@ -57,5 +57,5 @@
 .customChildStyles li:hover {
   margin-bottom: 10px;
   border-radius: 5px;
-  background-color: var(--darker-bg);
+  background-color: var(--border-color);
 }

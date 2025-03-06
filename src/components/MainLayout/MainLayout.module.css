@@ -5,6 +5,6 @@
 
 .resizeHandle {
   width: 1px;
-  background-color: var(--darker-bg);
+  background-color: var(--border-color);
   cursor: col-resize;
 }

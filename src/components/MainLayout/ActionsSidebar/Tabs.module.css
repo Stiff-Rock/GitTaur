@@ -1,19 +1,30 @@
 .tabs {
   display: flex;
+  margin-bottom: 15px;
+  user-select: none;
 }
 
 .tab {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
+  box-sizing: border-box;
+  border-radius: 5px;
   width: 140px;
   background-color: var(--secondary-bg);
-  border-right: 1px solid var(--darker-bg);
   cursor: pointer;
+  transition: background-color 0.1s ease;
 }
 
 .tab span {
   margin-left: 10px;
+}
+
+.tab:hover {
+  background-color: var(--lighter-bg);
 }
 
 .tab.active {

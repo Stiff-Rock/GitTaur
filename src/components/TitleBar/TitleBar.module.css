@@ -3,7 +3,7 @@
   justify-content: flex-end;
   align-items: center;
   background-color: var(--primary-bg);
-  border-bottom: 1px solid var(--darker-bg);
+  border-bottom: 1px solid var(--border-color);
   -webkit-app-region: drag;
 }
 
@@ -29,7 +29,7 @@
 }
 
 .controlBtn:hover {
-  background-color: var(--darker-bg);
+  background-color: var(--border-color);
 }
 
 .close:hover {

@@ -1,7 +1,42 @@
 .actionBar {
   display: flex;
-  flex-direction: row;
-  height: 50px;
-  background-color: var(--secondary-bg);
-  border-bottom: 1px solid var(--darker-bg);
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  width: 100%;
+  background-color: var(--tertiary-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.actions {
+  display: flex;
+}
+
+.actions svg {
+  display: flex;
+  width: 20px;
+  height: auto;
+  margin-right: 5px;
+  margin-left: 5px;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.1s ease;
+}
+
+.actions svg:hover {
+  background-color: var(--lighter-bg);
+}
+
+.leftActions {
+  width: 25%;
+}
+
+.centerActions {
+  width: 50%;
+  justify-content: center;
+}
+
+.rightActions {
+  width: 25%;
 }
