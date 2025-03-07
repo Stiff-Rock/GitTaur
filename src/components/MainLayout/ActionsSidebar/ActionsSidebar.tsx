@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './ActionSidebar.module.css';
 import Accordion from '../../Common/Accordion/Accordion';
 import { GoTag, GoCloud, GoDeviceDesktop } from "react-icons/go";
-import Tabs from './Tabs';
+import AppTabs from './AppTabs';
 import { useAppContext } from '../../../context/AppContext';
 
 const ActionsSidebar: React.FC = () => {
@@ -10,7 +10,7 @@ const ActionsSidebar: React.FC = () => {
 
   return (
     <div className={`${styles.actionSidebar}`}>
-      <Tabs />
+      <AppTabs />
 
       <Accordion title="Local" icon={<GoDeviceDesktop />} >
         {repoInfo &&

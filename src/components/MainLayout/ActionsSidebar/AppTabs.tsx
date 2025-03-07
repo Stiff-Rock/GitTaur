@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import styles from './Tabs.module.css';
+import React, { useState } from 'react';
+import styles from './AppTabs.module.css';
 import { GoHistory, GoChecklist, GoFileDiff } from "react-icons/go";
 
-const Tabs: React.FC = () => {
+const AppTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState('history');
-
-  useEffect(() => {
-    console.log(activeTab);
-  }, [activeTab])
-
 
   return (
     <div className={styles.tabs}>
@@ -30,4 +25,4 @@ const Tabs: React.FC = () => {
   );
 };
 
-export default Tabs;
+export default AppTabs;

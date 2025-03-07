@@ -2,6 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--border-color);
   -webkit-app-region: drag;
 }
 
@@ -22,41 +23,4 @@
 
 .workspaceIcon:hover {
   background-color: var(--lighter-bg);
-}
-
-.windowControls {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  background-color: var(--primary-bg);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.controlBtn {
-  border: none;
-  background: none;
-  color: #d4d4d4;
-  cursor: pointer;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 50px;
-  height: 36px;
-  -webkit-app-region: no-drag;
-}
-
-.controlBtn svg {
-  width: 20px;
-  height: 20px;
-  transition: inherit;
-}
-
-.controlBtn:hover {
-  background-color: var(--border-color);
-}
-
-.close:hover {
-  background-color: red;
 }
