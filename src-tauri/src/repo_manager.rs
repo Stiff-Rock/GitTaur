@@ -35,11 +35,30 @@ impl RepoManager {
                 Err(_) => "Unknown".to_string(),
             };
 
+            let local_branches = repo
+                .branches(Some(git2::BranchType::Local))
+                .map_err(|e| e.to_string())?
+                .filter_map(|b| b.ok())
+                .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
+                .collect::<Vec<String>>();
+
+            let remotes = repo
+                .remotes()
+                .map_err(|e| e.to_string())?
+                .iter()
+                .filter_map(|r| r.map(|s| s.to_string()))
+                .collect::<Vec<String>>();
+
+            let tags = repo
+                .tag_names(None)
+                .map_err(|e| e.to_string())?
+                .iter()
+                .filter_map(|t| t.map(|s| s.to_string()))
+                .collect::<Vec<String>>();
+
             let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
             revwalk.push_head().map_err(|e| e.to_string())?;
-
             let mut commits = Vec::new();
-
             for oid in revwalk {
                 let oid = oid.map_err(|e| e.to_string())?;
                 let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
@@ -73,7 +92,14 @@ impl RepoManager {
                 commits.push(commit_info);
             }
 
-            Ok(RepoInfo::new(name, current_branch, commits))
+            Ok(RepoInfo::new(
+                name,
+                current_branch,
+                local_branches,
+                remotes,
+                tags,
+                commits,
+            ))
         } else {
             Err("Repository not found".to_string())
         }

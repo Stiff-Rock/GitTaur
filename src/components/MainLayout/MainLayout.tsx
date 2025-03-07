@@ -8,7 +8,7 @@ import { GoDash } from "react-icons/go";
 import { useAppContext } from '../../context/AppContext';
 
 const MainLayout: React.FC = () => {
-  const [showInfoSidebar, setShowInfoSidebar] = useState(true);
+  const [showInfoSidebar, setShowInfoSidebar] = useState(false);
   const { commitInfo } = useAppContext();
 
   useEffect(() => {

@@ -3,36 +3,43 @@ import styles from './ActionSidebar.module.css';
 import Accordion from '../../Common/Accordion/Accordion';
 import { GoTag, GoCloud, GoDeviceDesktop } from "react-icons/go";
 import Tabs from './Tabs';
+import { useAppContext } from '../../../context/AppContext';
 
 const ActionsSidebar: React.FC = () => {
-  const items = ['Item 1', 'Item 2', 'Item 3'];
+  const { repoInfo } = useAppContext();
 
   return (
     <div className={`${styles.actionSidebar}`}>
       <Tabs />
 
       <Accordion title="Local" icon={<GoDeviceDesktop />} >
-        <ul>
-          {items.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
+        {repoInfo &&
+          <ul>
+            {repoInfo.local_branches.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        }
       </Accordion>
 
       <Accordion title="Remote" icon={<GoCloud />}>
-        <ul>
-          {items.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
+        {repoInfo &&
+          <ul>
+            {repoInfo.remotes.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        }
       </Accordion>
 
       <Accordion title="Tags" icon={<GoTag />}>
-        <ul>
-          {items.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
+        {repoInfo &&
+          <ul>
+            {repoInfo.tags.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        }
       </Accordion>
 
     </div >
