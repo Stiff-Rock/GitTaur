@@ -8,19 +8,5 @@
 
 .windowTabs {
   display: flex;
-  margin-left: 5px;
   -webkit-app-region: no-drag;
-}
-
-.workspaceIcon {
-  width: 20px;
-  height: auto;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.1 ease;
-}
-
-.workspaceIcon:hover {
-  background-color: var(--lighter-bg);
 }
