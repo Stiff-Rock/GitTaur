@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react';
-import '../../../assets/styles/variables.css';
 import styles from './Acordion.module.css'
 import Collapsible from 'react-collapsible';
 import { GoChevronRight } from 'react-icons/go';

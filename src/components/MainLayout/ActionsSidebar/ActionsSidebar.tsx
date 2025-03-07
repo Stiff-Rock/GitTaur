@@ -10,6 +10,7 @@ const ActionsSidebar: React.FC = () => {
   return (
     <div className={`${styles.actionSidebar}`}>
       <Tabs />
+
       <Accordion title="Local" icon={<GoDeviceDesktop />} >
         <ul>
           {items.map((item, index) => (

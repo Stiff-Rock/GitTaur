@@ -3,10 +3,11 @@
   src: url('../fonts/CaskaydiaMonoNerdFont.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 html {
-  font-family: 'CaskaydiaMonoNerdFont';
+  font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
   color: var(--primary-text);
 }
 
@@ -16,8 +17,10 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
+/* References all containers in the app */
 .container {
   display: flex;
   flex-direction: column;
