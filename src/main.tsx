@@ -3,12 +3,12 @@ import "./assets/styles/App.css"
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { RepoProvider } from './context/RepoContext';
+import { AppProvider } from './context/AppContext';
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RepoProvider>
+    <AppProvider>
       <App />
-    </RepoProvider>
+    </AppProvider>
   </React.StrictMode>,
 );

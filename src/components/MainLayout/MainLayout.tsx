@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './MainLayout.module.css';
 import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
-import CommitHistory from './MainContainer/CommitHistory';
+import CommitHistoryLOLAZO from './MainContainer/CommitHistory';
 import InfoSidebar from './InfoSidebar/InfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { GoDash } from "react-icons/go";
+import { useAppContext } from '../../context/AppContext';
 
 const MainLayout: React.FC = () => {
   const [showInfoSidebar, setShowInfoSidebar] = useState(true);
+  const { commitInfo } = useAppContext();
+
+  useEffect(() => {
+    if (commitInfo)
+      setShowInfoSidebar(true);
+  }, [commitInfo]);
 
   return (
     <div className={styles.appMain}>
@@ -19,7 +26,7 @@ const MainLayout: React.FC = () => {
         <PanelResizeHandle className={styles.resizeHandle} />
 
         <Panel id="center-panel" order={2}>
-          <CommitHistory />
+          <CommitHistoryLOLAZO />
         </Panel>
 
         {showInfoSidebar && (

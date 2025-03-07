@@ -5,12 +5,12 @@ import styles from "./TitleBar.module.css";
 import { GoX, GoDash, GoScreenFull, GoScreenNormal, GoCodespaces, GoPlus } from "react-icons/go";
 import { invoke } from '@tauri-apps/api/core';
 import type { RepoInfo } from '../../types/repoInfo';
-import { useRepo } from '../../context/RepoContext';
+import { useAppContext } from '../../context/AppContext';
 
 const TitleBar: React.FC = () => {
   const appWindow = getCurrentWindow();
   const [isMaximized, setIsMaximized] = useState(false);
-  const { setRepoInfo } = useRepo();
+  const { setRepoInfo } = useAppContext();
 
   // Listens to window maximized state changes
   useEffect(() => {

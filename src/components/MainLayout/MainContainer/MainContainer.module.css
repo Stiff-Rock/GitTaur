@@ -7,3 +7,20 @@
   padding: 10px;
   box-sizing: border-box;
 }
+
+.commit {
+  cursor: pointer;
+  transition: background-color 0.2 ease;
+}
+
+.commit:hover {
+  background-color: var(--tertiary-bg);
+}
+
+.selected {
+  background-color: var(--lighter-bg);
+}
+
+.commit.selected:hover {
+  background-color: var(--lighter-bg);
+}
