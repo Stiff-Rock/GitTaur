@@ -8,5 +8,6 @@
 
 .windowTabs {
   display: flex;
+  margin-top: 5px;
   -webkit-app-region: no-drag;
 }
