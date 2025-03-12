@@ -1,42 +1,115 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import styles from "./WindowTabs.module.css";
-import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
-import type { RepoInfo } from '../../../types/repoInfo';
 import { GoCodespaces, GoPlus } from "react-icons/go";
 import { useAppContext } from '../../../context/AppContext';
+import Tab from "./Tab";
+import { invoke } from "@tauri-apps/api/core";
 
 const WindowTabs: React.FC = () => {
-  const { setRepoInfo } = useAppContext();
-  const [activeTab, setActiveTab] = useState("Tab1");
+  const { workspace, setWorkspace, setActiveTab, activeTab } = useAppContext();
 
-  async function openDefault() {
-    const unlisten = await listen<RepoInfo>('repo-info', (event) => {
-      setRepoInfo(event.payload);
-      unlisten();
-    });
+  // Active Tab
+  useEffect(() => {
+    if (!workspace || !activeTab) return
 
-    const path = "C:\\Users\\Yago\\Desktop\\PlateaApp";
-    const msg: string = await invoke("open_repository", { path });
-    console.log(msg);
+
+    if (!Object.keys(workspace.tabs).includes(activeTab)) {
+      const addTab = async () => {
+        const repoPath = activeTab;
+        let label: string;
+
+        if (activeTab.includes("/") || activeTab.includes("\\"))
+          label = await invoke<string>("get_last_directory", { path: activeTab })
+        else label = activeTab;
+
+        const newTab = {
+          label,
+          repoPath,
+          isActive: true
+        };
+
+        setWorkspace(prev => ({
+          ...prev!,
+          tabs: {
+            ...prev!.tabs,
+            [activeTab]: newTab
+          }
+        }));
+      };
+
+      addTab();
+    }
+  }, [activeTab])
+
+  function openTab(label: string = "Welcome Page", repoPath: string = "Welcome Page") {
+    if (!workspace) return;
+
+    if (Object.keys(workspace.tabs).includes(repoPath)) {
+      if (repoPath !== "Welcome Page")
+        alert("This repository is already opened")
+      return;
+    }
+
+    const newTab = {
+      label,
+      repoPath,
+      isActive: true
+    };
+
+    setWorkspace(prev => ({
+      ...prev!,
+      tabs: {
+        ...prev!.tabs,
+        [repoPath]: newTab
+      }
+    }));
+    setActiveTab(newTab.repoPath);
+  }
+
+  function closeTab() {
+    if (!workspace) return;
+
+    let remainingKeys = Object.keys(workspace.tabs);
+    if (remainingKeys.length === 1 && remainingKeys[0] === "Welcome Page")
+      return;
+
+    const updatedTabs = { ...workspace.tabs };
+    const tabToClose = activeTab;
+
+    delete updatedTabs[tabToClose];
+
+    setWorkspace(prev => ({
+      ...prev!,
+      tabs: updatedTabs,
+    }));
+
+    remainingKeys = Object.keys(updatedTabs);
+    if (remainingKeys.length > 0) {
+      setActiveTab(remainingKeys[remainingKeys.length - 1]);
+    } else {
+      openTab();
+    }
   }
 
   return (
     <div className={`${styles.tabs}`}>
-
-
       <GoCodespaces className={`${styles.workspaceIcon}`} />
 
-      <div onClick={() => setActiveTab("Tab1")} className={`${styles.tab} ${activeTab === 'Tab1' && styles.active}`}>
-        <span>PlateaApp</span>
-      </div>
+      {workspace?.tabs && Object.keys(workspace.tabs).length > 0 ? (
+        Object.entries(workspace.tabs).map(([key, tab]) => (
+          <Tab
+            key={tab.repoPath}
+            label={tab.label}
+            isActive={activeTab === key}
+            onClick={() => setActiveTab(key)}
+            onClose={() => closeTab()}
+          />
+        ))
+      ) : (
+        <span>ERROR</span>
+      )}
 
-      <div onClick={() => setActiveTab("Tab2")} className={`${styles.tab} ${activeTab === 'Tab2' && styles.active}`}>
-        <span>PythonShit</span>
-      </div>
-
-      <GoPlus onClick={() => openDefault()} className={`${styles.workspaceIcon}`} />
-
+      <GoPlus onClick={() => openTab()} className={`${styles.workspaceIcon}`} />
     </div>
   );
 };

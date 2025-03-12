@@ -17,8 +17,9 @@
   align-items: center;
   box-sizing: border-box;
   justify-content: center;
-  padding: 10px 25px;
+  padding: 10px 15px;
   border: 1px solid var(--primary-bg);
+  gap: 20px;
   transition: color 0.1s ease;
 }
 
@@ -35,11 +36,15 @@
   background-color: var(--tertiary-bg);
 }
 
+.tabIcon,
 .workspaceIcon {
   width: 20px;
   height: 20px;
-  padding: 10px;
   border-radius: 5px;
+}
+
+.workspaceIcon {
+  padding: 10px;
   margin-right: 5px;
   margin-left: 5px;
   cursor: pointer;
@@ -48,4 +53,14 @@
 
 .workspaceIcon:hover {
   background-color: var(--lighter-bg);
+}
+
+.closeIcon {
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.closeIcon:hover {
+  background-color: red;
 }
