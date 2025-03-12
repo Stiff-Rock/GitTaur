@@ -1,13 +1,9 @@
 {
-    "activeTab": "C:\\Users\\Yago\\Desktop\\ChatServer",
-    "tabs": {
-        "C:\\Users\\Yago\\Desktop\\ChatServer": {
-            "label": "ChatServer",
-            "repoPath": "C:\\Users\\Yago\\Desktop\\ChatServer"
-        },
-        "C:\\Users\\Yago\\Desktop\\PlateaApp": {
-            "label": "PlateaApp",
-            "repoPath": "C:\\Users\\Yago\\Desktop\\PlateaApp"
-        }
+  "tabs": {
+    "C:\\Users\\Yago\\Desktop\\ChatServer": {
+      "label": "ChatServer",
+      "repoPath": "C:\\Users\\Yago\\Desktop\\ChatServer"
     }
+  },
+  "activeTab": "C:\\Users\\Yago\\Desktop\\ChatServer"
 }

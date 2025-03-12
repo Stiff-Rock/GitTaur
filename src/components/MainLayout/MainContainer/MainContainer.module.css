@@ -24,3 +24,8 @@
 .commit.selected:hover {
   background-color: var(--lighter-bg);
 }
+
+.scrollbar {
+  background-color: var(--lighter-bg);
+  border-radius: 8px;
+}

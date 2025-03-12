@@ -5,7 +5,6 @@ import type { RepoInfo } from './../types/repoInfo';
 import type { Workspace } from './../types/workspace';
 import { useDialog } from '../hooks/useDialog';
 
-
 interface AppContextType {
   // State 
   activeTab: string;
@@ -45,9 +44,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           };
           setActiveTab("Welcome Page")
+        } else {
+          setWorkspace(workspaceData);
+          setActiveTab(workspaceData.activeTab);
         }
-        setWorkspace(workspaceData);
-        setActiveTab(workspaceData.activeTab);
       } catch (error) {
         console.error('Failed to load workspace:', error);
       }
@@ -58,11 +58,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!workspace || !activeTab) return;
+
     setWorkspace(prevWorkspace => ({
       ...prevWorkspace!,
       activeTab,
     }));
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!workspace) return;
+    invoke<Workspace>("save_workspace", { workspace: workspace })
+      .catch(error => console.error('Error while saving workspace:', error));
+  }, [workspace]);
 
   const openNewRepo = async () => {
     const repoPath = await openDirectoryDialog();

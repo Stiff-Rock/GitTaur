@@ -10,12 +10,10 @@ use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
-use std::sync::Arc;
 use std::sync::Mutex;
 use tab::Tab;
 use tauri::command;
 use tauri::Emitter;
-use tauri::State;
 use tauri::Window;
 use workspace::Workspace;
 
@@ -88,33 +86,8 @@ fn emit_info(window: Window, repo_info: &RepoInfo) {
 }
 
 #[command]
-fn clone_repository(
-    path: String,
-    repo_url: String,
-    state: State<Arc<RepoManager>>,
-    window: Window,
-) -> String {
-    let mut repos_guard = match state.try_lock_repos() {
-        Ok(guard) => guard,
-        Err(msg) => return msg,
-    };
-
-    match Repository::clone(&repo_url, &path) {
-        Ok(repo) => {
-            repos_guard.insert(path.clone(), repo);
-            match add_tab(path.clone()) {
-                Ok(_) => match state.get_repo_info(&path, &repos_guard) {
-                    Ok(info) => {
-                        emit_info(window, &info);
-                        format!("Repository cloned at: {}", path)
-                    }
-                    Err(e) => format!("Error getting repo info: {}", e),
-                },
-                Err(e) => format!("Error adding tab for repository: {}", e),
-            }
-        }
-        Err(e) => format!("Error cloning repository: {}", e),
-    }
+fn clone_repository(_: String, _: String, _: Window) -> String {
+    "shit".to_string()
 }
 
 #[command]
@@ -130,26 +103,15 @@ fn get_last_directory(path: &str) -> String {
     last_component.to_str().expect("Invalid UTF-8").to_string()
 }
 
-fn add_tab(repo_path: String) -> std::io::Result<()> {
+#[command]
+fn save_workspace(workspace: Workspace) -> Result<(), String> {
+    // Update the workspace object
     let mut workspace_lock = WORKSPACE.lock().unwrap();
-    let label = get_last_directory(&repo_path);
-    workspace_lock.add_tab(label, repo_path);
-    save_workspace(&workspace_lock)
-}
+    *workspace_lock = workspace.clone();
 
-#[command]
-fn remove_tab() -> std::io::Result<()> {
-    Ok(())
-}
-
-#[command]
-fn switch_tab(_prev_tab_id: i32) -> std::io::Result<()> {
-    Ok(())
-}
-
-fn save_workspace(workspace: &Workspace) -> std::io::Result<()> {
-    let json_data = serde_json::to_string_pretty(workspace)?;
-    fs::write(WORKSPACE_PATH, json_data)?;
+    // Update the workspace json
+    let json_data = serde_json::to_string_pretty(&workspace).map_err(|e| e.to_string())?;
+    fs::write(WORKSPACE_PATH, json_data).map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -197,11 +159,6 @@ fn restore_session() {
                 Err(_) => return,
             };
         }
-
-        let repos_guard = REPO_MANAGER.try_lock_repos().expect("Failed to lock repos");
-        for (repo_path, _) in repos_guard.iter() {
-            println!("Repo Path: {}", repo_path);
-        }
     }
 }
 
@@ -217,6 +174,7 @@ pub fn run() {
             get_workspace,
             get_last_directory,
             get_repo_info,
+            save_workspace,
         ])
         .setup(|_| {
             restore_session();

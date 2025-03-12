@@ -25,7 +25,26 @@ const CommitHistory: React.FC = () => {
       autoHide
       autoHideTimeout={500}
       autoHideDuration={300}
-      className={styles.scrollContainer}
+      renderThumbVertical={({ style, ...props }) => (
+        <div
+          {...props}
+          className={styles.scrollbar}
+        />
+      )}
+      renderTrackVertical={({ style, ...props }) => (
+        <div
+          {...props}
+          className={styles.trackVertical}
+          style={{
+            ...style,
+            width: '10px',
+            right: '2px',
+            bottom: '2px',
+            top: '2px',
+            borderRadius: '4px'
+          }}
+        />
+      )}
     >
       <div className={`${styles.container}`}>
         {commits.length > 0 ? (

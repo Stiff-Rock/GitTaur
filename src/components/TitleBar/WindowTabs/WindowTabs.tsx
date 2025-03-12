@@ -4,6 +4,7 @@ import { GoCodespaces, GoPlus } from "react-icons/go";
 import { useAppContext } from '../../../context/AppContext';
 import Tab from "./Tab";
 import { invoke } from "@tauri-apps/api/core";
+import { Workspace } from "../../../types/workspace";
 
 const WindowTabs: React.FC = () => {
   const { workspace, setWorkspace, setActiveTab, activeTab } = useAppContext();
@@ -68,26 +69,25 @@ const WindowTabs: React.FC = () => {
   function closeTab() {
     if (!workspace) return;
 
-    let remainingKeys = Object.keys(workspace.tabs);
-    if (remainingKeys.length === 1 && remainingKeys[0] === "Welcome Page")
+    const currentTabKeys = Object.keys(workspace.tabs);
+    if (currentTabKeys.length === 1 && currentTabKeys[0] === "Welcome Page")
       return;
 
     const updatedTabs = { ...workspace.tabs };
-    const tabToClose = activeTab;
-
-    delete updatedTabs[tabToClose];
+    delete updatedTabs[activeTab];
 
     setWorkspace(prev => ({
       ...prev!,
       tabs: updatedTabs,
     }));
 
-    remainingKeys = Object.keys(updatedTabs);
+    const remainingKeys = Object.keys(updatedTabs);
     if (remainingKeys.length > 0) {
-      setActiveTab(remainingKeys[remainingKeys.length - 1]);
-    } else {
+      const prevTab = remainingKeys[remainingKeys.length - 1];
+      console.warn(prevTab);
+      setActiveTab(prevTab);
+    } else
       openTab();
-    }
   }
 
   return (
