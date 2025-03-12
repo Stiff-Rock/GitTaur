@@ -21,15 +21,17 @@ use workspace::Workspace;
 
 const WORKSPACE_PATH: &str = "./workspace.json";
 lazy_static::lazy_static! {
-static ref WORKSPACE: Mutex<Workspace> = Mutex::new(Workspace {
+    static ref REPO_MANAGER: RepoManager = RepoManager::new();
+
+    static ref WORKSPACE: Mutex<Workspace> = Mutex::new(Workspace {
         tabs: HashMap::new(),
         active_tab: String::new(),
     });
 }
 
 #[command]
-fn create_repository(path: String, state: State<Arc<RepoManager>>) -> String {
-    let mut repos_guard = match state.try_lock_repos() {
+fn create_repository(path: String) -> String {
+    let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
         Ok(guard) => guard,
         Err(msg) => return msg,
     };
@@ -43,9 +45,10 @@ fn create_repository(path: String, state: State<Arc<RepoManager>>) -> String {
     }
 }
 
+// REFACTOR THIS FUNCTION AS THE get_repo_info
 #[command]
-fn open_repository(path: String, state: State<Arc<RepoManager>>, window: Window) -> String {
-    let mut repos_guard = match state.try_lock_repos() {
+fn open_repository(path: String, window: Window) -> String {
+    let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
         Ok(guard) => guard,
         Err(msg) => return msg,
     };
@@ -57,7 +60,7 @@ fn open_repository(path: String, state: State<Arc<RepoManager>>, window: Window)
     match Repository::open(&path) {
         Ok(repo) => {
             repos_guard.insert(path.clone(), repo);
-            match state.get_repo_info(&path, &repos_guard) {
+            match REPO_MANAGER.get_repo_info(&path, &repos_guard) {
                 Ok(info) => {
                     emit_info(window, &info);
                     format!("Repository opened at: {}", path)
@@ -67,6 +70,17 @@ fn open_repository(path: String, state: State<Arc<RepoManager>>, window: Window)
         }
         Err(e) => format!("Error opening repository: {}", e),
     }
+}
+
+#[command]
+fn get_repo_info(path: String) -> Result<RepoInfo, String> {
+    let repos_guard = REPO_MANAGER
+        .try_lock_repos()
+        .map_err(|e| format!("Failed to lock repos: {}", e))?;
+
+    REPO_MANAGER
+        .get_repo_info(&path, &repos_guard)
+        .map_err(|e| format!("Failed to get repo info: {}", e))
 }
 
 fn emit_info(window: Window, repo_info: &RepoInfo) {
@@ -163,17 +177,37 @@ fn restore_session() {
 
         let mut contents = String::new();
         file.read_to_string(&mut contents)
-            .expect("Error reading workspace file contets");
+            .expect("Error reading workspace file contents");
 
         let mut workspace_lock = WORKSPACE.lock().unwrap();
         *workspace_lock = serde_json::from_str(&contents).expect("Failed to load workspace info");
+
+        for key in workspace_lock.tabs.keys() {
+            let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
+                Ok(guard) => guard,
+                Err(_) => return,
+            };
+
+            if repos_guard.contains_key(key) {
+                return;
+            }
+
+            match Repository::open(key) {
+                Ok(repo) => repos_guard.insert(key.clone(), repo),
+                Err(_) => return,
+            };
+        }
+
+        let repos_guard = REPO_MANAGER.try_lock_repos().expect("Failed to lock repos");
+        for (repo_path, _) in repos_guard.iter() {
+            println!("Repo Path: {}", repo_path);
+        }
     }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .manage(Arc::new(RepoManager::new()))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
@@ -182,6 +216,7 @@ pub fn run() {
             clone_repository,
             get_workspace,
             get_last_directory,
+            get_repo_info,
         ])
         .setup(|_| {
             restore_session();

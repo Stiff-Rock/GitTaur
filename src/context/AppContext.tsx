@@ -1,36 +1,30 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import type { RepoInfo, CommitInfo } from './../types/repoInfo';
+import type { RepoInfo } from './../types/repoInfo';
 import type { Workspace } from './../types/workspace';
 import { useDialog } from '../hooks/useDialog';
 
 
 interface AppContextType {
   // State 
-  repoInfo: RepoInfo | null;
-  commitInfo: CommitInfo | null;
   activeTab: string;
   workspace: Workspace | null;
   notification: string;
 
   // Setters 
-  setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
-  setCommitInfo: React.Dispatch<React.SetStateAction<CommitInfo | null>>;
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
 
   // Global Functions
-  openRepo: () => void;
+  openNewRepo: () => Promise<void>;
+  openRepo: (repoPath: string) => Promise<RepoInfo | null>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
-  const [commitInfo, setCommitInfo] = useState<CommitInfo | null>(null);
-
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [activeTab, setActiveTab] = useState("Welcome Page");
 
@@ -70,30 +64,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   }, [activeTab]);
 
-  const openRepo = async () => {
+  const openNewRepo = async () => {
     const repoPath = await openDirectoryDialog();
-
     if (!repoPath) return;
-
-    const unlisten = await listen<RepoInfo>('repo-info', (event) => {
-      setRepoInfo(event.payload);
-      setActiveTab(repoPath);
-      unlisten();
-    });
-
-    const msg: string = await invoke("open_repository", { path: repoPath });
-    setNotification(msg);
+    await openRepo(repoPath);
   }
 
+  const openRepo = async (repoPath: string): Promise<RepoInfo | null> => {
+    try {
+      let resolveRepoInfo: (info: RepoInfo) => void;
+      const repoInfoPromise = new Promise<RepoInfo>((resolve) => {
+        resolveRepoInfo = resolve;
+      });
+
+      const unlisten = await listen<RepoInfo>('repo-info', (event) => {
+        unlisten();
+        resolveRepoInfo(event.payload);
+      });
+
+      const msg = await invoke<string>("open_repository", { path: repoPath });
+      setNotification(msg);
+
+      const repoinfo = await repoInfoPromise;
+      return repoinfo;
+    } catch (error) {
+      console.error("Error:", error);
+      setNotification("Failed to open repository");
+      return null;
+    }
+  };
   return (
     <AppContext.Provider value={{
       // States and Setters
-      repoInfo, setRepoInfo,
-      commitInfo, setCommitInfo,
       activeTab, setActiveTab,
       workspace, setWorkspace,
       notification, setNotification,
       // Global Functions
+      openNewRepo,
       openRepo
     }}>
       {children}

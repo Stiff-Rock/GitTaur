@@ -3,10 +3,10 @@ import styles from './ActionSidebar.module.css';
 import Accordion from '../../Common/Accordion/Accordion';
 import { GoTag, GoCloud, GoDeviceDesktop } from "react-icons/go";
 import AppTabs from './AppTabs';
-import { useAppContext } from '../../../context/AppContext';
+import { useMainContext } from '../../../context/MainContext';
 
 const ActionsSidebar: React.FC = () => {
-  const { repoInfo } = useAppContext();
+  const { repoInfo } = useMainContext();
 
   return (
     <div className={`${styles.actionSidebar}`}>

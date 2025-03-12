@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styles from './MainLayout.module.css';
 import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
 import CommitHistory from './MainContainer/CommitHistory';
 import InfoSidebar from './InfoSidebar/InfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { GoDash } from "react-icons/go";
-import { useAppContext } from '../../context/AppContext';
+import { useMainContext } from '../../context/MainContext';
 
-const MainLayout: React.FC = () => {
-  const [showInfoSidebar, setShowInfoSidebar] = useState(false);
-  const { commitInfo, workspace } = useAppContext();
+interface MainLayoutProps {
+  repoPath: string;
+  isActive: boolean;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
+  const { showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
+
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (commitInfo)
-      setShowInfoSidebar(true);
-  }, [commitInfo]);
-
-  useEffect(() => {
-    if (workspace) {
-
-    } else {
-
+    if (!hasLoaded.current) {
+      getRepoInfo(repoPath);
+      hasLoaded.current = true;
     }
-  }, [workspace]);
+  }, [])
 
   return (
-    <div className={styles.appMain}>
+    <div className={`${styles.appMain} ${isActive ? '' : styles.inactive}`}>
       <PanelGroup direction="horizontal">
         <Panel id="left-panel" order={1} minSize={20} defaultSize={31} maxSize={40}>
           <ActionsSidebar />

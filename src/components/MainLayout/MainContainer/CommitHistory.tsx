@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../../context/AppContext';
 import styles from './MainContainer.module.css'
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { CommitInfo } from '../../../types/repoInfo';
+import { useMainContext } from '../../../context/MainContext';
 
 const CommitHistory: React.FC = () => {
-  const { repoInfo, setCommitInfo } = useAppContext();
+  const { repoInfo, setCommitInfo } = useMainContext();
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<string | null>(null);
 

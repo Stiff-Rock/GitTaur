@@ -12,7 +12,6 @@ const WindowTabs: React.FC = () => {
   useEffect(() => {
     if (!workspace || !activeTab) return
 
-
     if (!Object.keys(workspace.tabs).includes(activeTab)) {
       const addTab = async () => {
         const repoPath = activeTab;
@@ -46,7 +45,7 @@ const WindowTabs: React.FC = () => {
 
     if (Object.keys(workspace.tabs).includes(repoPath)) {
       if (repoPath !== "Welcome Page")
-        alert("This repository is already opened")
+        console.warn("This repository is already opened")
       return;
     }
 

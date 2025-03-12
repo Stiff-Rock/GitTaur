@@ -1,9 +1,9 @@
 import React from 'react';
 import styles from './InfoSidebar.module.css';
-import { useAppContext } from '../../../context/AppContext';
+import { useMainContext } from '../../../context/MainContext';
 
 const InfoSidebar: React.FC = () => {
-  const { commitInfo } = useAppContext();
+  const { commitInfo } = useMainContext();
 
   return (
     <div className={`${styles.infoSidebar}`}>
