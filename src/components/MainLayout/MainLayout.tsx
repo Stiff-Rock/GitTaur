@@ -6,26 +6,27 @@ import InfoSidebar from './InfoSidebar/InfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { GoDash } from "react-icons/go";
 import { useMainContext } from '../../context/MainContext';
+import { useAppContext } from '../../context/AppContext';
 
-interface MainLayoutProps {
-  repoPath: string;
-  isActive: boolean;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
+const MainLayout: React.FC = () => {
+  const { activeTab } = useAppContext();
   const { showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
 
   const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      getRepoInfo(repoPath);
+    if (!hasLoaded.current || !activeTab) {
+      getRepoInfo(activeTab);
       hasLoaded.current = true;
     }
   }, [])
 
+  useEffect(() => {
+    getRepoInfo(activeTab);
+  }, [activeTab])
+
   return (
-    <div className={`${styles.appMain} ${isActive ? '' : styles.inactive}`}>
+    <div className={styles.appMain}>
       <PanelGroup direction="horizontal">
         <Panel id="left-panel" order={1} minSize={20} defaultSize={31} maxSize={40}>
           <ActionsSidebar />

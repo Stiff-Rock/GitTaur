@@ -31,17 +31,9 @@ function App() {
       {showWelcomePage || !workspace ? (
         <WelcomePage />
       ) : (
-        Object.values(workspace.tabs).map((tab) => (
-          tab.repoPath !== "Welcome Page" && (
-            <MainProvider key={tab.repoPath}>
-              <MainLayout
-                key={tab.repoPath}
-                repoPath={tab.repoPath}
-                isActive={workspace.activeTab === tab.repoPath}
-              />
-            </MainProvider>
-          )
-        ))
+        <MainProvider>
+          <MainLayout />
+        </MainProvider>
       )}
     </main>
   );
