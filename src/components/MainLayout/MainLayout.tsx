@@ -6,6 +6,7 @@ import InfoSidebar from './InfoSidebar/InfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { GoDash } from "react-icons/go";
 import { useMainContext } from '../../context/MainContext';
+import { usePanelSync } from '../../context/PanelSyncContext';
 
 interface MainLayoutProps {
   repoPath: string;
@@ -14,20 +15,61 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
   const { showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
-
   const hasLoaded = useRef(false);
+
+  const {
+    leftSize,
+    rightSize,
+    setLeftSize,
+    setRightSize
+  } = usePanelSync();
+
+  const panelLeftRef = useRef<any>(null);
+  const panelRightRef = useRef<any>(null);
+  const isProgrammaticResize = useRef(false);
+
+  useEffect(() => {
+    if (!panelLeftRef.current) return;
+
+    isProgrammaticResize.current = true;
+    panelLeftRef.current.resize(leftSize);
+    setTimeout(() => {
+      isProgrammaticResize.current = false;
+    }, 0);
+  }, [leftSize]);
+
+  useEffect(() => {
+    if (!showInfoSidebar || !panelRightRef.current) return;
+
+    isProgrammaticResize.current = true;
+    panelRightRef.current.resize(rightSize);
+    setTimeout(() => {
+      isProgrammaticResize.current = false;
+    }, 0);
+  }, [rightSize, showInfoSidebar]);
 
   useEffect(() => {
     if (!hasLoaded.current) {
       getRepoInfo(repoPath);
-      hasLoaded.current = true;
     }
   }, [])
 
   return (
     <div className={`${styles.appMain} ${isActive ? '' : styles.inactive}`}>
       <PanelGroup direction="horizontal">
-        <Panel id="left-panel" order={1} minSize={20} defaultSize={31} maxSize={40}>
+        <Panel
+          ref={panelLeftRef}
+          id="left-panel"
+          order={1}
+          minSize={20}
+          defaultSize={leftSize}
+          maxSize={40}
+          onResize={(size) => {
+            if (!isProgrammaticResize.current) {
+              setLeftSize(size);
+            }
+          }}
+        >
           <ActionsSidebar />
         </Panel>
 
@@ -40,7 +82,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
         {showInfoSidebar && (
           <>
             <PanelResizeHandle className={styles.resizeHandle} />
-            <Panel id="right-panel" order={3} className={styles.rightPanel} minSize={30} maxSize={40}>
+            <Panel
+              ref={panelRightRef}
+              id="right-panel"
+              order={3}
+              className={styles.rightPanel}
+              minSize={30}
+              defaultSize={rightSize}
+              maxSize={40}
+              onResize={(size) => {
+                if (!isProgrammaticResize.current) {
+                  setRightSize(size);
+                }
+              }}
+            >
               <GoDash className={styles.closeButton} onClick={() => setShowInfoSidebar(false)} />
               <InfoSidebar />
             </Panel>
