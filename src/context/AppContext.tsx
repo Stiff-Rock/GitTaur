@@ -77,6 +77,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!workspace) return;
+    console.log("WORKSPACE:", workspace.tabs);
     invoke<Workspace>("save_workspace", { workspace: workspace })
       .catch(error => console.error('Error while saving workspace:', error));
   }, [workspace]);
@@ -93,37 +94,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const msg = await invoke<string>("open_repository", { path: repoPath });
     setNotification(msg);
 
-    console.log("ACTIVE TAB BEFORE: " + activeTab)
+    console.log("CLOSING")
     closeWorkspaceTab(activeTab);
 
     const label = await invoke<string>("get_last_directory", { path: repoPath });
     const newTab: Tab = { label, repoPath }
+    console.log("OPENING")
     openWorkspaceTab(repoPath, newTab);
     setActiveTab(repoPath);
   }
 
-  const openWorkspaceTab = (tabKey: string, newTab: Tab): { [key: string]: Tab } => {
-    const updatedTabs = { ...workspace!.tabs };
-    updatedTabs[tabKey] = newTab;
-
-    setWorkspace(prev => ({
-      ...prev!,
-      tabs: updatedTabs,
-    }));
-
-    return updatedTabs;
+  const closeWorkspaceTab = (tab: string) => {
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      const updatedTabs = { ...prev.tabs };
+      delete updatedTabs[tab];
+      return { ...prev, tabs: updatedTabs };
+    });
   }
 
-  const closeWorkspaceTab = (tab: string): { [key: string]: Tab } => {
-    const updatedTabs = { ...workspace!.tabs };
-    delete updatedTabs[tab];
-
-    setWorkspace(prev => ({
-      ...prev!,
-      tabs: updatedTabs,
-    }));
-
-    return updatedTabs;
+  const openWorkspaceTab = (tabKey: string, newTab: Tab) => {
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        tabs: {
+          ...prev.tabs,
+          [tabKey]: newTab
+        }
+      };
+    });
   }
 
   return (

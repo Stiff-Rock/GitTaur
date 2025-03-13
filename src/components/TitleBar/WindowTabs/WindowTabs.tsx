@@ -35,17 +35,17 @@ const WindowTabs: React.FC = () => {
   }, [activeTab])
 
   function openNewTab() {
+    if (!workspace) return;
+
     const label = "Welcome Page";
     let repoPath = label;
 
-    if (!workspace) return;
-
-    if (Object.keys(workspace.tabs).includes(repoPath) && !isWelcomePage(repoPath)) {
+    if (repoPath === "Welcome Page") {
+      repoPath += ":" + Date.now();
+    } else if (Object.keys(workspace.tabs).includes(repoPath)) {
       console.warn("This repository is already opened")
       return;
     }
-
-    if (repoPath === "Welcome Page") repoPath += ":" + Date.now();
 
     const newTab = {
       label,
