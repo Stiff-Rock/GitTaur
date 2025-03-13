@@ -15,7 +15,6 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
   const { showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
-  const hasLoaded = useRef(false);
 
   const {
     leftSize,
@@ -49,7 +48,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
   }, [rightSize, showInfoSidebar]);
 
   useEffect(() => {
-    if (!hasLoaded.current) {
+    if (!/^Welcome Page:\d+$/.test(repoPath)) {
       getRepoInfo(repoPath);
     }
   }, [])

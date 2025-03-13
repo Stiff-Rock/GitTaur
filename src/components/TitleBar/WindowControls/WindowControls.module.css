@@ -2,6 +2,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  height: 100%;
 }
 
 .controlBtn {
@@ -31,4 +32,18 @@
 
 .close:hover {
   background-color: red;
+}
+
+.sepparator {
+  width: 1px;
+  height: 60%;
+  background-color: var(--lighter-bg);
+  border: none;
+  box-sizing: border-box;
+}
+
+.draggable {
+  height: 100%;
+  width: 50px;
+  -webkit-app-region: drag;
 }

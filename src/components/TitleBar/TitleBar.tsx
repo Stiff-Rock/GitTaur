@@ -4,8 +4,8 @@ import WindowControls from './WindowControls/WindowControls';
 
 const TitleBar: React.FC = () => {
   return (
-    <div className={`${styles.titleBar}`}>
-      <div className={`${styles.windowTabs}`}>
+    <div className={styles.titleBar}>
+      <div className={styles.windowTabs}>
         <WindowTabs />
       </div>
 

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import type { RepoInfo, CommitInfo } from './../types/repoInfo';
 import { invoke } from '@tauri-apps/api/core';
+import { useAppContext } from './AppContext';
 
 
 interface MainContextType {

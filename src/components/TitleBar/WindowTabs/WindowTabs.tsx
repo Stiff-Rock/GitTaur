@@ -4,12 +4,11 @@ import { GoCodespaces, GoPlus } from "react-icons/go";
 import { useAppContext } from '../../../context/AppContext';
 import Tab from "./Tab";
 import { invoke } from "@tauri-apps/api/core";
-import { Workspace } from "../../../types/workspace";
 
 const WindowTabs: React.FC = () => {
-  const { workspace, setWorkspace, setActiveTab, activeTab } = useAppContext();
+  const { workspace, setActiveTab, activeTab, isWelcomePage, openWorkspaceTab, closeWorkspaceTab } = useAppContext();
 
-  // Active Tab
+  // Active Tab TODO: MAYBE DELETE THIS SINCE THE WAY OF ADDING THE NEW TABS IS ADDING IT TO ACTIVE TAB AND WE DONT WANT THAT
   useEffect(() => {
     if (!workspace || !activeTab) return
 
@@ -28,27 +27,25 @@ const WindowTabs: React.FC = () => {
           isActive: true
         };
 
-        setWorkspace(prev => ({
-          ...prev!,
-          tabs: {
-            ...prev!.tabs,
-            [activeTab]: newTab
-          }
-        }));
+        openWorkspaceTab(activeTab, newTab);
       };
 
       addTab();
     }
   }, [activeTab])
 
-  function openTab(label: string = "Welcome Page", repoPath: string = "Welcome Page") {
+  function openNewTab() {
+    const label = "Welcome Page";
+    let repoPath = label;
+
     if (!workspace) return;
 
-    if (Object.keys(workspace.tabs).includes(repoPath)) {
-      if (repoPath !== "Welcome Page")
-        console.warn("This repository is already opened")
+    if (Object.keys(workspace.tabs).includes(repoPath) && !isWelcomePage(repoPath)) {
+      console.warn("This repository is already opened")
       return;
     }
+
+    if (repoPath === "Welcome Page") repoPath += ":" + Date.now();
 
     const newTab = {
       label,
@@ -56,13 +53,7 @@ const WindowTabs: React.FC = () => {
       isActive: true
     };
 
-    setWorkspace(prev => ({
-      ...prev!,
-      tabs: {
-        ...prev!.tabs,
-        [repoPath]: newTab
-      }
-    }));
+    openWorkspaceTab(repoPath, newTab);
     setActiveTab(newTab.repoPath);
   }
 
@@ -70,24 +61,18 @@ const WindowTabs: React.FC = () => {
     if (!workspace) return;
 
     const currentTabKeys = Object.keys(workspace.tabs);
-    if (currentTabKeys.length === 1 && currentTabKeys[0] === "Welcome Page")
+    if (currentTabKeys.length === 1 && isWelcomePage(currentTabKeys[0]))
       return;
 
-    const updatedTabs = { ...workspace.tabs };
-    delete updatedTabs[activeTab];
-
-    setWorkspace(prev => ({
-      ...prev!,
-      tabs: updatedTabs,
-    }));
+    const updatedTabs = closeWorkspaceTab(activeTab);
 
     const remainingKeys = Object.keys(updatedTabs);
     if (remainingKeys.length > 0) {
       const prevTab = remainingKeys[remainingKeys.length - 1];
-      console.warn(prevTab);
       setActiveTab(prevTab);
-    } else
-      openTab();
+    } else {
+      openNewTab();
+    }
   }
 
   return (
@@ -108,7 +93,7 @@ const WindowTabs: React.FC = () => {
         <span>ERROR</span>
       )}
 
-      <GoPlus onClick={() => openTab()} className={`${styles.workspaceIcon}`} />
+      <GoPlus onClick={() => openNewTab()} className={`${styles.workspaceIcon}`} />
     </div>
   );
 };

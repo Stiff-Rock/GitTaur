@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styles from './ActionBar.module.css';
 import {
   GoGitCommit,
@@ -14,15 +14,7 @@ import { useAppContext } from '../../../context/AppContext';
 import OpenRepositoryButton from './Actions/OpenRepositoryButton';
 
 const ActionBar: React.FC = () => {
-  const { activeTab } = useAppContext();
-  const [isInWelcomePage, setIsInWelcomePage] = useState(false);
-
-  useEffect(() => {
-    const inWelcomePage = activeTab === "Welcome Page"
-    if (isInWelcomePage !== inWelcomePage) {
-      setIsInWelcomePage(inWelcomePage);
-    }
-  }, [activeTab])
+  const { isInWelcomePage } = useAppContext();
 
   return (
     <div className={`${styles.actionBar}`}>

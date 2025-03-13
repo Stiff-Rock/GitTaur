@@ -45,7 +45,7 @@ fn create_repository(path: String) -> String {
 
 // REFACTOR THIS FUNCTION AS THE get_repo_info
 #[command]
-fn open_repository(path: String, window: Window) -> String {
+fn open_repository(path: String) -> String {
     let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
         Ok(guard) => guard,
         Err(msg) => return msg,
@@ -56,17 +56,28 @@ fn open_repository(path: String, window: Window) -> String {
     }
 
     match Repository::open(&path) {
-        Ok(repo) => {
-            repos_guard.insert(path.clone(), repo);
-            match REPO_MANAGER.get_repo_info(&path, &repos_guard) {
-                Ok(info) => {
-                    emit_info(window, &info);
-                    format!("Repository opened at: {}", path)
-                }
-                Err(e) => format!("Error getting repo info: {}", e),
-            }
-        }
+        Ok(repo) => match repos_guard.insert(path.clone(), repo) {
+            Some(_) => format!("Repository opened: {}", path),
+            None => format!("Repository could not be opened: {}", path),
+        },
         Err(e) => format!("Error opening repository: {}", e),
+    }
+}
+
+#[command]
+fn close_repository(path: String) -> String {
+    let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
+        Ok(guard) => guard,
+        Err(msg) => return msg,
+    };
+
+    if !repos_guard.contains_key(&path) {
+        return format!("Repository not found: {}", path);
+    }
+
+    match repos_guard.remove(&path) {
+        Some(_) => format!("Repository closed: {}", path),
+        None => format!("Repository not found: {}", path),
     }
 }
 
@@ -78,7 +89,7 @@ fn get_repo_info(path: String) -> Result<RepoInfo, String> {
 
     REPO_MANAGER
         .get_repo_info(&path, &repos_guard)
-        .map_err(|e| format!("Failed to get repo info: {}", e))
+        .map_err(|e| format!("Failed to get repo info of repo {}: {}", path, e))
 }
 
 fn emit_info(window: Window, repo_info: &RepoInfo) {
@@ -170,6 +181,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             create_repository,
             open_repository,
+            close_repository,
             clone_repository,
             get_workspace,
             get_last_directory,

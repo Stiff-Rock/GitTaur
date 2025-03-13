@@ -4,6 +4,7 @@
   align-items: center;
   height: 40px;
   width: 100%;
+  margin-top: -3px;
   background-color: var(--tertiary-bg);
   border-bottom: 1px solid var(--border-color);
 }
@@ -14,11 +15,11 @@
 
 .actions svg {
   display: flex;
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-  margin-left: 5px;
-  padding: 10px;
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+  margin-right: 10px;
+  margin-left: 10px;
+  padding: 5px;
   border-radius: 5px;
   cursor: pointer;
   transition: 0.1s ease;

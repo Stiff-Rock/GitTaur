@@ -12,11 +12,12 @@ interface TabProps {
 const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
   const handleCloseClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+    event.preventDefault();
     onClose();
   };
 
   return (
-    <div onClick={onClick} className={`${styles.tab} ${isActive ? styles.active : ''}`}>
+    <div onClick={onClick} onAuxClick={handleCloseClick} className={`${styles.tab} ${isActive ? styles.active : ''}`}>
       {label === "Welcome Page" ? <GoDatabase className={`${styles.tabIcon}`} /> : <GoRepo className={`${styles.tabIcon}`} />}
       <span>{label}</span>
       <GoX className={`${styles.closeIcon}`} onClick={handleCloseClick} />

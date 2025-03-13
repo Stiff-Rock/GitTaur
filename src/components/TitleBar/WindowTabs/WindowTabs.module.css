@@ -2,8 +2,8 @@
   display: flex;
   align-items: stretch;
   user-select: none;
-  margin-bottom: -1px;
   align-items: flex-end;
+  min-width: 0;
 }
 
 .tabs svg {
@@ -12,15 +12,23 @@
 
 .tab {
   display: flex;
-  width: 100%;
   color: var(--secondary-text);
   align-items: center;
   box-sizing: border-box;
   justify-content: center;
-  padding: 10px 15px;
+  padding: 10px 10px;
   border: 1px solid var(--primary-bg);
   gap: 20px;
-  transition: color 0.1s ease;
+  transition: all 0.1s ease;
+  overflow: hidden;
+}
+
+.tab span {
+  flex: 1;
+  font-size: var(--font-size-tab);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tab:hover {
@@ -36,17 +44,20 @@
   background-color: var(--tertiary-bg);
 }
 
-.tabIcon,
-.workspaceIcon {
-  width: 20px;
-  height: 20px;
+.tabIcon {
+  width: var(--icon-secondary-size);
+  height: var(--icon-secondary-size);
   border-radius: 5px;
 }
 
 .workspaceIcon {
-  padding: 10px;
-  margin-right: 5px;
-  margin-left: 5px;
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+  border-radius: 5px;
+  padding: 5px;
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-bottom: 5px;
   cursor: pointer;
   transition: background-color 0.1s ease;
 }

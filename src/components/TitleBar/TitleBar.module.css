@@ -7,7 +7,7 @@
 }
 
 .windowTabs {
+  min-width: 0;
   display: flex;
-  margin-top: 5px;
   -webkit-app-region: no-drag;
 }

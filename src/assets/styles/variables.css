@@ -22,4 +22,11 @@
   --font-size-title: 24px;
 
   --font-size-subtitle: 20px;
+
+  --font-size-tab: 14px;
+
+  /* ICON SIZES */
+  --icon-primary-size: 20px;
+
+  --icon-secondary-size: 15px;
 }

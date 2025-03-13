@@ -1,31 +1,36 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import type { RepoInfo } from './../types/repoInfo';
 import type { Workspace } from './../types/workspace';
 import { useDialog } from '../hooks/useDialog';
+import type { Tab } from './../types/tab';
 
 interface AppContextType {
   // State 
   activeTab: string;
   workspace: Workspace | null;
+  isInWelcomePage: boolean
   notification: string;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
 
   // Global Functions
   openNewRepo: () => Promise<void>;
-  openRepo: (repoPath: string) => Promise<RepoInfo | null>;
+  isWelcomePage: (text: string) => boolean;
+
+  openWorkspaceTab: (tabKey: string, newTab: Tab) => { [key: string]: Tab };
+  closeWorkspaceTab: (tab: string) => { [key: string]: Tab };
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [activeTab, setActiveTab] = useState("Welcome Page");
+  const [activeTab, setActiveTab] = useState("Welcome Page:" + Date.now());
+  const [isInWelcomePage, setIsInWelcomePage] = useState(true);
 
   const { openDirectoryDialog } = useDialog();
   const [notification, setNotification] = useState("");
@@ -36,14 +41,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const workspaceData: Workspace = await invoke('get_workspace');
         if (!workspaceData.tabs || Object.keys(workspaceData.tabs).length === 0) {
-          const defaultPage: string = "Welcome Page";
+          const defaultPage: string = "Welcome Page:" + Date.now();
           workspaceData.tabs = {
             defaultPage: {
               label: defaultPage,
               repoPath: defaultPage,
             }
           };
-          setActiveTab("Welcome Page")
+          setActiveTab(defaultPage)
         } else {
           setWorkspace(workspaceData);
           setActiveTab(workspaceData.activeTab);
@@ -59,6 +64,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!workspace || !activeTab) return;
 
+    const inWelcomePage = isWelcomePage(activeTab)
+    if (isInWelcomePage !== inWelcomePage) {
+      setIsInWelcomePage(inWelcomePage);
+    }
+
     setWorkspace(prevWorkspace => ({
       ...prevWorkspace!,
       activeTab,
@@ -71,44 +81,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .catch(error => console.error('Error while saving workspace:', error));
   }, [workspace]);
 
+  const pattern = /^Welcome Page:\d+$/;
+  const isWelcomePage = (text: string): boolean => {
+    return pattern.test(text)
+  }
+
   const openNewRepo = async () => {
     const repoPath = await openDirectoryDialog();
     if (!repoPath) return;
-    await openRepo(repoPath);
+
+    const msg = await invoke<string>("open_repository", { path: repoPath });
+    setNotification(msg);
+
+    console.log("ACTIVE TAB BEFORE: " + activeTab)
+    closeWorkspaceTab(activeTab);
+
+    const label = await invoke<string>("get_last_directory", { path: repoPath });
+    const newTab: Tab = { label, repoPath }
+    openWorkspaceTab(repoPath, newTab);
+    setActiveTab(repoPath);
   }
 
-  const openRepo = async (repoPath: string): Promise<RepoInfo | null> => {
-    try {
-      let resolveRepoInfo: (info: RepoInfo) => void;
-      const repoInfoPromise = new Promise<RepoInfo>((resolve) => {
-        resolveRepoInfo = resolve;
-      });
+  const openWorkspaceTab = (tabKey: string, newTab: Tab): { [key: string]: Tab } => {
+    const updatedTabs = { ...workspace!.tabs };
+    updatedTabs[tabKey] = newTab;
 
-      const unlisten = await listen<RepoInfo>('repo-info', (event) => {
-        unlisten();
-        resolveRepoInfo(event.payload);
-      });
+    setWorkspace(prev => ({
+      ...prev!,
+      tabs: updatedTabs,
+    }));
 
-      const msg = await invoke<string>("open_repository", { path: repoPath });
-      setNotification(msg);
+    return updatedTabs;
+  }
 
-      const repoinfo = await repoInfoPromise;
-      return repoinfo;
-    } catch (error) {
-      console.error("Error:", error);
-      setNotification("Failed to open repository");
-      return null;
-    }
-  };
+  const closeWorkspaceTab = (tab: string): { [key: string]: Tab } => {
+    const updatedTabs = { ...workspace!.tabs };
+    delete updatedTabs[tab];
+
+    setWorkspace(prev => ({
+      ...prev!,
+      tabs: updatedTabs,
+    }));
+
+    return updatedTabs;
+  }
+
   return (
     <AppContext.Provider value={{
       // States and Setters
-      activeTab, setActiveTab,
       workspace, setWorkspace,
+      activeTab, setActiveTab,
+      isInWelcomePage, setIsInWelcomePage,
       notification, setNotification,
       // Global Functions
       openNewRepo,
-      openRepo
+      isWelcomePage,
+      openWorkspaceTab,
+      closeWorkspaceTab,
     }}>
       {children}
     </AppContext.Provider>
