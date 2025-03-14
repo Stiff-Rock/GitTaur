@@ -20,10 +20,16 @@
   -webkit-app-region: no-drag;
 }
 
+.windowActions {
+  display: flex;
+  box-sizing: border-box;
+}
+
 .controlBtn svg {
   width: 20px;
   height: 20px;
   transition: inherit;
+  padding-bottom: 4px;
 }
 
 .controlBtn:hover {

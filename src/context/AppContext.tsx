@@ -63,7 +63,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!workspace || !activeTab) return;
-
     const inWelcomePage = isWelcomePage(activeTab)
     if (isInWelcomePage !== inWelcomePage) {
       setIsInWelcomePage(inWelcomePage);
@@ -77,7 +76,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!workspace) return;
-    console.log("WORKSPACE:", workspace.tabs);
     invoke<Workspace>("save_workspace", { workspace: workspace })
       .catch(error => console.error('Error while saving workspace:', error));
   }, [workspace]);
@@ -94,26 +92,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const msg = await invoke<string>("open_repository", { path: repoPath });
     setNotification(msg);
 
-    console.log("CLOSING")
     closeWorkspaceTab(activeTab);
 
     const label = await invoke<string>("get_last_directory", { path: repoPath });
     const newTab: Tab = { label, repoPath }
-    console.log("OPENING")
     openWorkspaceTab(repoPath, newTab);
     setActiveTab(repoPath);
   }
 
-  const closeWorkspaceTab = (tab: string) => {
+  const closeWorkspaceTab = (tab: string): { [key: string]: Tab } => {
     setWorkspace(prev => {
       if (!prev) return prev;
       const updatedTabs = { ...prev.tabs };
       delete updatedTabs[tab];
       return { ...prev, tabs: updatedTabs };
     });
+
+    const currentTabs = { ...workspace?.tabs };
+    delete currentTabs[tab];
+    return currentTabs;
   }
 
-  const openWorkspaceTab = (tabKey: string, newTab: Tab) => {
+  const openWorkspaceTab = (tabKey: string, newTab: Tab): { [key: string]: Tab } => {
     setWorkspace(prev => {
       if (!prev) return prev;
       return {
@@ -124,6 +124,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       };
     });
+
+    return {
+      ...workspace?.tabs,
+      [tabKey]: newTab
+    };
   }
 
   return (

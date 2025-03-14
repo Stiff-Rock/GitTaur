@@ -12,6 +12,7 @@
 
 .tab {
   display: flex;
+  width: 200px;
   color: var(--secondary-text);
   align-items: center;
   box-sizing: border-box;

@@ -1,5 +1,5 @@
 import MainLayout from "./components/MainLayout/MainLayout"
-import ActionBar from "./components/MainLayout/ActionBar/ActionBar";
+import ActionBar from "./components/ActionBar/ActionBar";
 import TitleBar from "./components/TitleBar/TitleBar";
 import { useAppContext } from "./context/AppContext";
 import WelcomePage from "./components/WelcomePage/WelcomePage";

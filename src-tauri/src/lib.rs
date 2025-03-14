@@ -13,7 +13,6 @@ use std::path::Path;
 use std::sync::Mutex;
 use tab::Tab;
 use tauri::command;
-use tauri::Emitter;
 use tauri::Window;
 use workspace::Workspace;
 
@@ -56,10 +55,10 @@ fn open_repository(path: String) -> String {
     }
 
     match Repository::open(&path) {
-        Ok(repo) => match repos_guard.insert(path.clone(), repo) {
-            Some(_) => format!("Repository opened: {}", path),
-            None => format!("Repository could not be opened: {}", path),
-        },
+        Ok(repo) => {
+            repos_guard.insert(path.clone(), repo);
+            format!("Repository opened successfully")
+        }
         Err(e) => format!("Error opening repository: {}", e),
     }
 }
@@ -82,6 +81,16 @@ fn close_repository(path: String) -> String {
 }
 
 #[command]
+fn clone_repository(url: String) -> String {
+    let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
+        Ok(guard) => guard,
+        Err(msg) => return msg,
+    };
+    //OPEN POPUP TO ASK FOR DIR AND URL
+    url
+}
+
+#[command]
 fn get_repo_info(path: String) -> Result<RepoInfo, String> {
     let repos_guard = REPO_MANAGER
         .try_lock_repos()
@@ -90,15 +99,6 @@ fn get_repo_info(path: String) -> Result<RepoInfo, String> {
     REPO_MANAGER
         .get_repo_info(&path, &repos_guard)
         .map_err(|e| format!("Failed to get repo info of repo {}: {}", path, e))
-}
-
-fn emit_info(window: Window, repo_info: &RepoInfo) {
-    window.emit("repo-info", repo_info).unwrap();
-}
-
-#[command]
-fn clone_repository(_: String, _: String, _: Window) -> String {
-    "shit".to_string()
 }
 
 #[command]

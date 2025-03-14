@@ -32,15 +32,17 @@ const WindowControls: React.FC = () => {
       <hr className={styles.sepparator} />
       <div className={styles.draggable} />
 
-      <button className={`${styles.controlBtn} ${styles.minimize}`} onClick={() => appWindow.minimize()}>
-        <GoDash />
-      </button>
-      <button className={styles.controlBtn} onClick={() => appWindow.toggleMaximize()}>
-        {isMaximized ? <GoScreenNormal /> : <GoScreenFull />}
-      </button>
-      <button className={`${styles.controlBtn} ${styles.close}`} onClick={() => appWindow.close()}>
-        <GoX />
-      </button>
+      <div className={styles.windowActions}>
+        <button className={`${styles.controlBtn} ${styles.minimize}`} onClick={() => appWindow.minimize()}>
+          <GoDash />
+        </button>
+        <button className={styles.controlBtn} onClick={() => appWindow.toggleMaximize()}>
+          {isMaximized ? <GoScreenNormal /> : <GoScreenFull />}
+        </button>
+        <button className={`${styles.controlBtn} ${styles.close}`} onClick={() => appWindow.close()}>
+          <GoX />
+        </button>
+      </div>
     </div>
   );
 };

@@ -10,7 +10,7 @@ import {
   GoProjectSymlink,
   GoDuplicate
 } from "react-icons/go";
-import { useAppContext } from '../../../context/AppContext';
+import { useAppContext } from '../../context/AppContext';
 import OpenRepositoryButton from './Actions/OpenRepositoryButton';
 
 const ActionBar: React.FC = () => {
@@ -48,4 +48,3 @@ const ActionBar: React.FC = () => {
 };
 
 export default ActionBar;
-

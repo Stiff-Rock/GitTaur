@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 const WindowTabs: React.FC = () => {
   const { workspace, setActiveTab, activeTab, isWelcomePage, openWorkspaceTab, closeWorkspaceTab } = useAppContext();
 
-  // Active Tab TODO: MAYBE DELETE THIS SINCE THE WAY OF ADDING THE NEW TABS IS ADDING IT TO ACTIVE TAB AND WE DONT WANT THAT
+  // Active Tab
   useEffect(() => {
     if (!workspace || !activeTab) return
 
@@ -43,7 +43,6 @@ const WindowTabs: React.FC = () => {
     if (repoPath === "Welcome Page") {
       repoPath += ":" + Date.now();
     } else if (Object.keys(workspace.tabs).includes(repoPath)) {
-      console.warn("This repository is already opened")
       return;
     }
 
@@ -68,6 +67,7 @@ const WindowTabs: React.FC = () => {
 
     const remainingKeys = Object.keys(updatedTabs);
     if (remainingKeys.length > 0) {
+      //TODO: THIS IS NOT WORKING PROPERLY
       const prevTab = remainingKeys[remainingKeys.length - 1];
       setActiveTab(prevTab);
     } else {
@@ -77,7 +77,7 @@ const WindowTabs: React.FC = () => {
 
   return (
     <div className={`${styles.tabs}`}>
-      <GoCodespaces className={`${styles.workspaceIcon}`} />
+      <GoCodespaces title="Switch workspace" className={`${styles.workspaceIcon}`} />
 
       {workspace?.tabs && Object.keys(workspace.tabs).length > 0 ? (
         Object.entries(workspace.tabs).map(([key, tab]) => (
