@@ -56,22 +56,23 @@ const WindowTabs: React.FC = () => {
     setActiveTab(newTab.repoPath);
   }
 
-  function closeTab() {
+  function closeTab(tabKey: string) {
     if (!workspace) return;
 
     const currentTabKeys = Object.keys(workspace.tabs);
     if (currentTabKeys.length === 1 && isWelcomePage(currentTabKeys[0]))
       return;
 
-    const updatedTabs = closeWorkspaceTab(activeTab);
+    const updatedTabs = closeWorkspaceTab(tabKey);
 
-    const remainingKeys = Object.keys(updatedTabs);
-    if (remainingKeys.length > 0) {
-      //TODO: THIS IS NOT WORKING PROPERLY
-      const prevTab = remainingKeys[remainingKeys.length - 1];
-      setActiveTab(prevTab);
-    } else {
-      openNewTab();
+    if (tabKey === activeTab) {
+      const remainingKeys = Object.keys(updatedTabs);
+      if (remainingKeys.length > 0) {
+        const prevTab = remainingKeys[remainingKeys.length - 1];
+        setActiveTab(prevTab);
+      } else {
+        openNewTab();
+      }
     }
   }
 
@@ -86,7 +87,7 @@ const WindowTabs: React.FC = () => {
             label={tab.label}
             isActive={activeTab === key}
             onClick={() => setActiveTab(key)}
-            onClose={() => closeTab()}
+            onClose={() => closeTab(tab.repoPath)}
           />
         ))
       ) : (
