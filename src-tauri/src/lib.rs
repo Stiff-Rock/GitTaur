@@ -3,17 +3,16 @@ mod repo_manager;
 mod tab;
 mod workspace;
 use git2::Repository;
+use regex::Regex;
 use repo_info::RepoInfo;
 use repo_manager::RepoManager;
-use std::collections::HashMap;
 use std::fs;
-use std::fs::File;
+use std::fs::{metadata, File};
 use std::io::{Read, Write};
 use std::path::Path;
 use std::sync::Mutex;
 use tab::Tab;
 use tauri::command;
-use tauri::Window;
 use workspace::Workspace;
 
 const WORKSPACE_PATH: &str = "./workspace.json";
@@ -21,9 +20,11 @@ lazy_static::lazy_static! {
     static ref REPO_MANAGER: RepoManager = RepoManager::new();
 
     static ref WORKSPACE: Mutex<Workspace> = Mutex::new(Workspace {
-        tabs: HashMap::new(),
+        tabs: Vec::new(),
         active_tab: String::new(),
     });
+
+    static ref WELCOME_PAGE_REGEX: Regex = Regex::new(r"^Welcome Page:\d+$").unwrap();
 }
 
 #[command]
@@ -82,7 +83,7 @@ fn close_repository(path: String) -> String {
 
 #[command]
 fn clone_repository(url: String) -> String {
-    let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
+    let mut _repos_guard = match REPO_MANAGER.try_lock_repos() {
         Ok(guard) => guard,
         Err(msg) => return msg,
     };
@@ -103,15 +104,19 @@ fn get_repo_info(path: String) -> Result<RepoInfo, String> {
 
 #[command]
 fn get_last_directory(path: &str) -> String {
-    let path = std::path::Path::new(path);
-    let last_component = match path.file_name() {
-        Some(name) => name,
-        None => path
-            .parent()
-            .and_then(|p| p.file_name())
-            .expect("Failed to extract last directory from the path"),
-    };
-    last_component.to_str().expect("Invalid UTF-8").to_string()
+    if WELCOME_PAGE_REGEX.is_match(path) {
+        return "Welcome Page".to_string();
+    }
+
+    let path = Path::new(path);
+
+    let last_component = path
+        .file_name()
+        .or_else(|| path.parent().and_then(|p| p.file_name()))
+        .map(|name| name.to_str().unwrap_or_default())
+        .unwrap_or_else(|| "Unknown");
+
+    last_component.to_string()
 }
 
 #[command]
@@ -134,15 +139,15 @@ fn get_workspace() -> Workspace {
 
 fn restore_session() {
     let path = Path::new(WORKSPACE_PATH);
-    if !path.exists() {
-        let json_data = serde_json::json!({
-            "tabs": {},
-            "activeTab": ""
-        })
-        .to_string();
+
+    if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
+        let workspace_instance = WORKSPACE.lock().unwrap();
+
+        let json_data = serde_json::to_string_pretty(&*workspace_instance)
+            .map_err(|e| e.to_string())
+            .expect("Failed to serialize workspace");
 
         let mut file = File::create(WORKSPACE_PATH).expect("Failed to create workspace.json");
-
         file.write_all(json_data.as_bytes())
             .expect("Failed to write default JSON content");
     } else {
@@ -155,19 +160,25 @@ fn restore_session() {
         let mut workspace_lock = WORKSPACE.lock().unwrap();
         *workspace_lock = serde_json::from_str(&contents).expect("Failed to load workspace info");
 
-        for key in workspace_lock.tabs.keys() {
-            let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
-                Ok(guard) => guard,
-                Err(_) => return,
-            };
-
-            if repos_guard.contains_key(key) {
+        let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
+            Ok(guard) => guard,
+            Err(e) => {
+                println!("{}", e);
                 return;
+            }
+        };
+
+        for (key, _) in &workspace_lock.tabs {
+            if WELCOME_PAGE_REGEX.is_match(key) || repos_guard.contains_key(key) {
+                continue;
             }
 
             match Repository::open(key) {
                 Ok(repo) => repos_guard.insert(key.clone(), repo),
-                Err(_) => return,
+                Err(e) => {
+                    println!("Failed to open repository while restoring session: {}", e);
+                    return;
+                }
             };
         }
     }

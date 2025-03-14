@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import type { Workspace } from './../types/workspace';
 import { useDialog } from '../hooks/useDialog';
@@ -6,136 +6,181 @@ import type { Tab } from './../types/tab';
 
 interface AppContextType {
   // State 
-  activeTab: string;
   workspace: Workspace | null;
   isInWelcomePage: boolean
   notification: string;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
 
   // Global Functions
   openNewRepo: () => Promise<void>;
   isWelcomePage: (text: string) => boolean;
-
-  openWorkspaceTab: (tabKey: string, newTab: Tab) => { [key: string]: Tab };
-  closeWorkspaceTab: (tab: string) => { [key: string]: Tab };
+  setActiveTab: (tabId: string) => void;
+  openWorkspaceTab: (tabKey: string, newTab: Tab) => void;
+  closeWorkspaceTab: (tabKey: string) => void;
+  openWelcomePage: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [activeTab, setActiveTab] = useState("Welcome Page:" + Date.now());
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
 
   const { openDirectoryDialog } = useDialog();
   const [notification, setNotification] = useState("");
+
+  const pattern = /^Welcome Page:\d+$/;
+
+  const isLoaded = useRef(false);
 
   // The backend information of the workspace gets loaded on startup
   useEffect(() => {
     const fetchWorkspace = async () => {
       try {
         const workspaceData: Workspace = await invoke('get_workspace');
-        if (!workspaceData.tabs || Object.keys(workspaceData.tabs).length === 0) {
+
+        if (workspaceData.tabs.length === 0) {
           const defaultPage: string = "Welcome Page:" + Date.now();
-          workspaceData.tabs = {
-            defaultPage: {
-              label: defaultPage,
-              repoPath: defaultPage,
-            }
+          const newTab: Tab = { label: "Welcome Page", repoPath: defaultPage };
+
+          const newWorkspace: Workspace = {
+            ...workspaceData,
+            tabs: [[defaultPage, newTab]],
+            activeTab: defaultPage
           };
-          setActiveTab(defaultPage)
+
+          setWorkspace(newWorkspace);
         } else {
           setWorkspace(workspaceData);
-          setActiveTab(workspaceData.activeTab);
         }
       } catch (error) {
         console.error('Failed to load workspace:', error);
       }
     };
 
-    fetchWorkspace();
+    if (!isLoaded.current) {
+      fetchWorkspace();
+      isLoaded.current = true;
+    }
   }, []);
 
   useEffect(() => {
-    if (!workspace || !activeTab) return;
-    const inWelcomePage = isWelcomePage(activeTab)
-    if (isInWelcomePage !== inWelcomePage) {
-      setIsInWelcomePage(inWelcomePage);
+    if (!workspace) return;
+
+    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
+
+    if (workspace.tabs.length === 0) {
+      openWelcomePage();
     }
 
-    setWorkspace(prevWorkspace => ({
-      ...prevWorkspace!,
-      activeTab,
-    }));
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (!workspace) return;
     invoke<Workspace>("save_workspace", { workspace: workspace })
       .catch(error => console.error('Error while saving workspace:', error));
   }, [workspace]);
 
-  const pattern = /^Welcome Page:\d+$/;
   const isWelcomePage = (text: string): boolean => {
     return pattern.test(text)
   }
 
   const openNewRepo = async () => {
     const repoPath = await openDirectoryDialog();
-    if (!repoPath) return;
+    if (!repoPath || !workspace) return;
+
+    if (workspace.tabs.some(([tabKey]) => tabKey === repoPath)) {
+      setActiveTab(repoPath);
+      return;
+    }
 
     const msg = await invoke<string>("open_repository", { path: repoPath });
     setNotification(msg);
 
-    closeWorkspaceTab(activeTab);
-
     const label = await invoke<string>("get_last_directory", { path: repoPath });
     const newTab: Tab = { label, repoPath }
     openWorkspaceTab(repoPath, newTab);
-    setActiveTab(repoPath);
   }
 
-  const closeWorkspaceTab = (tab: string): { [key: string]: Tab } => {
-    setWorkspace(prev => {
-      if (!prev) return prev;
-      const updatedTabs = { ...prev.tabs };
-      delete updatedTabs[tab];
-      return { ...prev, tabs: updatedTabs };
-    });
+  const closeWorkspaceTab = (tabKey: string) => {
+    if (!workspace) return;
 
-    const currentTabs = { ...workspace?.tabs };
-    delete currentTabs[tab];
-    return currentTabs;
-  }
+    if (workspace.tabs.length === 1 && isWelcomePage(tabKey)) {
+      return;
+    }
 
-  const openWorkspaceTab = (tabKey: string, newTab: Tab): { [key: string]: Tab } => {
+    const remainingTabs = workspace.tabs.filter(([key]) => key !== tabKey);
+    let newActiveTab: string = workspace.activeTab;
+
+    if (tabKey === workspace.activeTab) {
+      if (remainingTabs.length > 0) {
+        console.log("YEAH");
+        newActiveTab = remainingTabs[remainingTabs.length - 1][0];
+      } else {
+        newActiveTab = "";
+      }
+    }
+
     setWorkspace(prev => {
       if (!prev) return prev;
       return {
         ...prev,
-        tabs: {
-          ...prev.tabs,
-          [tabKey]: newTab
-        }
+        tabs: remainingTabs,
+        activeTab: newActiveTab
+      };
+    });
+  };
+
+  const openWorkspaceTab = (tabKey: string, newTab: Tab) => {
+    if (!workspace) return;
+
+    let remainingTabs = workspace.tabs;
+    remainingTabs.push([tabKey, newTab]);
+
+    const currentActiveTab = workspace.activeTab;
+    if (!isWelcomePage(tabKey) && isWelcomePage(currentActiveTab)) {
+      remainingTabs = workspace.tabs.filter(([key]) => key !== currentActiveTab);
+    }
+
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        tabs: remainingTabs,
+        activeTab: tabKey,
       };
     });
 
-    return {
-      ...workspace?.tabs,
-      [tabKey]: newTab
+    return [...(workspace?.tabs || []), [tabKey, newTab]];
+  };
+
+  const setActiveTab = (tabId: string) => {
+    setIsInWelcomePage(isWelcomePage(tabId));
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      return { ...prev, activeTab: tabId };
+    });
+  };
+
+  const openWelcomePage = () => {
+    if (!workspace) return;
+
+    const label = "Welcome Page";
+    const repoPath = label + ":" + Date.now();;
+    const key = repoPath;
+
+    const newTab = {
+      label,
+      repoPath,
     };
+
+    openWorkspaceTab(key, newTab);
   }
 
   return (
     <AppContext.Provider value={{
       // States and Setters
       workspace, setWorkspace,
-      activeTab, setActiveTab,
       isInWelcomePage, setIsInWelcomePage,
       notification, setNotification,
       // Global Functions
@@ -143,6 +188,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isWelcomePage,
       openWorkspaceTab,
       closeWorkspaceTab,
+      setActiveTab,
+      openWelcomePage,
     }}>
       {children}
     </AppContext.Provider>

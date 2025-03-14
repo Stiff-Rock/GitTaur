@@ -1,6 +1,6 @@
 import { Tab } from "./tab";
 
 export interface Workspace {
-  tabs: { [key: string]: Tab };
+  tabs: Array<[string, Tab]>;
   activeTab: string;
 }
