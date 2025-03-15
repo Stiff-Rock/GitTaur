@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import styles from './Acordion.module.css'
 import Collapsible from 'react-collapsible';
-import { GoChevronRight } from 'react-icons/go';
+import { ChevronRightIcon } from "@primer/octicons-react";
 
 interface AccordionProps {
   title: string;
@@ -15,14 +15,14 @@ const Accordion: React.FC<AccordionProps> = ({ title, icon, children }) => {
       <Collapsible
         trigger={
           <div className={`${styles.accordionHeader}`}>
-            <GoChevronRight className={`${styles.arrow}`} />
+            <ChevronRightIcon className={`${styles.arrow}`} />
             {icon}
             <span>{title}</span>
           </div>
         }
         triggerWhenOpen={
           <div className={`${styles.accordionHeader}`}>
-            <GoChevronRight className={`${styles.arrow}  ${styles.open}`} />
+            <ChevronRightIcon className={`${styles.arrow}  ${styles.open}`} />
             {icon}
             <span>{title}</span>
           </div>

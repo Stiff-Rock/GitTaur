@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import React, { useState } from 'react';
-import { useDialog } from '../hooks/useDialog';
+import { useDialog } from '../../../hooks/useDialog';
 
-const ButtonCreateRepository: React.FC = () => {
+const CreateRepositoryButton: React.FC = () => {
   const [resultMsg, setResultMsg] = useState("");
   const { openDirectoryDialog } = useDialog();
 
@@ -26,4 +26,4 @@ const ButtonCreateRepository: React.FC = () => {
   );
 };
 
-export default ButtonCreateRepository;
+export default CreateRepositoryButton;

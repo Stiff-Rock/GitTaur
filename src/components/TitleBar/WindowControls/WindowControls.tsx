@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { GoX, GoDash, GoScreenFull, GoScreenNormal } from "react-icons/go";
+import {
+  XIcon,
+  DashIcon,
+  ScreenNormalIcon,
+  ScreenFullIcon,
+} from "@primer/octicons-react";
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import styles from './WindowControls.module.css';
 
@@ -34,13 +39,13 @@ const WindowControls: React.FC = () => {
 
       <div className={styles.windowActions}>
         <button className={`${styles.controlBtn} ${styles.minimize}`} onClick={() => appWindow.minimize()}>
-          <GoDash />
+          <DashIcon />
         </button>
         <button className={styles.controlBtn} onClick={() => appWindow.toggleMaximize()}>
-          {isMaximized ? <GoScreenNormal /> : <GoScreenFull />}
+          {isMaximized ? <ScreenNormalIcon /> : <ScreenFullIcon />}
         </button>
         <button className={`${styles.controlBtn} ${styles.close}`} onClick={() => appWindow.close()}>
-          <GoX />
+          <XIcon />
         </button>
       </div>
     </div>

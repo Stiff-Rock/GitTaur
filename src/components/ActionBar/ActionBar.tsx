@@ -1,17 +1,17 @@
 import React from 'react';
 import styles from './ActionBar.module.css';
 import {
-  GoGitCommit,
-  GoGitBranch,
-  GoTerminal,
-  GoMoveToBottom,
-  GoMoveToTop,
-  GoDownload,
-  GoProjectSymlink,
-  GoDuplicate
-} from "react-icons/go";
+  FileDirectorySymlinkIcon,
+  TerminalIcon,
+  GitCommitIcon,
+  DownloadIcon,
+  MoveToBottomIcon,
+  MoveToTopIcon,
+  GitBranchIcon,
+} from "@primer/octicons-react";
 import { useAppContext } from '../../context/AppContext';
 import OpenRepositoryButton from './Actions/OpenRepositoryButton';
+import CloneRepositoryButton from './Actions/CloneRepositoryButton';
 
 const ActionBar: React.FC = () => {
   const { isInWelcomePage } = useAppContext();
@@ -23,21 +23,21 @@ const ActionBar: React.FC = () => {
           (
             <>
               <OpenRepositoryButton />
-              <GoDuplicate />
+              <CloneRepositoryButton />
             </>
           ) : (
-            <GoProjectSymlink />
+            <FileDirectorySymlinkIcon />
           )}
-        <GoTerminal />
+        <TerminalIcon />
       </div>
       <div className={`${styles.actions} ${styles.centerActions}`}>
         {!isInWelcomePage && (
           <>
-            <GoDownload />
-            <GoMoveToBottom />
-            <GoMoveToTop />
-            <GoGitCommit />
-            <GoGitBranch />
+            <DownloadIcon />
+            <MoveToBottomIcon />
+            <MoveToTopIcon />
+            <GitCommitIcon />
+            <GitBranchIcon />
           </>
         )}
       </div>

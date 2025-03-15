@@ -1,23 +1,26 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import type { Workspace } from './../types/workspace';
-import { useDialog } from '../hooks/useDialog';
 import type { Tab } from './../types/tab';
+import { useDialog } from '../hooks/useDialog';
 
 interface AppContextType {
   // State 
   workspace: Workspace | null;
   isInWelcomePage: boolean
+  cloneRepoModalActive: boolean;
   notification: string;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
+  setCloneRepoModalActive: React.Dispatch<React.SetStateAction<boolean>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
 
   // Global Functions
-  openNewRepo: () => Promise<void>;
   isWelcomePage: (text: string) => boolean;
+  openNewRepo: () => void;
+  cloneRepo: (path: string, repoUrl: string) => void;
   setActiveTab: (tabId: string) => void;
   openWorkspaceTab: (tabKey: string, newTab: Tab) => void;
   closeWorkspaceTab: (tabKey: string) => void;
@@ -27,10 +30,10 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { openDirectoryDialog } = useDialog();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
-
-  const { openDirectoryDialog } = useDialog();
+  const [cloneRepoModalActive, setCloneRepoModalActive] = useState(false);
   const [notification, setNotification] = useState("");
 
   const pattern = /^Welcome Page:\d+$/;
@@ -85,6 +88,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return pattern.test(text)
   }
 
+
+  //TODO: SI ABRE UN REPO QUE ESTA ENN EL HISTORIAL, ABRELO DE AHI, ESTA FUNCION ESTA MAL
   const openNewRepo = async () => {
     const repoPath = await openDirectoryDialog();
     if (!repoPath || !workspace) return;
@@ -101,6 +106,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newTab: Tab = { label, repoPath }
     openWorkspaceTab(repoPath, newTab);
   }
+
+  const cloneRepo = async (path: string, repoUrl: string) => {
+    try {
+      const msg: string = await invoke("clone_repository", { path, repoUrl });
+      setNotification(msg);
+    } catch (error) {
+      console.error('Error clonando repositorio:', error)
+    }
+  };
 
   const closeWorkspaceTab = (tabKey: string) => {
     if (!workspace) return;
@@ -182,10 +196,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // States and Setters
       workspace, setWorkspace,
       isInWelcomePage, setIsInWelcomePage,
+      cloneRepoModalActive, setCloneRepoModalActive,
       notification, setNotification,
       // Global Functions
-      openNewRepo,
       isWelcomePage,
+      openNewRepo,
+      cloneRepo,
       openWorkspaceTab,
       closeWorkspaceTab,
       setActiveTab,

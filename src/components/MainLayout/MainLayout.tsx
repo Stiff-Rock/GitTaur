@@ -4,7 +4,7 @@ import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
 import CommitHistory from './MainContainer/CommitHistory';
 import InfoSidebar from './InfoSidebar/InfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { GoDash } from "react-icons/go";
+import { DashIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../context/MainContext';
 import { usePanelSync } from '../../context/PanelSyncContext';
 
@@ -95,7 +95,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
                 }
               }}
             >
-              <GoDash className={styles.closeButton} onClick={() => setShowInfoSidebar(false)} />
+              <button
+                onClick={() => setShowInfoSidebar(false)}
+                className='actionButton'
+              >
+                <DashIcon className={styles.closeButton} />
+              </button>
               <InfoSidebar />
             </Panel>
           </>

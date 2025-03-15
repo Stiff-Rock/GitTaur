@@ -1,7 +1,11 @@
+import { useAppContext } from '../../context/AppContext';
+import CloneRepositoryModal from '../Common/Modals/CloneRepositoryModal';
 import styles from './WelcomePage.module.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 function WelcomePage() {
+  const { cloneRepoModalActive } = useAppContext();
+
   return (
     <div className={styles.main}>
       <div className={styles.subContainer}>
@@ -36,6 +40,8 @@ function WelcomePage() {
           </div>
         </Scrollbars>
       </div>
+
+      {cloneRepoModalActive && <CloneRepositoryModal />}
     </div>
   );
 }

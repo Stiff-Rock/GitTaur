@@ -1,12 +1,17 @@
 import React from 'react';
-import { GoFileDirectory } from "react-icons/go";
+import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useAppContext } from '../../../context/AppContext';
 
 const OpenRepositoryButton: React.FC = () => {
   const { openNewRepo } = useAppContext();
 
   return (
-    <GoFileDirectory onClick={openNewRepo} />
+    <button
+      onClick={openNewRepo}
+      className='actionButton'
+    >
+      <FileDirectoryIcon />
+    </button>
   );
 };
 

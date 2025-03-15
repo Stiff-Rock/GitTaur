@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from "./WindowTabs.module.css";
-import { GoX, GoDatabase, GoRepo } from "react-icons/go";
+import { DatabaseIcon, RepoIcon, XIcon } from "@primer/octicons-react";
 
 interface TabProps {
   label: string;
@@ -18,9 +18,26 @@ const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
 
   return (
     <div onClick={onClick} onAuxClick={handleCloseClick} className={`${styles.tab} ${isActive ? styles.active : ''}`}>
-      {label === "Welcome Page" ? <GoDatabase className={`${styles.tabIcon}`} /> : <GoRepo className={`${styles.tabIcon}`} />}
+      {label === "Welcome Page" ?
+        <button
+          className='actionButton'
+        >
+          <DatabaseIcon className={`${styles.tabIcon}`} />
+        </button> :
+        <button
+          className='actionButton'
+        >
+          <RepoIcon className={`${styles.tabIcon}`} />
+        </button>
+      }
       <span>{label}</span>
-      <GoX className={`${styles.closeIcon}`} onClick={handleCloseClick} />
+      <button
+        className='actionButton'
+        title='Close tab'
+        onClick={handleCloseClick}
+      >
+        <XIcon className={`${styles.closeIcon}`} />
+      </button>
     </div>
   );
 };

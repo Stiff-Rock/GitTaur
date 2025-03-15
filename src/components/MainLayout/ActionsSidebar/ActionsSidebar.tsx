@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './ActionSidebar.module.css';
 import Accordion from '../../Common/Accordion/Accordion';
-import { GoTag, GoCloud, GoDeviceDesktop } from "react-icons/go";
+import { CloudIcon, DeviceDesktopIcon, TagIcon } from "@primer/octicons-react";
 import AppTabs from './AppTabs';
 import { useMainContext } from '../../../context/MainContext';
 
@@ -12,7 +12,7 @@ const ActionsSidebar: React.FC = () => {
     <div className={`${styles.actionSidebar}`}>
       <AppTabs />
 
-      <Accordion title="Local" icon={<GoDeviceDesktop />} >
+      <Accordion title="Local" icon={<DeviceDesktopIcon />} >
         {repoInfo &&
           <ul>
             {repoInfo.local_branches.map((item, index) => (
@@ -22,7 +22,7 @@ const ActionsSidebar: React.FC = () => {
         }
       </Accordion>
 
-      <Accordion title="Remote" icon={<GoCloud />}>
+      <Accordion title="Remote" icon={<CloudIcon />}>
         {repoInfo &&
           <ul>
             {repoInfo.remotes.map((item, index) => (
@@ -32,7 +32,7 @@ const ActionsSidebar: React.FC = () => {
         }
       </Accordion>
 
-      <Accordion title="Tags" icon={<GoTag />}>
+      <Accordion title="Tags" icon={<TagIcon />}>
         {repoInfo &&
           <ul>
             {repoInfo.tags.map((item, index) => (

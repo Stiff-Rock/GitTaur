@@ -1,31 +1,18 @@
-import { invoke } from "@tauri-apps/api/core";
-import React, { useState } from 'react';
-import { useDialog } from '../hooks/useDialog';
+import React from 'react';
+import { useAppContext } from "../../../context/AppContext";
+import { RepoCloneIcon } from "@primer/octicons-react";
 
-const ButtonCloneRepository: React.FC = () => {
-  const [inputUrl, setInputUrl] = useState("");
-  const [resultMsg, setResultMsg] = useState("");
-  const { openDirectoryDialog } = useDialog();
-
-  async function cloneRepo() {
-    try {
-      const path = await openDirectoryDialog();
-      if (path) {
-        const msg: string = await invoke("clone_repository", { path, repoUrl: inputUrl });
-        setResultMsg(msg);
-      }
-    } catch (error) {
-      console.error('Error clonando repositorio:', error)
-    }
-  }
+const CloneRepositoryButton: React.FC = () => {
+  const { setCloneRepoModalActive } = useAppContext();
 
   return (
-    <div>
-      <button onClick={cloneRepo}>Clonar repositorio</button>
-      {resultMsg && <p>{resultMsg}</p>}
-      <input type="text" value={inputUrl} onChange={(e) => setInputUrl(e.target.value)} placeholder="Url del repositorio..." ></input>
-    </div >
+    <button
+      onClick={() => setCloneRepoModalActive(true)}
+      className='actionButton'
+    >
+      <RepoCloneIcon />
+    </button>
   );
 };
 
-export default ButtonCloneRepository;
+export default CloneRepositoryButton;
