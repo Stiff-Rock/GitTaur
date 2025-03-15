@@ -33,7 +33,11 @@ const ActionBar: React.FC = () => {
               <FileDirectorySymlinkIcon />
             </button>
           )}
-        <TerminalIcon />
+        <button
+          className={`actionButton ${styles.actionButton}`}
+        >
+          <TerminalIcon />
+        </button>
       </div>
       <div className={`${styles.actions} ${styles.centerActions}`}>
         {!isInWelcomePage && (

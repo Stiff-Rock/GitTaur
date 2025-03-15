@@ -82,13 +82,26 @@ fn close_repository(path: String) -> String {
 }
 
 #[command]
-fn clone_repository(url: String) -> String {
-    let mut _repos_guard = match REPO_MANAGER.try_lock_repos() {
-        Ok(guard) => guard,
-        Err(msg) => return msg,
-    };
-    //OPEN POPUP TO ASK FOR DIR AND URL
-    url
+fn clone_repository(path: String, repo_url: String) -> String {
+    let clone_path = Path::new(&path);
+    //TODO: I think that i cannot delete it since the program never stops holding it
+    match Repository::clone(&repo_url, &clone_path) {
+        Ok(repo) => {
+            let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
+                Ok(guard) => guard,
+                Err(msg) => return msg,
+            };
+
+            match repos_guard.insert(path.clone(), repo) {
+                Some(repo) => format!(
+                    "Repository already exists at: {}",
+                    repo.path().to_str().unwrap()
+                ),
+                None => format!("Repository successfully cloned: {}", path),
+            }
+        }
+        Err(e) => format!("Failed to clone repository: {}", e),
+    }
 }
 
 #[command]

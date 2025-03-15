@@ -5,10 +5,10 @@ import { useDialog } from "../../../hooks/useDialog";
 import { useAppContext } from "../../../context/AppContext";
 
 const CloneRepositoryModal: React.FC = () => {
-  const { setCloneRepoModalActive } = useAppContext();
+  const { setCloneRepoModalActive, cloneRepo } = useAppContext();
   const { openDirectoryDialog } = useDialog();
 
-  const [parentFolder, setParentFolder] = useState("");
+  const [path, setParentFolder] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
 
   const chooseParentFolder = async () => {
@@ -18,22 +18,24 @@ const CloneRepositoryModal: React.FC = () => {
     }
   };
 
-  const handleClone = () => {
-    console.log("Parent Folder:", parentFolder);
+  const handleClone = async () => {
+    console.log("Parent Folder:", path);
     console.log("Repository URL:", repoUrl);
+    await cloneRepo(path, repoUrl);
+    setCloneRepoModalActive(false);
   };
 
   return (
     <div className='modalOverlay' onClick={() => setCloneRepoModalActive(false)}>
-      <div className='modal'>
+      <div className={`modal ${styles.container}`} onClick={(e) => e.stopPropagation()}>
         <div className={styles.clonePathField}>
           <input
             type="text"
             placeholder="Parent directory"
-            value={parentFolder}
+            value={path}
             readOnly
           />
-          <button onClick={chooseParentFolder} className="actionButton">
+          <button onClick={chooseParentFolder} className={`actionButton ${styles.actionButton}`}>
             <FileDirectoryIcon />
           </button>
         </div>
@@ -45,7 +47,10 @@ const CloneRepositoryModal: React.FC = () => {
           onChange={(e) => setRepoUrl(e.target.value)}
         />
 
-        <button onClick={handleClone}>Clone repository</button>
+        <div className={styles.buttonsContainer}>
+          <button onClick={handleClone}>Clone repository</button>
+          <button onClick={() => setCloneRepoModalActive(false)}>Cancel</button>
+        </div>
       </div>
     </div>
   );

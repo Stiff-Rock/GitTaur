@@ -20,7 +20,7 @@ interface AppContextType {
   // Global Functions
   isWelcomePage: (text: string) => boolean;
   openNewRepo: () => void;
-  cloneRepo: (path: string, repoUrl: string) => void;
+  cloneRepo: (path: string, repoUrl: string) => Promise<boolean>;
   setActiveTab: (tabId: string) => void;
   openWorkspaceTab: (tabKey: string, newTab: Tab) => void;
   closeWorkspaceTab: (tabKey: string) => void;
@@ -107,10 +107,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     openWorkspaceTab(repoPath, newTab);
   }
 
-  const cloneRepo = async (path: string, repoUrl: string) => {
+  const cloneRepo = async (path: string, repoUrl: string): boolean => {
     try {
       const msg: string = await invoke("clone_repository", { path, repoUrl });
       setNotification(msg);
+      return true;
     } catch (error) {
       console.error('Error clonando repositorio:', error)
     }
