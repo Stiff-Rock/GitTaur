@@ -5,9 +5,8 @@ import { CommitInfo } from '../../../../types/repoInfo';
 import { useMainContext } from '../../../../context/MainContext';
 
 const CommitHistory: React.FC = () => {
-  const { repoInfo, setCommitInfo } = useMainContext();
+  const { selectedCommit, setSelectedCommit, repoInfo, setCommitInfo } = useMainContext();
   const [commits, setCommits] = useState<CommitInfo[]>([]);
-  const [selectedCommit, setSelectedCommit] = useState<string | null>(null);
 
   useEffect(() => {
     if (repoInfo) {

@@ -7,6 +7,9 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DashIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../context/MainContext';
 import { usePanelSync } from '../../context/PanelSyncContext';
+import { AppTabs } from '../../types/appTabs';
+import LocalChanges from './MainContainer/LocalChanges/LocalChanges';
+import TodoPanel from './MainContainer/TodoPanel/TodoPanel';
 
 interface MainLayoutProps {
   repoPath: string;
@@ -14,7 +17,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
-  const { showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
+  const { currentAppTab, showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
 
   const {
     leftSize,
@@ -75,7 +78,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
         <PanelResizeHandle className={styles.resizeHandle} />
 
         <Panel id="center-panel" order={2}>
-          <CommitHistory />
+          {currentAppTab === AppTabs.CommitHistory && <CommitHistory />}
+          {currentAppTab === AppTabs.LocalChanges && <LocalChanges />}
+          {currentAppTab === AppTabs.TodoPanel && <TodoPanel />}
         </Panel>
 
         {showInfoSidebar && (
