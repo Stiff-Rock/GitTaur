@@ -4,6 +4,7 @@ export interface CommitInfo {
   body: string;
   author: string;
   commit_date: string;
+  parents: string[];
 }
 
 export interface RepoInfo {

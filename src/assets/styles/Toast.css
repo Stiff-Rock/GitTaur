@@ -1,0 +1,24 @@
+.NotificationToast {
+  --toastify-color-light: var(--primary-bg);
+  --toastify-color-dark: var(--secondary-bg);
+  --toastify-text-color-light: var(--primary-text);
+  --toastify-text-color-dark: var(--primary-text);
+
+  --toastify-color-progress-light: var(--active-color);
+  --toastify-color-progress-dark: var(--active-color);
+
+  --toastify-icon-color-success: var(--active-color);
+  --toastify-icon-color-error: #ff5555;
+
+  font-size: var(--font-size-tab);
+}
+
+.NotificationToast .Toastify__close-button {
+  color: var(--secondary-text);
+  font-size: var(--icon-secondary-size);
+}
+
+.NotificationToast .Toastify__toast-icon svg {
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+}

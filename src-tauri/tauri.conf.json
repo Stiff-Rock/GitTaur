@@ -29,8 +29,13 @@
     "active": true,
     "targets": "all",
     "icon": [
-
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    },
+    "os": true
   }
 }

@@ -37,7 +37,7 @@ fn create_repository(path: String) -> String {
     match Repository::init(&path) {
         Ok(repo) => {
             repos_guard.insert(path.clone(), repo);
-            format!("Repository created at: {}", path)
+            format!("")
         }
         Err(e) => format!("Error creating repository: {}", e),
     }
@@ -58,7 +58,7 @@ fn open_repository(path: String) -> String {
     match Repository::open(&path) {
         Ok(repo) => {
             repos_guard.insert(path.clone(), repo);
-            format!("Repository opened successfully")
+            format!("")
         }
         Err(e) => format!("Error opening repository: {}", e),
     }
@@ -97,7 +97,7 @@ fn clone_repository(path: String, repo_url: String) -> String {
                     "Repository already exists at: {}",
                     repo.path().to_str().unwrap()
                 ),
-                None => format!("Repository successfully cloned: {}", path),
+                None => format!(""),
             }
         }
         Err(e) => format!("Failed to clone repository: {}", e),
@@ -106,13 +106,14 @@ fn clone_repository(path: String, repo_url: String) -> String {
 
 #[command]
 fn get_repo_info(path: String) -> Result<RepoInfo, String> {
-    let repos_guard = REPO_MANAGER
-        .try_lock_repos()
-        .map_err(|e| format!("Failed to lock repos: {}", e))?;
+    let repos_guard = REPO_MANAGER.try_lock_repos().map_err(|e| {
+        println!("Failed to lock REPO_MANAGER: {}", e);
+        format!("Failed to get repo info: {}", e)
+    })?;
 
     REPO_MANAGER
         .get_repo_info(&path, &repos_guard)
-        .map_err(|e| format!("Failed to get repo info of repo {}: {}", path, e))
+        .map_err(|e| format!("Failed to get repo info with path <{}>: {}", path, e))
 }
 
 #[command]
@@ -126,21 +127,20 @@ fn get_last_directory(path: &str) -> String {
     let last_component = path
         .file_name()
         .or_else(|| path.parent().and_then(|p| p.file_name()))
-        .map(|name| name.to_str().unwrap_or_default())
-        .unwrap_or_else(|| "Unknown");
+        .and_then(|name| name.to_str())
+        .unwrap_or("Unknown");
 
     last_component.to_string()
 }
 
 #[command]
 fn save_workspace(workspace: Workspace) -> Result<(), String> {
-    // Update the workspace object
-    let mut workspace_lock = WORKSPACE.lock().unwrap();
+    let mut workspace_lock = WORKSPACE.lock().map_err(|e| e.to_string())?;
     *workspace_lock = workspace.clone();
 
-    // Update the workspace json
     let json_data = serde_json::to_string_pretty(&workspace).map_err(|e| e.to_string())?;
-    fs::write(WORKSPACE_PATH, json_data).map_err(|e| e.to_string())?;
+    fs::write(WORKSPACE_PATH, json_data).map_err(|e| format!("Failed to save: {}", e))?;
+
     Ok(())
 }
 
@@ -200,8 +200,10 @@ fn restore_session() {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             create_repository,
             open_repository,

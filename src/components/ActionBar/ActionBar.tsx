@@ -1,8 +1,6 @@
 import React from 'react';
 import styles from './ActionBar.module.css';
 import {
-  FileDirectorySymlinkIcon,
-  TerminalIcon,
   GitCommitIcon,
   DownloadIcon,
   MoveToBottomIcon,
@@ -13,6 +11,8 @@ import {
 import { useAppContext } from '../../context/AppContext';
 import OpenRepositoryButton from './Actions/OpenRepositoryButton';
 import CloneRepositoryButton from './Actions/CloneRepositoryButton';
+import OpenRepoDirButton from './Actions/OpenRepoDirButton';
+import OpenTerminalDirButton from './Actions/OpenTerminalButton';
 
 const ActionBar: React.FC = () => {
   const { isInWelcomePage } = useAppContext();
@@ -27,17 +27,9 @@ const ActionBar: React.FC = () => {
               <CloneRepositoryButton />
             </>
           ) : (
-            <button
-              className={`actionButton ${styles.actionButton}`}
-            >
-              <FileDirectorySymlinkIcon />
-            </button>
+            <OpenRepoDirButton />
           )}
-        <button
-          className={`actionButton ${styles.actionButton}`}
-        >
-          <TerminalIcon />
-        </button>
+        <OpenTerminalDirButton />
       </div>
       <div className={`${styles.actions} ${styles.centerActions}`}>
         {!isInWelcomePage && (

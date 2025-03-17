@@ -76,7 +76,7 @@ input {
   border-radius: 5px;
 }
 
-button {
+.appButton {
   background-color: var(--secondary-bg);
   color: var(--primary-text);
   border: 1px solid var(--border-color);
@@ -86,7 +86,7 @@ button {
   transition: all 0.15s ease;
 }
 
-button:hover {
+.appButton:hover {
   background-color: var(--secondary-bg);
   border-color: var(--active-color);
   color: var(--active-color);

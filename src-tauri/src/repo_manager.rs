@@ -80,6 +80,12 @@ impl RepoManager {
                     .ok_or_else(|| "Invalid timestamp".to_string())?;
                 let formatted_date = date_time.format("%d/%m/%Y").to_string();
 
+                let mut parents = Vec::new();
+                for i in 0..commit.parent_count() {
+                    let parent = commit.parent(i).map_err(|e| e.to_string())?;
+                    parents.push(parent.id().to_string());
+                }
+
                 // Create ComitInfo object
                 let commit_info = CommitInfo {
                     sha: commit.id().to_string(),
@@ -87,6 +93,7 @@ impl RepoManager {
                     body: msg_body,
                     author: commit.author().name().unwrap_or("Unknown").to_string(),
                     commit_date: formatted_date,
+                    parents,
                 };
 
                 commits.push(commit_info);

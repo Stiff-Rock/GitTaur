@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import styles from './MainContainer.module.css'
+import styles from '../MainContainer.module.css'
 import { Scrollbars } from 'react-custom-scrollbars-2';
-import { CommitInfo } from '../../../types/repoInfo';
-import { useMainContext } from '../../../context/MainContext';
+import { CommitInfo } from '../../../../types/repoInfo';
+import { useMainContext } from '../../../../context/MainContext';
 
 const CommitHistory: React.FC = () => {
   const { repoInfo, setCommitInfo } = useMainContext();

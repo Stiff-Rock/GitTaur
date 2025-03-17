@@ -7,6 +7,7 @@ pub struct CommitInfo {
     pub body: String,
     pub author: String,
     pub commit_date: String,
+    pub parents: Vec<String>,
 }
 
 #[derive(Serialize)]

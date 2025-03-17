@@ -107,14 +107,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     openWorkspaceTab(repoPath, newTab);
   }
 
-  const cloneRepo = async (path: string, repoUrl: string): boolean => {
+  const cloneRepo = async (path: string, repoUrl: string): Promise<boolean> => {
     try {
       const msg: string = await invoke("clone_repository", { path, repoUrl });
       setNotification(msg);
-      return true;
     } catch (error) {
       console.error('Error clonando repositorio:', error)
     }
+    return true;
   };
 
   const closeWorkspaceTab = (tabKey: string) => {
@@ -129,7 +129,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (tabKey === workspace.activeTab) {
       if (remainingTabs.length > 0) {
-        console.log("YEAH");
         newActiveTab = remainingTabs[remainingTabs.length - 1][0];
       } else {
         newActiveTab = "";

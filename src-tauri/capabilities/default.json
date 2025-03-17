@@ -7,10 +7,41 @@
   ],
   "permissions": [
     "core:default",
-    "opener:default",
     "dialog:default",
+    "opener:default",
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
-    "core:window:allow-close"
+    "core:window:allow-close",
+    "core:path:default",
+    "shell:default",
+    "os:default",
+    "opener:allow-open-path",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "git-bash",
+          "cmd": "C:\\Program Files\\Git\\git-bash.exe",
+          "args": [
+            "-c",
+            {
+              "validator": ".*"
+            }
+          ],
+          "sidecar": false
+        },
+        {
+          "name": "default-shell",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": "^cd\\s+\"[A-Za-z0-9\\-\\_\\/\\:]+\"\\s+&&\\s+\\$SHELL$"
+            }
+          ],
+          "sidecar": false
+        }
+      ]
+    }
   ]
 }

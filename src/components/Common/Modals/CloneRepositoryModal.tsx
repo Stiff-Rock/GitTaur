@@ -19,8 +19,6 @@ const CloneRepositoryModal: React.FC = () => {
   };
 
   const handleClone = async () => {
-    console.log("Parent Folder:", path);
-    console.log("Repository URL:", repoUrl);
     await cloneRepo(path, repoUrl);
     setCloneRepoModalActive(false);
   };
@@ -48,8 +46,8 @@ const CloneRepositoryModal: React.FC = () => {
         />
 
         <div className={styles.buttonsContainer}>
-          <button onClick={handleClone}>Clone repository</button>
-          <button onClick={() => setCloneRepoModalActive(false)}>Cancel</button>
+          <button className='appButton' onClick={handleClone}>Clone repository</button>
+          <button className='appButton' onClick={() => setCloneRepoModalActive(false)}>Cancel</button>
         </div>
       </div>
     </div>

@@ -6,13 +6,17 @@ import WelcomePage from "./components/WelcomePage/WelcomePage";
 import { useEffect } from "react";
 import { MainProvider } from './context/MainContext';
 import { PanelSyncProvider } from "./context/PanelSyncContext";
+import { ToastContainer, toast, Zoom } from "react-toastify";
 
 function App() {
   const { workspace, notification, isInWelcomePage, isWelcomePage } = useAppContext();
 
   useEffect(() => {
     if (notification) {
-      console.warn(notification);
+      if (notification.toLowerCase().includes("error"))
+        toast.error(notification);
+      else
+        toast.info(notification);
     }
   }, [notification])
 
@@ -20,6 +24,16 @@ function App() {
     <main className="container">
       <TitleBar />
       <ActionBar />
+      <ToastContainer
+        className="NotificationToast"
+        position="top-right"
+        autoClose={3000}
+        newestOnTop
+        hideProgressBar={true}
+        pauseOnHover
+        pauseOnFocusLoss
+        transition={Zoom}
+      />
       {isInWelcomePage || !workspace ? (
         <WelcomePage />
       ) : (
