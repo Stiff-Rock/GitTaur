@@ -8,7 +8,8 @@ import { useAppContext } from '../../../context/AppContext';
 const OpenTerminalDirButton: React.FC = () => {
   const { setNotification, workspace } = useAppContext();
 
-
+  //TODO: CHECK IF IT WORKS IN MAC AND LINUX
+  //TODO: USER COFIG GIT BASH PATH
   const openTerminal = async () => {
     const PROJECT_PATH = workspace?.activeTab;
     try {
