@@ -4,6 +4,7 @@ import styles from '../ActionBar.module.css';
 import { Command } from '@tauri-apps/plugin-shell';
 import { platform } from '@tauri-apps/plugin-os';
 import { useAppContext } from '../../../context/AppContext';
+import { invoke } from '@tauri-apps/api/core';
 
 const OpenTerminalDirButton: React.FC = () => {
   const { setNotification, workspace } = useAppContext();
@@ -26,7 +27,7 @@ const OpenTerminalDirButton: React.FC = () => {
           console.error(error);
         }
       } else {
-        await Command.create('sh', ['-c', `cd "${PROJECT_PATH}" && $SHELL`]).spawn();
+        //TODO: OTHER OS DONT WORK
       }
     } catch (error) {
       console.error('Error:', error);
@@ -37,7 +38,11 @@ const OpenTerminalDirButton: React.FC = () => {
   return (
     <button
       className={`${styles.actionButton} actionButton`}
-      onClick={openTerminal}
+      onClick={() => {
+        invoke('open_terminal')
+        .then(() => console.log('Terminal opened'))
+        .catch((error) => console.error('Error opening terminal:', error));
+      }}
       title="Open git terminal"
     >
       <TerminalIcon />

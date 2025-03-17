@@ -150,6 +150,34 @@ fn get_workspace() -> Workspace {
     workspace_lock.clone()
 }
 
+#[tauri::command]
+fn open_terminal() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("cmd.exe")
+            .args(&["/C", "start", "cmd.exe"])
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg("-a")
+            .arg("Terminal")
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let terminal =
+            std::env::var("TERMINAL").unwrap_or_else(|_| "x-terminal-emulator".to_string());
+        std::process::Command::new(terminal)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 fn restore_session() {
     let path = Path::new(WORKSPACE_PATH);
 
@@ -200,9 +228,6 @@ fn restore_session() {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             create_repository,
@@ -213,6 +238,7 @@ pub fn run() {
             get_last_directory,
             get_repo_info,
             save_workspace,
+            open_terminal
         ])
         .setup(|_| {
             restore_session();

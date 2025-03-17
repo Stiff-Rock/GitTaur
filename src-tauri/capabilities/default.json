@@ -8,34 +8,8 @@
   "permissions": [
     "core:default",
     "dialog:default",
-    "opener:default",
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
-    "core:window:allow-close",
-    "core:path:default",
-    "shell:default",
-    "os:default",
-    "opener:allow-open-path",
-    {
-      "identifier": "shell:allow-spawn",
-      "allow": [
-        {
-          "name": "git-bash",
-          "cmd": "C:\\Program Files\\Git\\git-bash.exe",
-          "args": [
-            "-c"
-          ],
-          "sidecar": false
-        },
-        {
-          "name": "default-shell",
-          "cmd": "sh",
-          "args": [
-            "-c"
-          ],
-          "sidecar": false
-        }
-      ]
-    }
+    "core:path:default"
   ]
 }
