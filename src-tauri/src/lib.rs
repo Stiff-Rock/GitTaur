@@ -150,30 +150,42 @@ fn get_workspace() -> Workspace {
     workspace_lock.clone()
 }
 
-#[tauri::command]
-fn open_terminal() -> Result<(), String> {
+#[command]
+fn open_terminal(path: String) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("cmd.exe")
-            .args(&["/C", "start", "cmd.exe"])
+        if let Err(e) = std::process::Command::new("cmd.exe")
+            .args(&["/C", "start", "cmd.exe", "/K", "cd", "/d", &path])
             .spawn()
-            .map_err(|e| e.to_string())?;
+        {
+            println!("Error opening terminal on Windows: {}", e);
+            return Err(e.to_string());
+        }
     }
+
     #[cfg(target_os = "macos")]
     {
-        std::process::Command::new("open")
-            .arg("-a")
-            .arg("Terminal")
+        let script = format!("tell application \"Terminal\" to do script \"cd {}\"", path);
+        if let Err(e) = std::process::Command::new("osascript")
+            .args(&["-e", &script])
             .spawn()
-            .map_err(|e| e.to_string())?;
+        {
+            println!("Error opening terminal on macOS: {}", e);
+            return Err(e.to_string());
+        }
     }
+    //TODO: USER CONFIG, LET USER SELECT WHAT TERMINAL TO USE
     #[cfg(target_os = "linux")]
     {
         let terminal =
             std::env::var("TERMINAL").unwrap_or_else(|_| "x-terminal-emulator".to_string());
-        std::process::Command::new(terminal)
+        if let Err(e) = std::process::Command::new(terminal)
+            .current_dir(&path)
             .spawn()
-            .map_err(|e| e.to_string())?;
+        {
+            println!("Error opening terminal on Linux: {}", e);
+            return Err(e.to_string());
+        }
     }
     Ok(())
 }
@@ -228,6 +240,8 @@ fn restore_session() {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             create_repository,

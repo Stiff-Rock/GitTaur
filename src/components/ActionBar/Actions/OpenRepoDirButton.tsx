@@ -8,18 +8,14 @@ const OpenRepoDirButton: React.FC = () => {
   const { workspace, setNotification } = useAppContext();
 
   const openRepoDir = async () => {
+    if (!workspace) return;
+
     try {
-      const path = workspace?.activeTab;
-
-      if (!path) {
-        setNotification("No active repository selected");
-        return;
-      }
-
+      const path = workspace.activeTab;
       await openPath(path);
     } catch (error) {
-      setNotification(`Failed to open directory: ${error instanceof Error ? error.message : error}`);
-      console.error("Directory open error:", error);
+      console.error('Error opening file explorer:', error);
+      setNotification('Error opening file explorer: ' + error);
     }
   };
 
