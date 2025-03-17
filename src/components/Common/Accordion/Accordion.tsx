@@ -4,14 +4,15 @@ import Collapsible from 'react-collapsible';
 import { ChevronRightIcon } from "@primer/octicons-react";
 
 interface AccordionProps {
+  className?: string;
   title: string;
   icon: ReactNode
   children: ReactNode;
 }
 
-const Accordion: React.FC<AccordionProps> = ({ title, icon, children }) => {
+const Accordion: React.FC<AccordionProps> = ({ className, title, icon, children }) => {
   return (
-    <div className={`${styles.accordion}`}>
+    <div className={`${className} ${styles.accordion}`}>
       <Collapsible
         trigger={
           <div className={`${styles.accordionHeader}`}>

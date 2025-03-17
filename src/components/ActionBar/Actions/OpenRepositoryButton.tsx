@@ -10,6 +10,7 @@ const OpenRepositoryButton: React.FC = () => {
     <button
       onClick={openNewRepo}
       className={`actionButton ${styles.actionButton}`}
+      title='Open repository'
     >
       <FileDirectoryIcon />
     </button>

@@ -1,7 +1,32 @@
+.accordion {
+  margin-bottom: 10px;
+}
+
 .actionSidebar {
   display: flex;
   flex-direction: column;
   background-color: var(--secondary-bg);
   height: 100%;
   padding: 10px;
+}
+
+.actionSidebar ul {
+  padding: 0;
+  margin-top: -5px;
+}
+
+.actionSidebar ul li {
+  width: 100%;
+}
+
+.actionSidebar ul li div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 35px;
+}
+
+.activeIndicator {
+  width: 10px;
+  height: 10px;
 }

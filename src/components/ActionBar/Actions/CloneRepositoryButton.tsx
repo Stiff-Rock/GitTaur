@@ -10,6 +10,7 @@ const CloneRepositoryButton: React.FC = () => {
     <button
       onClick={() => setCloneRepoModalActive(true)}
       className={`actionButton ${styles.actionButton}`}
+      title='Clone repository'
     >
       <RepoCloneIcon />
     </button>
