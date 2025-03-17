@@ -82,25 +82,58 @@ fn close_repository(path: String) -> String {
 }
 
 #[command]
-fn clone_repository(path: String, repo_url: String) -> String {
+fn clone_repository(path: String, repo_url: String) -> Result<String, String> {
     let clone_path = Path::new(&path);
-    //TODO: I think that i cannot delete it since the program never stops holding it
-    match Repository::clone(&repo_url, &clone_path) {
-        Ok(repo) => {
-            let mut repos_guard = match REPO_MANAGER.try_lock_repos() {
-                Ok(guard) => guard,
-                Err(msg) => return msg,
-            };
+    let repo = match Repository::clone(&repo_url, &clone_path) {
+        Ok(repo) => repo,
+        Err(e) => {
+            // Log the technical details for debugging
+            println!("Technical error details: {:?}", e);
 
-            match repos_guard.insert(path.clone(), repo) {
-                Some(repo) => format!(
-                    "Repository already exists at: {}",
-                    repo.path().to_str().unwrap()
+            return Err(match e.code() {
+                git2::ErrorCode::Auth => format!(
+                    "Authentication failed for repository:\n{}\n\n\
+                    Please check your credentials or SSH keys.",
+                    repo_url
                 ),
-                None => format!(""),
-            }
+                git2::ErrorCode::NotFound => format!(
+                    "The repository was not found at the provided URL:\n{}\n\n\
+                    Please ensure the URL is correct and the repository is accessible.",
+                    repo_url
+                ),
+                git2::ErrorCode::Exists => format!(
+                    "The target directory already exists at:\n{}\n\n\
+                    Please choose a different directory or remove the existing one before cloning.",
+                    clone_path.display()
+                ),
+                git2::ErrorCode::Certificate => {
+                    "SSL certificate verification failed. This can be caused by:\n\
+                    - Invalid server certificate\n\
+                    - System clock mismatch\n\
+                    - Corporate network restrictions\n\n\
+                    Please check your system's certificate settings or consult your network administrator."
+                        .to_string()
+                }
+                _ => format!(
+                    "Failed to clone the repository from:\n{}\n\n\
+                    Error details: {}",
+                    repo_url,
+                    e.message()
+                ),
+            });
         }
-        Err(e) => format!("Failed to clone repository: {}", e),
+    };
+
+    let mut repos_guard = REPO_MANAGER
+        .try_lock_repos()
+        .map_err(|e| format!("Failed to lock repository manager: {}", e))?;
+
+    match repos_guard.insert(path.clone(), repo) {
+        Some(existing) => Ok(format!(
+            "This repository is already managed at:\n{}",
+            existing.path().display()
+        )),
+        None => Ok("Repository cloned successfully and is now managed.".to_string()),
     }
 }
 
@@ -189,7 +222,7 @@ fn open_terminal(path: String) -> Result<(), String> {
     }
     Ok(())
 }
-
+//TODO: REPO_MANAGER Repository objects block any otehr porgram interacting with the repo files
 fn restore_session() {
     let path = Path::new(WORKSPACE_PATH);
 

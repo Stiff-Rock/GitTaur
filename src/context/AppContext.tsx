@@ -110,6 +110,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const cloneRepo = async (path: string, repoUrl: string): Promise<boolean> => {
     try {
       const msg: string = await invoke("clone_repository", { path, repoUrl });
+      if (msg)
+        console.error(msg);
       setNotification(msg);
     } catch (error) {
       console.error('Error clonando repositorio:', error)
