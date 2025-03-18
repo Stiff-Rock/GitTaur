@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import styles from './MainLayout.module.css';
 import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
 import CommitHistory from './MainContainer/CommitHistory/CommitHistory';
-import InfoSidebar from './InfoSidebar/InfoSidebar';
+import CommitInfoSidebar from './InfoSidebar/CommitInfoSidebar/CommitInfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DashIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../context/MainContext';
@@ -106,7 +106,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
               >
                 <DashIcon className={styles.closeButton} />
               </button>
-              <InfoSidebar />
+              <CommitInfoSidebar />
             </Panel>
           </>
         )}

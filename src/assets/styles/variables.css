@@ -10,18 +10,25 @@
 
   --border-color: #0f0f0f;
 
+
   --primary-text: #d1d5db;
 
   --secondary-text: #868e96;
 
 
+  --link-color: #7FDBFF;
+
   --active-color: #50FA7B;
+
+  --modal-bg: rgba(0, 0, 0, 0.5);
 
 
   /* FONT SIZES */
   --font-size-title: 24px;
 
   --font-size-subtitle: 20px;
+
+  --font-size-header: 18px;
 
   --font-size-tab: 14px;
 

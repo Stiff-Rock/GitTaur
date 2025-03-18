@@ -2,9 +2,9 @@ mod repo_info;
 mod repo_manager;
 mod tab;
 mod workspace;
-use git2::Repository;
+use git2::{Oid, Repository};
 use regex::Regex;
-use repo_info::RepoInfo;
+use repo_info::{FileChange, RepoInfo};
 use repo_manager::RepoManager;
 use std::fs;
 use std::fs::{metadata, File};
@@ -150,6 +150,26 @@ fn get_repo_info(path: String) -> Result<RepoInfo, String> {
 }
 
 #[command]
+fn get_commit_changes(repo_path: String, sha: String) -> Result<Vec<FileChange>, String> {
+    let repos_guard = REPO_MANAGER.try_lock_repos().map_err(|e| {
+        println!("Failed to lock REPO_MANAGER: {}", e);
+        format!("Failed to get repo info: {}", e)
+    })?;
+
+    let repo = repos_guard
+        .get(&repo_path)
+        .ok_or_else(|| "Repository not found".to_string())?;
+
+    let oid = Oid::from_str(&sha).map_err(|e| e.to_string())?;
+
+    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+
+    let changes = RepoManager::get_commit_changes(repo, &commit).map_err(|e| e.to_string())?;
+
+    Ok(changes)
+}
+
+#[command]
 fn get_last_directory(path: &str) -> String {
     if WELCOME_PAGE_REGEX.is_match(path) {
         return "Welcome Page".to_string();
@@ -285,7 +305,8 @@ pub fn run() {
             get_last_directory,
             get_repo_info,
             save_workspace,
-            open_terminal
+            open_terminal,
+            get_commit_changes,
         ])
         .setup(|_| {
             restore_session();

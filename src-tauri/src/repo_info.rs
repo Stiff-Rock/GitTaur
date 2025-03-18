@@ -1,11 +1,19 @@
 use serde::Serialize;
 
 #[derive(Serialize)]
+pub struct FileChange {
+    pub file: String,
+    pub change_type: String,
+    pub patch: String,
+}
+
+#[derive(Serialize)]
 pub struct CommitInfo {
     pub sha: String,
     pub subject: String,
     pub body: String,
     pub author: String,
+    pub email: String,
     pub commit_date: String,
     pub parents: Vec<String>,
 }

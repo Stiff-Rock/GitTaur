@@ -54,9 +54,3 @@
 .noneFoundMsg {
   color: var(--secondary-text);
 }
-
-.scrollbar {
-  background-color: var(--lighter-bg);
-  border-radius: 8px;
-  margin-left: 5px;
-}

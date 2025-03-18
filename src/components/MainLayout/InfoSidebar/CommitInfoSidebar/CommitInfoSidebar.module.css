@@ -1,0 +1,144 @@
+hr {
+  width: 100%;
+  margin: 10px 0px;
+}
+
+.infoSidebar {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-bg);
+  height: 100%;
+  gap: 5px;
+}
+
+.scrollContent {
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.title {
+  font-size: var(--font-size-subtitle);
+  margin-bottom: 10px;
+}
+
+.authorContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.authorContainer img {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  min-height: 50px;
+  border-radius: 10px;
+  background-color: white;
+  border: 1px solid var(--border-color);
+}
+
+.authorInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.commitContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.commitInfoField {
+  display: flex;
+  gap: 10px;
+}
+
+.shaField {
+  align-items: center;
+}
+
+.label {
+  color: var(--secondary-text);
+}
+
+.value {
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+.copyBtn {
+  padding: 5px;
+  border-radius: 5px;
+  transition: 0.1s ease;
+}
+
+.copyBtn:hover {
+  background-color: var(--lighter-bg);
+}
+
+.changeItem {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: var(--tertiary-bg);
+  border-radius: 4px;
+}
+
+.changeField {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.patch {
+  background-color: var(--lighter-bg);
+  padding: 5px;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  margin-top: 5px;
+}
+
+.copyWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.copyBtn {
+  cursor: pointer;
+}
+
+.tooltip {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary-bg);
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

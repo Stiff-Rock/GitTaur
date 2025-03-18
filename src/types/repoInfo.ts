@@ -1,8 +1,15 @@
+export interface FileChange {
+  file: string;
+  change_type: string;
+  patch: string;
+}
+
 export interface CommitInfo {
   sha: string;
   subject: string;
   body: string;
   author: string;
+  email: string;
   commit_date: string;
   parents: string[];
 }

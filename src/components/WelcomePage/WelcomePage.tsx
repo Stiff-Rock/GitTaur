@@ -17,13 +17,12 @@ function WelcomePage() {
           renderThumbVertical={({ style, ...props }) => (
             <div
               {...props}
-              className={styles.scrollbar}
+              className='scrollbar'
             />
           )}
           renderTrackVertical={({ style, ...props }) => (
             <div
               {...props}
-              className={styles.trackVertical}
               style={{
                 ...style,
                 width: '10px',

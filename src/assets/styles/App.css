@@ -51,7 +51,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--modal-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,4 +90,17 @@ input {
   background-color: var(--secondary-bg);
   border-color: var(--active-color);
   color: var(--active-color);
+}
+
+.scrollbar {
+  background-color: var(--lighter-bg);
+  border-radius: 8px;
+  margin-left: 5px;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  cursor: pointer;
+  text-decoration: underline;
 }

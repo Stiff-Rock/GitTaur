@@ -19,7 +19,7 @@
 }
 
 .accordionHeader span {
-  font-size: 18px;
+  font-size: var(--font-size-header);
   margin-left: 15px;
 }
 
