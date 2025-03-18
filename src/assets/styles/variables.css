@@ -22,6 +22,12 @@
 
   --modal-bg: rgba(0, 0, 0, 0.5);
 
+  --file-added: #4CAF50;
+
+  --file-removed: #F44336;
+
+  --file-changed: #FF9800;
+
 
   /* FONT SIZES */
   --font-size-title: 24px;

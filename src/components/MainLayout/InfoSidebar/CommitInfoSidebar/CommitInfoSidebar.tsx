@@ -5,35 +5,46 @@ import CopyShaButton from './CopyShaButton';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { FileChange } from '../../../../types/repoInfo';
 import { invoke } from '@tauri-apps/api/core';
+import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
 import { useAppContext } from '../../../../context/AppContext';
+import md5 from "md5";
 
 const CommitInfoSidebar: React.FC = () => {
   const { workspace } = useAppContext();
   const { commitInfo, selectedCommit } = useMainContext();
 
   const [changes, setChanges] = useState<FileChange[]>();
+  const [pfpUrl, setPfpUrl] = useState<string>("");
 
   const goToParent = (sha: string) => {
     console.warn("PARENT: ", sha)
   }
 
-  useEffect(() => {
-    const fetchChanges = async () => {
-      try {
-        if (workspace?.activeTab && selectedCommit) {
-          invoke<FileChange[]>("get_commit_changes", {
-            repoPath: workspace.activeTab,
-            sha: selectedCommit
-          }).then(changes => {
-            setChanges(changes);
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching commit changes:", error);
-        setChanges([]);
+  const fetchChanges = async () => {
+    try {
+      if (workspace?.activeTab && selectedCommit) {
+        invoke<FileChange[]>("get_commit_changes", {
+          repoPath: workspace.activeTab,
+          sha: selectedCommit
+        }).then(changes => {
+          setChanges(changes);
+        });
       }
-    };
+    } catch (error) {
+      console.error("Error fetching commit changes:", error);
+      setChanges([]);
+    }
+  };
 
+  const getGravatarUrl = (email: string, size: number, defaultImage: string) => {
+    const trimmedEmail = email.trim().toLowerCase();
+    const hash = md5(trimmedEmail);
+    return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=${defaultImage}`;
+  };
+
+  useEffect(() => {
+    if (!commitInfo) return;
+    setPfpUrl(getGravatarUrl(commitInfo.email, 50, "retro"));
     fetchChanges();
   }, [selectedCommit])
 
@@ -64,10 +75,14 @@ const CommitInfoSidebar: React.FC = () => {
             />
           )}
         >
-          <div className={styles.scrollContent}>
+          <div className={styles.content}>
             <span className={styles.title}>Author</span>
             <div className={styles.authorContainer}>
-              <img src='../../../../../src/assets/pfp.svg' />
+              {pfpUrl ? (
+                <img src={pfpUrl} alt="Profile Picture" />
+              ) : (
+                <img src='../../../../../src/assets/pfp.svg' alt="Default Profile Picture" />
+              )}
               <div className={styles.authorInfo}>
                 <span>{commitInfo.author}</span>
                 <span>{commitInfo.email && commitInfo.email.includes(".github.com") ? "From GitHub.com" : commitInfo.email}</span>
@@ -90,9 +105,11 @@ const CommitInfoSidebar: React.FC = () => {
                 ))}
               </div>
 
-              <div className={`${styles.commitInfoField} ${styles.shaField}`} >
-                <span className={styles.label}>SHA:</span>
-                <span className={styles.value}>{commitInfo.sha}</span>
+              <div className={styles.shaField} >
+                <div className={styles.commitInfoField}>
+                  <span className={styles.label}>SHA:</span>
+                  <span className={styles.value}>{commitInfo.sha}</span>
+                </div>
                 <CopyShaButton sha={commitInfo.sha} />
               </div>
 
@@ -116,8 +133,12 @@ const CommitInfoSidebar: React.FC = () => {
               {changes && changes.length > 0 ? (
                 changes.map((change, index) => (
                   <div key={index} className={styles.changeItem}>
+                    <span className={styles.changeType}>
+                      {change.change_type.includes("Modified") && <DiffIcon className={styles.diffIcon} />}
+                      {change.change_type.includes("Added") && <PlusIcon className={styles.plusIcon} />}
+                      {change.change_type.includes("Deleted") && <DashIcon className={styles.deletedIcon} />}
+                    </span>
                     <span className={styles.value}>{change.file}</span>
-                    <span className={styles.changeType}>({change.change_type})</span>
                   </div>
                 ))
               ) : (

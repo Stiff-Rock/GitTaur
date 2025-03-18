@@ -7,15 +7,16 @@ hr {
   display: flex;
   flex-direction: column;
   background-color: var(--secondary-bg);
-  height: 100%;
+  height: 100vh;
   gap: 5px;
 }
 
-.scrollContent {
+.content {
   padding: 0 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;
+  box-sizing: border-box;
 }
 
 .title {
@@ -34,9 +35,8 @@ hr {
   height: 50px;
   min-width: 50px;
   min-height: 50px;
-  border-radius: 10px;
   background-color: white;
-  border: 1px solid var(--border-color);
+  border: 3px solid var(--border-color);
 }
 
 .authorInfo {
@@ -56,7 +56,9 @@ hr {
 }
 
 .shaField {
+  display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 .label {
@@ -80,10 +82,38 @@ hr {
 }
 
 .changeItem {
+  display: flex;
   padding: 10px;
   margin-bottom: 10px;
   background-color: var(--tertiary-bg);
   border-radius: 4px;
+  gap: 10px;
+}
+
+.changeType {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.diffIcon,
+.plusIcon,
+.deletedIcon {
+  padding: 1px;
+  border-radius: 3px;
+  color: white;
+}
+
+.diffIcon {
+  background-color: var(--file-changed);
+}
+
+.plusIcon {
+  background-color: var(--file-added);
+}
+
+.deletedIcon {
+  background-color: var(--file-removed);
 }
 
 .changeField {
