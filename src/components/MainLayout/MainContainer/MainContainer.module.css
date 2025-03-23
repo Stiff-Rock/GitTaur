@@ -7,23 +7,6 @@
   box-sizing: border-box;
 }
 
-.commit {
-  cursor: pointer;
-  transition: background-color 0.2 ease;
-}
-
-.commit:hover {
-  background-color: var(--tertiary-bg);
-}
-
-.selected {
-  background-color: var(--lighter-bg);
-}
-
-.commit.selected:hover {
-  background-color: var(--lighter-bg);
-}
-
 .scrollbar {
   background-color: var(--lighter-bg);
   border-radius: 8px;

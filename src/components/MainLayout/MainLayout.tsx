@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './MainLayout.module.css';
 import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
-import CommitHistory from './MainContainer/CommitHistory/CommitHistory';
 import CommitInfoSidebar from './InfoSidebar/CommitInfoSidebar/CommitInfoSidebar';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DashIcon } from "@primer/octicons-react";

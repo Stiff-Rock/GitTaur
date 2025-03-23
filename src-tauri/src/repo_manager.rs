@@ -1,6 +1,7 @@
 use crate::repo_info::{CommitInfo, FileChange, RepoInfo};
 use chrono::DateTime;
 use git2::{Commit, DiffOptions, Repository};
+use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
 
@@ -70,11 +71,11 @@ impl RepoManager {
         }
     }
 
-    fn get_commits(repo: &Repository) -> Result<HashMap<String, CommitInfo>, String> {
+    fn get_commits(repo: &Repository) -> Result<IndexMap<String, CommitInfo>, String> {
         let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
         revwalk.push_head().map_err(|e| e.to_string())?;
 
-        let mut commits = HashMap::new();
+        let mut commits = IndexMap::new();
 
         for oid_result in revwalk {
             let oid = oid_result.map_err(|e| e.to_string())?;

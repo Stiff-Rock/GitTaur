@@ -1,0 +1,33 @@
+.commitCircle {
+  fill: #2f81f7;
+  stroke: #1f1f1f;
+  r: 10;
+}
+
+.commitLink {
+  stroke: #666;
+  stroke-width: 2;
+}
+
+.commitText {
+  fill: white;
+  font-size: 12px;
+}
+
+.commit {
+  cursor: pointer;
+  fill: transparent;
+  transition: background-color 0.2 ease;
+}
+
+.commit:hover {
+  fill: var(--tertiary-bg);
+}
+
+.selected {
+  fill: var(--lighter-bg);
+}
+
+.commit.selected:hover {
+  fill: var(--lighter-bg);
+}

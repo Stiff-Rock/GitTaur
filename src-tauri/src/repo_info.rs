@@ -1,14 +1,14 @@
+use indexmap::IndexMap;
 use serde::Serialize;
-use std::collections::HashMap;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct FileChange {
     pub file: String,
     pub change_type: String,
     pub patch: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct CommitInfo {
     pub sha: String,
     pub subject: String,
@@ -19,14 +19,14 @@ pub struct CommitInfo {
     pub parents: Vec<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct RepoInfo {
     pub name: String,
     pub current_branch: String,
     pub local_branches: Vec<String>,
     pub remotes: Vec<String>,
     pub tags: Vec<String>,
-    pub commits: HashMap<String, CommitInfo>,
+    pub commits: IndexMap<String, CommitInfo>,
 }
 
 impl RepoInfo {
@@ -36,7 +36,7 @@ impl RepoInfo {
         local_branches: Vec<String>,
         remotes: Vec<String>,
         tags: Vec<String>,
-        commits: HashMap<String, CommitInfo>,
+        commits: IndexMap<String, CommitInfo>,
     ) -> Self {
         RepoInfo {
             name,
