@@ -70,11 +70,11 @@ impl RepoManager {
         }
     }
 
-    fn get_commits(repo: &Repository) -> Result<Vec<CommitInfo>, String> {
+    fn get_commits(repo: &Repository) -> Result<HashMap<String, CommitInfo>, String> {
         let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
         revwalk.push_head().map_err(|e| e.to_string())?;
 
-        let mut commits = Vec::new();
+        let mut commits = HashMap::new();
 
         for oid_result in revwalk {
             let oid = oid_result.map_err(|e| e.to_string())?;
@@ -98,18 +98,12 @@ impl RepoManager {
             let mut parents = Vec::new();
             for i in 0..commit.parent_count() {
                 let parent = commit.parent(i).map_err(|e| e.to_string())?;
-                parents.push(
-                    parent
-                        .id()
-                        .to_string()
-                        .get(0..7)
-                        .unwrap_or("Unknown")
-                        .to_string(),
-                );
+                parents.push(parent.id().to_string());
             }
 
+            let sha = commit.id().to_string();
             let commit_info = CommitInfo {
-                sha: commit.id().to_string(),
+                sha: sha.clone(),
                 subject: msg_subject,
                 body: msg_body,
                 author: commit.author().name().unwrap_or("Unknown").to_string(),
@@ -118,7 +112,7 @@ impl RepoManager {
                 parents,
             };
 
-            commits.push(commit_info);
+            commits.insert(sha, commit_info);
         }
 
         Ok(commits)

@@ -11,13 +11,23 @@ import md5 from "md5";
 
 const CommitInfoSidebar: React.FC = () => {
   const { workspace } = useAppContext();
-  const { commitInfo, selectedCommit } = useMainContext();
+  const { commitInfo, selectedCommit, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
 
   const [changes, setChanges] = useState<FileChange[]>();
   const [pfpUrl, setPfpUrl] = useState<string>("");
 
   const goToParent = (sha: string) => {
-    console.warn("PARENT: ", sha)
+    if (!repoInfo) return;
+
+    const commit = repoInfo.commits[sha];
+    if (!commit) {
+      console.error("Could not find commit by the following sha: ", sha);
+      return;
+    }
+
+    setSelectedCommit(commit.sha);
+    setCommitInfo(commit);
+    scrollToCommit();
   }
 
   const fetchChanges = async () => {
@@ -101,7 +111,7 @@ const CommitInfoSidebar: React.FC = () => {
               <div className={styles.commitInfoField}>
                 <span className={styles.label}>PARENTS:</span>
                 {commitInfo.parents.map((parent, index) => (
-                  <a onClick={() => goToParent(parent)} key={index} className={styles.value}>{parent}</a>
+                  <a onClick={() => goToParent(parent)} key={index} className={styles.value}>{parent.slice(0, 7)}</a>
                 ))}
               </div>
 

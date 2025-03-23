@@ -103,4 +103,5 @@ a {
   text-decoration: none;
   cursor: pointer;
   text-decoration: underline;
+  user-select: none;
 }

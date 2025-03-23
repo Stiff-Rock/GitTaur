@@ -63,6 +63,7 @@ hr {
 
 .label {
   color: var(--secondary-text);
+  user-select: none;
 }
 
 .value {

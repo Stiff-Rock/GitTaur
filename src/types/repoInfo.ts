@@ -20,5 +20,5 @@ export interface RepoInfo {
   local_branches: string[];
   remotes: string[];
   tags: string[];
-  commits: CommitInfo[];
+  commits: { [key: string]: CommitInfo };
 }

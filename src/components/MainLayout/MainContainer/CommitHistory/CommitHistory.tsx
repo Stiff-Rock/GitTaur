@@ -1,26 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import styles from '../MainContainer.module.css'
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { CommitInfo } from '../../../../types/repoInfo';
 import { useMainContext } from '../../../../context/MainContext';
+import { Menu } from "@tauri-apps/api/menu";
 
 const CommitHistory: React.FC = () => {
-  const { selectedCommit, setSelectedCommit, repoInfo, setCommitInfo } = useMainContext();
-  const [commits, setCommits] = useState<CommitInfo[]>([]);
 
-  useEffect(() => {
-    if (repoInfo) {
-      setCommits(repoInfo.commits);
-    }
-  }, [repoInfo])
+  const { scrollbarsRef, selectedCommitRef, selectedCommit, setSelectedCommit, repoInfo, setCommitInfo } = useMainContext();
 
-  function showCommit(commit: CommitInfo) {
+  const handleContextMenu = useCallback(async (event: React.MouseEvent) => {
+    event.preventDefault();
+
+    const menu = await Menu.new({
+      items: [
+        {
+          id: "custom-option-1",
+          text: "Custom Option 1",
+          action: () => {
+            console.log("Custom Option 1 clicked");
+          },
+        },
+        {
+          id: "custom-option-2",
+          text: "Custom Option 2",
+          action: () => {
+            console.log("Custom Option 2 clicked");
+          },
+        },
+      ],
+    });
+
+
+    await menu.popup({ x: event.clientX, y: event.clientY } as any);
+  }, []);
+
+  const showCommit = (commit: CommitInfo) => {
     setSelectedCommit(commit.sha);
     setCommitInfo(commit)
   }
 
   return (
     <Scrollbars
+      ref={scrollbarsRef}
       autoHide
       autoHideTimeout={500}
       autoHideDuration={300}
@@ -46,11 +68,13 @@ const CommitHistory: React.FC = () => {
       )}
     >
       <div className={`${styles.container}`}>
-        {commits.length > 0 ? (
-          commits.map((commit, index) => (
+        {repoInfo && Object.values(repoInfo.commits).length > 0 ? (
+          Object.values(repoInfo.commits).map((commit, index) => (
             <span
+              ref={commit.sha === selectedCommit ? selectedCommitRef : null}
               className={`${styles.commit} ${selectedCommit === commit.sha ? styles.selected : ''}`}
               onClick={() => showCommit(commit)}
+              onContextMenu={handleContextMenu}
               key={index}
             >
               {"- " + commit.subject}

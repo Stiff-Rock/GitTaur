@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Serialize)]
 pub struct FileChange {
@@ -25,7 +26,7 @@ pub struct RepoInfo {
     pub local_branches: Vec<String>,
     pub remotes: Vec<String>,
     pub tags: Vec<String>,
-    pub commits: Vec<CommitInfo>,
+    pub commits: HashMap<String, CommitInfo>,
 }
 
 impl RepoInfo {
@@ -35,7 +36,7 @@ impl RepoInfo {
         local_branches: Vec<String>,
         remotes: Vec<String>,
         tags: Vec<String>,
-        commits: Vec<CommitInfo>,
+        commits: HashMap<String, CommitInfo>,
     ) -> Self {
         RepoInfo {
             name,

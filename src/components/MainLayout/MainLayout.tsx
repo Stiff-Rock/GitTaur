@@ -10,6 +10,9 @@ import { usePanelSync } from '../../context/PanelSyncContext';
 import { AppTabs } from '../../types/appTabs';
 import LocalChanges from './MainContainer/LocalChanges/LocalChanges';
 import TodoPanel from './MainContainer/TodoPanel/TodoPanel';
+import LocalChangesInfoSidebar from './InfoSidebar/LocalChanges/LocalChangesInfoSidebar';
+import TodoPanelInfoSidebar from './InfoSidebar/TodoPanel/TodoPanelInfoSidebar';
+import CommitGraph from './MainContainer/CommitHistory/CommitGraph';
 
 interface MainLayoutProps {
   repoPath: string;
@@ -78,7 +81,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
         <PanelResizeHandle className={styles.resizeHandle} />
 
         <Panel id="center-panel" order={2}>
-          {currentAppTab === AppTabs.CommitHistory && <CommitHistory />}
+          {currentAppTab === AppTabs.CommitHistory && <CommitGraph />}
           {currentAppTab === AppTabs.LocalChanges && <LocalChanges />}
           {currentAppTab === AppTabs.TodoPanel && <TodoPanel />}
         </Panel>
@@ -106,7 +109,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
               >
                 <DashIcon className={styles.closeButton} />
               </button>
-              <CommitInfoSidebar />
+              {currentAppTab === AppTabs.CommitHistory && <CommitInfoSidebar />}
+              {currentAppTab === AppTabs.LocalChanges && <LocalChangesInfoSidebar />}
+              {currentAppTab === AppTabs.TodoPanel && <TodoPanelInfoSidebar />}
             </Panel>
           </>
         )}
