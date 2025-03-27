@@ -1120,12 +1120,14 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@gitgraph/react@^1.6.0",
         "npm:@primer/octicons-react@^19.15.1",
         "npm:@tauri-apps/api@^2.3.0",
         "npm:@tauri-apps/cli@2",
         "npm:@tauri-apps/plugin-dialog@2.2",
         "npm:@tauri-apps/plugin-opener@~2.2.6",
         "npm:@tauri-apps/plugin-shell@2.2",
+        "npm:@types/d3-hierarchy@^3.1.7",
         "npm:@types/d3@^7.4.3",
         "npm:@types/md5@^2.3.5",
         "npm:@types/react-dom@^18.3.1",

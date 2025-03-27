@@ -1,6 +1,6 @@
 use crate::repo_info::{CommitInfo, FileChange, RepoInfo};
 use chrono::DateTime;
-use git2::{Commit, DiffOptions, Repository};
+use git2::{BranchType, Commit, DiffOptions, Repository};
 use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
@@ -42,12 +42,7 @@ impl RepoManager {
                 .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
                 .collect::<Vec<String>>();
 
-            let remotes = repo
-                .remotes()
-                .map_err(|e| e.to_string())?
-                .iter()
-                .filter_map(|r| r.map(|s| s.to_string()))
-                .collect::<Vec<String>>();
+            let remotes: HashMap<String, Vec<String>> = Self::get_remote_branches(repo)?;
 
             let tags = repo
                 .tag_names(None)
@@ -58,17 +53,44 @@ impl RepoManager {
 
             let commits = Self::get_commits(repo)?;
 
-            Ok(RepoInfo::new(
-                name,
-                current_branch,
-                local_branches,
-                remotes,
-                tags,
-                commits,
-            ))
+            let repo = RepoInfo::new(name, current_branch, local_branches, remotes, tags, commits);
+            println!("{}", serde_json::to_string_pretty(&repo).unwrap());
+            Ok(repo)
         } else {
             Err("Repository not found".to_string())
         }
+    }
+
+    fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>, String> {
+        let remote_branches = repo
+            .branches(Some(BranchType::Remote))
+            .map_err(|e| e.to_string())?;
+
+        let mut remote_branches_map: HashMap<String, Vec<String>> = HashMap::new();
+        for branch_entry in remote_branches {
+            let (branch, _branch_type) = branch_entry.map_err(|e| e.to_string())?;
+            let branch_name = branch
+                .name()
+                .map_err(|e| e.to_string())?
+                .unwrap_or_else(|| {
+                    eprintln!(
+                        "Warning: Invalid branch name in entry {:?}",
+                        branch.name_bytes()
+                    );
+                    "(invalid)"
+                });
+
+            if let Some(stripped) = branch_name.strip_prefix("refs/remotes/") {
+                if let Some((remote, name)) = stripped.split_once('/') {
+                    remote_branches_map
+                        .entry(remote.to_string())
+                        .or_default()
+                        .push(name.to_string());
+                }
+            }
+        }
+
+        Ok(remote_branches_map)
     }
 
     fn get_commits(repo: &Repository) -> Result<IndexMap<String, CommitInfo>, String> {
@@ -103,8 +125,10 @@ impl RepoManager {
             }
 
             let sha = commit.id().to_string();
+            let branches = Self::get_commit_branches(repo, oid).map_err(|e| e.to_string())?;
             let commit_info = CommitInfo {
                 sha: sha.clone(),
+                branches,
                 subject: msg_subject,
                 body: msg_body,
                 author: commit.author().name().unwrap_or("Unknown").to_string(),

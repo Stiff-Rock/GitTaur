@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from '../ActionSidebar.module.css';
 import Accordion from '../../../Common/Accordion/Accordion';
 import { CloudIcon, DeviceDesktopIcon, TagIcon } from "@primer/octicons-react";
@@ -8,6 +8,20 @@ import { GitBranchIcon, DatabaseIcon, FeedTagIcon } from "@primer/octicons-react
 
 const InfoAccordions: React.FC = () => {
   const { repoInfo } = useMainContext();
+
+  useEffect(() => {
+    if (repoInfo) {
+      console.log("REPO:", repoInfo)
+      if (!repoInfo.remotes) {
+        console.log("FUCK")
+        return;
+      }
+      console.log("REMOTES:", repoInfo.remotes)
+      Object.entries(repoInfo.remotes).forEach(value => {
+        console.log("BRANCH:", value)
+      });
+    }
+  }, [repoInfo])
 
   return (
     <>
@@ -31,15 +45,20 @@ const InfoAccordions: React.FC = () => {
       </Accordion>
 
 
-      <Accordion className={styles.accordion} title="Remote" icon={<CloudIcon />}>
+      <Accordion className={styles.accordion} title="Remotes" icon={<CloudIcon />}>
         {repoInfo && (
           <ul>
-            {repoInfo.remotes.map((item, index) => (
+            {Object.entries(repoInfo.remotes).map(([remoteName, branches], index) => (
               <li key={index}>
-                <div>
-                  <DatabaseIcon />
-                  {item}
-                </div>
+                <Accordion className={styles.accordion} title={remoteName} icon={<DatabaseIcon />}>
+                  <ul>
+                    {branches.map((branch, branchIndex) => (
+                      <li key={`${remoteName}-${branch}-${branchIndex}`}>
+                        {branch}
+                      </li>
+                    ))}
+                  </ul>
+                </Accordion>
               </li>
             ))}
           </ul>

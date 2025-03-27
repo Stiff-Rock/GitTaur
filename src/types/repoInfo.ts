@@ -6,6 +6,7 @@ export interface FileChange {
 
 export interface CommitInfo {
   sha: string;
+  branches: string[];
   subject: string;
   body: string;
   author: string;
@@ -18,7 +19,7 @@ export interface RepoInfo {
   name: string;
   current_branch: string;
   local_branches: string[];
-  remotes: string[];
+  remotes: { [key: string]: string[] };
   tags: string[];
   commits: { [key: string]: CommitInfo };
 }
