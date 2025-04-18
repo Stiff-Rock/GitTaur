@@ -1,12 +1,13 @@
-export interface FileChange {
+interface FileChange {
   file: string;
   change_type: string;
   patch: string;
 }
 
-export interface CommitInfo {
+interface CommitNode {
   sha: string;
-  branches: string[];
+  branch: string;
+  refs: string[];
   subject: string;
   body: string;
   author: string;
@@ -15,11 +16,12 @@ export interface CommitInfo {
   parents: string[];
 }
 
-export interface RepoInfo {
+interface RepoInfo {
   name: string;
+  main_branch: string;
   current_branch: string;
   local_branches: string[];
-  remotes: { [key: string]: string[] };
+  remotes: Record<string, string[]>;
   tags: string[];
-  commits: { [key: string]: CommitInfo };
+  commit_history: Record<string, CommitNode>;
 }

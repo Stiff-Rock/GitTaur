@@ -1,14 +1,12 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
-import type { RepoInfo, CommitInfo } from './../types/repoInfo';
 import { invoke } from '@tauri-apps/api/core';
-import { AppTabs } from './../types/appTabs';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 interface MainContextType {
   // State 
   currentAppTab: AppTabs;
   repoInfo: RepoInfo | null;
-  commitInfo: CommitInfo | null;
+  commitInfo: CommitNode | null;
   selectedCommit: string;
   showInfoSidebar: boolean;
   shouldScroll: boolean;
@@ -17,7 +15,7 @@ interface MainContextType {
   setCurrentAppTab: React.Dispatch<React.SetStateAction<AppTabs>>;
   setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
-  setCommitInfo: React.Dispatch<React.SetStateAction<CommitInfo | null>>;
+  setCommitInfo: React.Dispatch<React.SetStateAction<CommitNode | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -33,9 +31,9 @@ interface MainContextType {
 const MainContext = createContext<MainContextType | undefined>(undefined);
 
 export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTab, setCurrentTab] = useState<AppTabs>(AppTabs.CommitHistory);
+  const [currentTab, setCurrentTab] = useState<AppTabs>("commit-history");
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
-  const [commitInfo, setCommitInfo] = useState<CommitInfo | null>(null);
+  const [commitInfo, setCommitInfo] = useState<CommitNode | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
 
@@ -46,7 +44,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   let lastInfoSidebarState = useRef(false);
 
   useEffect(() => {
-    if (currentTab === AppTabs.LocalChanges || currentTab === AppTabs.TodoPanel) {
+    if (currentTab === "local-changes" || currentTab === "todo-panel") {
       setShowInfoSidebar(true);
     } else {
       setShowInfoSidebar(lastInfoSidebarState.current);
@@ -54,7 +52,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentTab]);
 
   useEffect(() => {
-    if (currentTab === AppTabs.CommitHistory) {
+    if (currentTab === "commit-history") {
       lastInfoSidebarState.current = showInfoSidebar;
     }
 

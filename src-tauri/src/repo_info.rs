@@ -11,9 +11,10 @@ pub struct FileChange {
 }
 
 #[derive(Serialize, Debug)]
-pub struct CommitInfo {
+pub struct CommitNode {
     pub sha: String,
-    pub branches: Vec<String>,
+    pub branch: String,
+    pub refs: Vec<String>,
     pub subject: String,
     pub body: String,
     pub author: String,
@@ -25,29 +26,10 @@ pub struct CommitInfo {
 #[derive(Serialize, Debug)]
 pub struct RepoInfo {
     pub name: String,
+    pub main_branch: String,
     pub current_branch: String,
     pub local_branches: Vec<String>,
     pub remotes: HashMap<String, Vec<String>>,
     pub tags: Vec<String>,
-    pub commits: IndexMap<String, CommitInfo>,
-}
-
-impl RepoInfo {
-    pub fn new(
-        name: String,
-        current_branch: String,
-        local_branches: Vec<String>,
-        remotes: HashMap<String, Vec<String>>,
-        tags: Vec<String>,
-        commits: IndexMap<String, CommitInfo>,
-    ) -> Self {
-        RepoInfo {
-            name,
-            current_branch,
-            local_branches,
-            remotes,
-            tags,
-            commits,
-        }
-    }
+    pub commit_history: IndexMap<String, CommitNode>,
 }

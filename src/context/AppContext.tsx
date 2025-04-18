@@ -1,7 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import type { Workspace } from './../types/workspace';
-import type { Tab } from './../types/tab';
 import { useDialog } from '../hooks/useDialog';
 
 interface AppContextType {
@@ -87,7 +85,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isWelcomePage = (text: string): boolean => {
     return pattern.test(text)
   }
-
 
   //TODO: SI ABRE UN REPO QUE ESTA ENN EL HISTORIAL, ABRELO DE AHI, ESTA FUNCION ESTA MAL
   const openNewRepo = async () => {

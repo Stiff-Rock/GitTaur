@@ -2,10 +2,11 @@ mod repo_info;
 mod repo_manager;
 mod tab;
 mod workspace;
-use git2::{Oid, Repository};
+use git2::{BranchType, Oid, Repository};
 use regex::Regex;
 use repo_info::{FileChange, RepoInfo};
 use repo_manager::RepoManager;
+use serde::Serialize;
 use std::fs;
 use std::fs::{metadata, File};
 use std::io::{Read, Write};
@@ -290,6 +291,120 @@ fn restore_session() {
     }
 }
 
+#[derive(Serialize, Clone, Debug)]
+pub struct CommitInfo {
+    id: String,
+    message: String,
+    author: String,
+    timestamp: i64,
+    parent_ids: Vec<String>,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct BranchInfo {
+    name: String,
+    commit_id: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct TagInfo {
+    name: String,
+    commit_id: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct GitData {
+    commits: Vec<CommitInfo>,
+    branches: Vec<BranchInfo>,
+    tags: Vec<TagInfo>,
+}
+
+// Extract git data - receives repository path directly as a parameter
+#[command]
+fn extract_git_data(repo_path: String) -> Result<GitData, String> {
+    // Open repository
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {}", e))?;
+
+    let mut git_data = GitData {
+        commits: Vec::new(),
+        branches: Vec::new(),
+        tags: Vec::new(),
+    };
+
+    // Get commits
+    let mut revwalk = repo
+        .revwalk()
+        .map_err(|e| format!("Failed to create revwalk: {}", e))?;
+
+    // Configure revwalk to follow all branches
+    revwalk
+        .push_glob("refs/heads/*")
+        .map_err(|e| format!("Failed to push refs to revwalk: {}", e))?;
+
+    // Sort by time (topological and time sort ensures parents come before children)
+    revwalk
+        .set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME)
+        .map_err(|e| format!("Failed to set revwalk sorting: {}", e))?;
+
+    // Process each commit
+    for oid_result in revwalk {
+        let oid = oid_result.map_err(|e| format!("Failed to get commit oid: {}", e))?;
+        let commit = repo
+            .find_commit(oid)
+            .map_err(|e| format!("Failed to find commit: {}", e))?;
+
+        // Get parent IDs
+        let parent_ids = commit.parent_ids().map(|id| id.to_string()).collect();
+
+        // Get commit message
+        let message = commit.message().unwrap_or("").to_string();
+
+        // Get author
+        let author = commit.author().name().unwrap_or("").to_string();
+
+        git_data.commits.push(CommitInfo {
+            id: oid.to_string(),
+            message,
+            author,
+            timestamp: commit.time().seconds(),
+            parent_ids,
+        });
+    }
+
+    // Get branches
+    if let Ok(branches) = repo.branches(Some(BranchType::Local)) {
+        for branch_result in branches {
+            if let Ok((branch, _)) = branch_result {
+                if let Ok(Some(name)) = branch.name() {
+                    if let Ok(commit) = branch.get().peel_to_commit() {
+                        git_data.branches.push(BranchInfo {
+                            name: name.to_string(),
+                            commit_id: commit.id().to_string(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    // Get tags
+    if let Ok(tag_names) = repo.tag_names(None) {
+        for tag_name in tag_names.iter().flatten() {
+            if let Ok(tag_ref) = repo.find_reference(&format!("refs/tags/{}", tag_name)) {
+                if let Ok(commit) = tag_ref.peel_to_commit() {
+                    git_data.tags.push(TagInfo {
+                        name: tag_name.to_string(),
+                        commit_id: commit.id().to_string(),
+                    });
+                }
+            }
+        }
+    }
+
+    Ok(git_data)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -307,6 +422,7 @@ pub fn run() {
             save_workspace,
             open_terminal,
             get_commit_changes,
+            extract_git_data
         ])
         .setup(|_| {
             restore_session();

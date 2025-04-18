@@ -1,4 +1,4 @@
-export interface Tab {
+interface Tab {
   label: string;
   repoPath: string;
 }

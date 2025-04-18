@@ -3,7 +3,6 @@ import styles from './CommitInfoSidebar.module.css';
 import { useMainContext } from '../../../../context/MainContext';
 import CopyShaButton from './CopyShaButton';
 import { Scrollbars } from 'react-custom-scrollbars-2';
-import { FileChange } from '../../../../types/repoInfo';
 import { invoke } from '@tauri-apps/api/core';
 import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
 import { useAppContext } from '../../../../context/AppContext';
@@ -19,7 +18,7 @@ const CommitInfoSidebar: React.FC = () => {
   const goToParent = (sha: string) => {
     if (!repoInfo) return;
 
-    const commit = repoInfo.commits[sha];
+    const commit = repoInfo.commit_history[sha];
     if (!commit) {
       console.error("Could not find commit by the following sha: ", sha);
       return;

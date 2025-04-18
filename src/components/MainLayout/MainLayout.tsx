@@ -6,7 +6,6 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DashIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../context/MainContext';
 import { usePanelSync } from '../../context/PanelSyncContext';
-import { AppTabs } from '../../types/appTabs';
 import LocalChanges from './MainContainer/LocalChanges/LocalChanges';
 import TodoPanel from './MainContainer/TodoPanel/TodoPanel';
 import LocalChangesInfoSidebar from './InfoSidebar/LocalChanges/LocalChangesInfoSidebar';
@@ -80,9 +79,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
         <PanelResizeHandle className={styles.resizeHandle} />
 
         <Panel id="center-panel" order={2}>
-          {currentAppTab === AppTabs.CommitHistory && <CommitGraph />}
-          {currentAppTab === AppTabs.LocalChanges && <LocalChanges />}
-          {currentAppTab === AppTabs.TodoPanel && <TodoPanel />}
+          {currentAppTab === "commit-history" && <CommitGraph />}
+          {currentAppTab === "local-changes" && <LocalChanges />}
+          {currentAppTab === "todo-panel" && <TodoPanel />}
         </Panel>
 
         {showInfoSidebar && (
@@ -108,9 +107,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
               >
                 <DashIcon className={styles.closeButton} />
               </button>
-              {currentAppTab === AppTabs.CommitHistory && <CommitInfoSidebar />}
-              {currentAppTab === AppTabs.LocalChanges && <LocalChangesInfoSidebar />}
-              {currentAppTab === AppTabs.TodoPanel && <TodoPanelInfoSidebar />}
+              {currentAppTab === "commit-history" && <CommitInfoSidebar />}
+              {currentAppTab === "local-changes" && <LocalChangesInfoSidebar />}
+              {currentAppTab === "todo-panel" && <TodoPanelInfoSidebar />}
             </Panel>
           </>
         )}

@@ -1,31 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as d3 from "d3";
-import { Gitgraph, TemplateName } from "@gitgraph/react";
+import React from "react";
+import { Branch, Gitgraph, TemplateName } from "@gitgraph/react";
 import Scrollbars from "react-custom-scrollbars-2";
 import styles from "../MainContainer.module.css";
-import graphStyles from "./CommitGraph.module.css"
 import { useMainContext } from "../../../../context/MainContext.tsx";
-import { CommitInfo } from "../../../../types/repoInfo.ts";
+import { ReactSvgElement } from "@gitgraph/react/lib/types";
+import type { Commit } from "@gitgraph/core";
 
 const CommitGraph: React.FC = () => {
   const { scrollbarsRef, selectedCommitRef, setSelectedCommit, repoInfo, setCommitInfo } = useMainContext();
 
-  const getTopologicalOrder = (commits: CommitInfo[]): CommitInfo[] => {
-    const visited = new Set<string>();
-    const order: CommitInfo[] = [];
+  const onCommitClicked = (commit: Commit<ReactSvgElement>) => {
+    if (selectedCommitRef !== commit) {
+      setSelectedCommit(commit);
+      setCommitInfo();
+    }
+  }
 
-    const visit = (sha: string) => {
-      if (visited.has(sha)) return;
-      visited.add(sha);
-      const commit = commits.find(c => c.sha === sha);
-      commit?.parents.forEach(visit);
-      commit && order.push(commit);
-    };
-
-    commits.forEach(commit => !visited.has(commit.sha) && visit(commit.sha));
-    return order.reverse();
-  };
-
+  //TODO: MAKE GRAPH CUSTOMIZATION
   return (
     <Scrollbars
       ref={scrollbarsRef}
@@ -44,29 +35,69 @@ const CommitGraph: React.FC = () => {
       )}
     >
       <div className={styles.container}>
-        <Gitgraph options={{ template: TemplateName.Metro }}>
-          {(gitgraph) => {
+        {repoInfo ? (
+          <Gitgraph options={{ template: TemplateName.Metro }}>
+            {(gitgraph) => {
+              gitgraph.clear();
 
-            //TODO: DO 
-            const master = gitgraph.branch("master");
-            master.commit("Initial commit");
+              const commitHistory = repoInfo.commit_history;
+              const commits = Object.values(commitHistory);
+              const branchMap = new Map<string, Branch>;
 
-            const develop = master.branch("develop");
-            develop.commit("Add TypeScript");
+              let currentBranch: Branch;
 
-            const aFeature = develop.branch("a-feature");
-            aFeature
-              .commit("Make it work")
-              .commit("Make it right")
-              .commit("Make it fast");
+              for (const commit of commits) {
+                if (commit.parents.length > 1) {
+                  const mergeRecieverBranch = branchMap.get(commit.branch);
+                  const toBeMergedBranch = commitHistory[commit.parents[1]].branch;
+                  if (mergeRecieverBranch !== undefined) {
+                    console.log("MERGE " + toBeMergedBranch + " INTO " + mergeRecieverBranch.name);
+                    mergeRecieverBranch.merge({
+                      branch: toBeMergedBranch,
+                      commitOptions: { author: commit.author, subject: commit.subject, hash: commit.sha }
+                    });
+                  } else {
+                    console.error("TARGET BRANCH UNDEFINED")
+                    console.error("TARGETBRANCH: ", mergeRecieverBranch);
+                    console.error("SOURCEBRANCH: ", toBeMergedBranch);
+                    console.error("COMMITMSG: ", commit.subject);
+                    break;
+                  }
+                }
+                else {
+                  const commitBranch = commit.branch;
+                  const branch = branchMap.get(commitBranch);
+                  if (branch !== undefined) {
+                    currentBranch = branch;
+                  } else if (commit.parents.length > 0) {
+                    const origin = commitHistory[commit.parents[0]];
+                    console.log("CREATING BRANCH: " + commitBranch + " DIVERGING FROM BRANCH: " + origin.branch + " AT COMMIT: " + origin.subject);
+                    currentBranch = gitgraph.branch({ name: commitBranch, from: origin.sha });
+                    branchMap.set(commitBranch, currentBranch);
+                  }
+                  else {
+                    console.log("New branch: " + commitBranch);
+                    currentBranch = gitgraph.branch(commitBranch);
+                    branchMap.set(commitBranch, currentBranch);
+                  }
 
-            develop.merge(aFeature);
-            develop.commit("Prepare v1");
 
-            master.merge(develop).tag("v1.0.0");
+                  console.log("COMMIT: " + commit.subject + " IN BRANCH: " + currentBranch.name);
+                  const author = commit.author + " <" + commit.email + ">";
+                  currentBranch.commit({
+                    subject: commit.subject,
+                    author,
+                    hash: commit.sha,
+                    onClick: (commit) => onCommitClicked(commit),
+                  });
+                }
+              }
 
-          }}
-        </Gitgraph>
+            }}
+          </Gitgraph>
+        ) : (
+          <p>Loading repository info...</p>
+        )}
       </div>
     </Scrollbars >
   );
