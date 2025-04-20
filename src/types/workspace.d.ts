@@ -1,4 +1,4 @@
 interface Workspace {
-  tabs: Array<[string, Tab]>;
+  tabs: Record<string, Tab>;
   activeTab: string;
 }

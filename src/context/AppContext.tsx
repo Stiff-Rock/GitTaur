@@ -44,13 +44,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const workspaceData: Workspace = await invoke('get_workspace');
 
-        if (workspaceData.tabs.length === 0) {
+        if (Object.entries(workspaceData.tabs).length === 0) {
           const defaultPage: string = "Welcome Page:" + Date.now();
           const newTab: Tab = { label: "Welcome Page", repoPath: defaultPage };
 
           const newWorkspace: Workspace = {
             ...workspaceData,
-            tabs: [[defaultPage, newTab]],
+            tabs: { [defaultPage]: newTab },
             activeTab: defaultPage
           };
 
@@ -74,7 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setIsInWelcomePage(isWelcomePage(workspace.activeTab));
 
-    if (workspace.tabs.length === 0) {
+    if (Object.entries(workspace.tabs).length === 0) {
       openWelcomePage();
     }
 
@@ -91,7 +91,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const repoPath = await openDirectoryDialog();
     if (!repoPath || !workspace) return;
 
-    if (workspace.tabs.some(([tabKey]) => tabKey === repoPath)) {
+    if (Object.entries(workspace.tabs).some(([tabKey]) => tabKey === repoPath)) {
       setActiveTab(repoPath);
       return;
     }
@@ -119,19 +119,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const closeWorkspaceTab = (tabKey: string) => {
     if (!workspace) return;
 
-    if (workspace.tabs.length === 1 && isWelcomePage(tabKey)) {
+    if (Object.entries(workspace.tabs).length === 1 && isWelcomePage(tabKey)) {
       return;
     }
 
-    const remainingTabs = workspace.tabs.filter(([key]) => key !== tabKey);
-    let newActiveTab: string = workspace.activeTab;
+    const remainingTabs = Object.fromEntries(
+      Object.entries(workspace.tabs).filter(([key]) => key !== tabKey)
+    );
+
+    let newActiveTab = workspace.activeTab;
 
     if (tabKey === workspace.activeTab) {
-      if (remainingTabs.length > 0) {
-        newActiveTab = remainingTabs[remainingTabs.length - 1][0];
-      } else {
-        newActiveTab = "";
-      }
+      const remainingEntries = Object.entries(remainingTabs);
+      newActiveTab = remainingEntries.length > 0
+        ? remainingEntries[remainingEntries.length - 1][0]
+        : "";
     }
 
     setWorkspace(prev => {
@@ -147,24 +149,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openWorkspaceTab = (tabKey: string, newTab: Tab) => {
     if (!workspace) return;
 
-    let remainingTabs = workspace.tabs;
-    remainingTabs.push([tabKey, newTab]);
+    const currentTabs = Object.entries(workspace.tabs);
+    currentTabs.push([tabKey, newTab]);
+
+    let filteredTabs = currentTabs;
 
     const currentActiveTab = workspace.activeTab;
     if (!isWelcomePage(tabKey) && isWelcomePage(currentActiveTab)) {
-      remainingTabs = workspace.tabs.filter(([key]) => key !== currentActiveTab);
+      filteredTabs = currentTabs.filter(([key]) => key !== currentActiveTab);
     }
+
+    const newTabs = Object.fromEntries(filteredTabs);
 
     setWorkspace(prev => {
       if (!prev) return prev;
       return {
         ...prev,
-        tabs: remainingTabs,
+        tabs: newTabs,
         activeTab: tabKey,
       };
     });
-
-    return [...(workspace?.tabs || []), [tabKey, newTab]];
   };
 
   const setActiveTab = (tabId: string) => {

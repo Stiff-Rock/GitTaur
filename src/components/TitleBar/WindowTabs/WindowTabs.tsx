@@ -16,20 +16,19 @@ const WindowTabs: React.FC = () => {
         <CodespacesIcon className={`${styles.workspaceIcon}`} />
       </button>
 
-      {
-        workspace?.tabs && workspace.tabs.length > 0 ? (
-          workspace.tabs.map(([key, tab]) => (
-            <Tab
-              key={key}
-              label={tab.label}
-              isActive={workspace.activeTab === key}
-              onClick={() => setActiveTab(key)}
-              onClose={() => closeWorkspaceTab(key)}
-            />
-          ))
-        ) : (
-          <span>ERROR</span>
-        )
+      {workspace && workspace.tabs && Object.entries(workspace.tabs).length > 0 ? (
+        Object.entries(workspace.tabs).map(([key, tab]) => (
+          <Tab
+            key={key}
+            label={tab.label}
+            isActive={workspace.activeTab === key}
+            onClick={() => setActiveTab(key)}
+            onClose={() => closeWorkspaceTab(key)}
+          />
+        ))
+      ) : (
+        <span>ERROR</span>
+      )
       }
 
       <button
