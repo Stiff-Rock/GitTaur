@@ -11,10 +11,6 @@ impl RepoManager {
         Self {}
     }
 
-    pub fn init_repo(&self, path: String) -> Result<Repository, String> {
-        Repository::init(&path).map_err(|e| format!("Error creating repository: {}", e))
-    }
-
     pub fn open_repo(&self, path: String) -> Result<Repository, String> {
         Repository::open(path).map_err(|e| format!("Error while opening repository: {}", e))
     }
@@ -79,19 +75,19 @@ impl RepoManager {
             }
         }
 
+        // Get current branch
         let current_branch = match repo.head() {
             Ok(head) => head.name().unwrap_or("Unknown").to_string(),
             Err(_) => "Unknown".to_string(),
         };
 
+        // Get local branches
         let local_branches = repo
             .branches(Some(git2::BranchType::Local))
             .map_err(|e| e.to_string())?
             .filter_map(|b| b.ok())
             .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
             .collect::<Vec<String>>();
-
-        let remotes: HashMap<String, Vec<String>> = Self::get_remote_branches(&repo)?;
 
         let tags = repo
             .tag_names(None)
@@ -203,8 +199,6 @@ impl RepoManager {
                             0
                         };
 
-                        println!("FIRST CHILD: {}", children[index].to_string());
-
                         commit_branches
                             .get(&children[index])
                             .unwrap_or(&"NOT_FOUND".to_string())
@@ -255,7 +249,10 @@ impl RepoManager {
             commit_history
         };
 
-        //TODO: TAGS ARE NOT DISPLAYED
+        let remotes: HashMap<String, Vec<String>> = Self::get_remote_branches(&repo)?;
+        println!("{:#?}", remotes);
+
+        //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS
         let repo = RepoInfo {
             name,
             main_branch,
@@ -265,12 +262,11 @@ impl RepoManager {
             tags,
             commit_history,
         };
-        println!("{}", serde_json::to_string_pretty(&repo).unwrap());
+        //println!("{}", serde_json::to_string_pretty(&repo).unwrap());
 
         Ok(repo)
     }
 
-    //TODO: I DONT REMEMBER THIS
     fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>, String> {
         let remote_branches = repo
             .branches(Some(BranchType::Remote))
@@ -279,7 +275,7 @@ impl RepoManager {
         let mut remote_branches_map: HashMap<String, Vec<String>> = HashMap::new();
         for branch_entry in remote_branches {
             let (branch, _branch_type) = branch_entry.map_err(|e| e.to_string())?;
-            let branch_name = branch
+            let branch_full_name = branch
                 .name()
                 .map_err(|e| e.to_string())?
                 .unwrap_or_else(|| {
@@ -290,13 +286,22 @@ impl RepoManager {
                     "(invalid)"
                 });
 
-            if let Some(stripped) = branch_name.strip_prefix("refs/remotes/") {
-                if let Some((remote, name)) = stripped.split_once('/') {
-                    remote_branches_map
-                        .entry(remote.to_string())
-                        .or_default()
-                        .push(name.to_string());
-                }
+            println!("{}", branch_full_name);
+
+            let info: Vec<&str> = branch_full_name.split('/').collect();
+
+            if info.len() == 2 {
+                let remote = info.first().copied().unwrap_or("Unknown remote");
+                let name = info.last().copied().unwrap_or("Unknown branch");
+                remote_branches_map
+                    .entry(remote.to_string())
+                    .or_default()
+                    .push(name.to_string());
+            } else {
+                eprintln!(
+                    "WARNING!!!! BRANCH NAME SPLIT RESULTED ON MORE THAN2: {}",
+                    branch_full_name
+                )
             }
         }
 

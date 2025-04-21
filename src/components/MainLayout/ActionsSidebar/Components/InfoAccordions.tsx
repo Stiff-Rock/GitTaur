@@ -9,6 +9,7 @@ import { GitBranchIcon, DatabaseIcon, FeedTagIcon } from "@primer/octicons-react
 const InfoAccordions: React.FC = () => {
   const { repoInfo } = useMainContext();
 
+  //TODO: REMOTES ACCORDION BUGGED AS FUCK
   useEffect(() => {
     if (repoInfo) {
       console.log("REPO:", repoInfo)
