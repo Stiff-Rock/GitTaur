@@ -81,25 +81,40 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const scrollToCommit = () => {
-    //TODO: THIS DOES NOT SCROLL CORRECTLY TO THE LOCATION
+    /*BUG: IT ALWAYS SCROLLS TO 320, ALMOST THERE
     if (!scrollbarsRef.current || !selectedCommitNode) return;
 
     const scrollbars = scrollbarsRef.current;
-    const scrollContainer = scrollbars.getValues();
-    const selectedElement = selectedCommitNode;
+    const elementContainer = document.getElementById(`commit-${selectedCommitNode.hash}`);
 
-    if (!scrollContainer || !selectedElement) return;
+    if (!elementContainer) return;
 
-    //TODO: SCROLL TO COMMIT
+    // Get the scroll container DOM element
+    const scrollContainerElement = scrollbars.container;
+    const containerRect = scrollContainerElement.getBoundingClientRect();
+    const elementRect = elementContainer.getBoundingClientRect();
 
-    /*const elementTop = selectedElement.offsetTop;
-    const containerHeight = scrollContainer.clientHeight;
-    const elementHeight = selectedElement.clientHeight;
+    // Calculate element's top relative to the scroll container's viewport
+    const elementTopRelativeToContainer = elementRect.top - containerRect.top;
 
-    const scrollToPosition = elementTop - (containerHeight / 2) + (elementHeight / 2);
+    // Current scroll position of the container
+    const currentScrollTop = scrollbars.getScrollTop();
 
-    scrollbars.scrollTop(scrollToPosition);
-    console.log("SCROLLED")*/
+    // Calculate the element's position within the scrollable content
+    const elementPositionInContent = currentScrollTop + elementTopRelativeToContainer;
+
+    // Get container and element heights
+    const containerHeight = containerRect.height;
+    const elementHeight = elementRect.height;
+
+    // Calculate target scroll position to center the element
+    console.log("elementPositionInContent: " + elementPositionInContent)
+    console.log("containerHeight: " + containerHeight)
+    console.log("elementHeight: " + elementHeight)
+    const targetScrollTop = elementPositionInContent - (containerHeight / 2) + (elementHeight / 2);
+
+    // Perform the scroll
+    scrollbars.scrollTop(targetScrollTop);*/
   };
 
   return (

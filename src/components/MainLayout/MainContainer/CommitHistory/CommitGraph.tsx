@@ -9,8 +9,7 @@ import type { Commit, GitgraphCommitOptions } from "@gitgraph/core";
 
 const CommitGraph: React.FC = () => {
   const { scrollbarsRef, selectedCommit, setSelectedCommit, setSelectedCommitNode, selectedCommitNode, repoInfo, setCommitInfo } = useMainContext();
-  const commitNodeRectMapRef = useRef<Map<string, SVGRectElement>>(new Map());
-  const prevCommitNodeRect = useRef<SVGRectElement | null>(null);
+  const prevCommitNodeRect = useRef<HTMLElement | null>(null);
 
   const onCommitClicked = (commit: Commit<ReactSvgElement>) => {
     if (repoInfo && selectedCommitNode !== commit) {
@@ -21,7 +20,8 @@ const CommitGraph: React.FC = () => {
   };
 
   useEffect(() => {
-    const commitRect = commitNodeRectMapRef.current.get(selectedCommit);
+    //TODO: GET A REFERENCE OF THE UP-MOST PARENT TO SET THE RECT HEIGHT AND WIDTH DYNAMICALLY
+    const commitRect = document.getElementById(`rect-${selectedCommit}`);
     if (!commitRect) return;
 
     if (prevCommitNodeRect.current)
@@ -92,15 +92,12 @@ const CommitGraph: React.FC = () => {
                     const size = commit.style.dot.size;
                     const color = commit.style.dot.color;
                     return (
-                      <g>
+                      <g id={`commit-${commit.hash}`}>
                         <rect
+                          id={`rect-${commit.hash}`}
                           width="700"
                           height="31"
                           className={graphStyles.unselected}
-                          ref={el => {
-                            if (el) commitNodeRectMapRef.current.set(commit.hash, el);
-                            else commitNodeRectMapRef.current.delete(commit.hash);
-                          }}
                         />
                         <circle
                           cx={size}
@@ -152,7 +149,6 @@ const CommitGraph: React.FC = () => {
                     currentBranch = gitgraph.branch(commitBranch);
                     branchMap.set(commitBranch, currentBranch);
                   }
-
 
                   console.log("COMMIT: " + commit.subject + " IN BRANCH: " + currentBranch.name);
                   currentBranch.commit(commitOptions);
