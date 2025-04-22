@@ -13,7 +13,7 @@ const CommitGraph: React.FC = () => {
 
   const onCommitClicked = (commit: Commit<ReactSvgElement>) => {
     if (repoInfo && selectedCommitNode !== commit) {
-      setSelectedCommitNode(commit); //TODO: SCROLL TO COMMIT
+      setSelectedCommitNode(commit);
       setSelectedCommit(commit.hash);
       setCommitInfo(repoInfo.commit_history[commit.hash]);
     }
