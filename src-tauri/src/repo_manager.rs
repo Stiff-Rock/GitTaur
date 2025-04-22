@@ -246,11 +246,12 @@ impl RepoManager {
                 commit_history.insert(oid.to_string(), node);
             }
 
-            commit_history
+            // Return reversed indexmap order for graph making
+            commit_history.into_iter().rev().collect()
         };
 
         let remotes: HashMap<String, Vec<String>> = Self::get_remote_branches(&repo)?;
-        println!("{:#?}", remotes);
+        println!("\n--REMOTES{:#?}--\n", remotes);
 
         //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS
         let repo = RepoInfo {
@@ -262,7 +263,8 @@ impl RepoManager {
             tags,
             commit_history,
         };
-        //println!("{}", serde_json::to_string_pretty(&repo).unwrap());
+
+        println!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
 
         Ok(repo)
     }

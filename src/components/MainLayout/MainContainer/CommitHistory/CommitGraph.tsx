@@ -1,20 +1,32 @@
-import React from "react";
-import { Branch, Gitgraph, TemplateName } from "@gitgraph/react";
+import React, { useEffect, useRef } from "react";
+import { Branch, Gitgraph, templateExtend, TemplateName } from "@gitgraph/react";
 import Scrollbars from "react-custom-scrollbars-2";
 import styles from "../MainContainer.module.css";
+import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
 import { ReactSvgElement } from "@gitgraph/react/lib/types";
-import type { Commit } from "@gitgraph/core";
+import type { Commit, GitgraphCommitOptions } from "@gitgraph/core";
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarsRef, selectedCommitRef, setSelectedCommit, repoInfo, setCommitInfo } = useMainContext();
+  const { scrollbarsRef, setSelectedCommit, setSelectedCommitNode, selectedCommitNode, repoInfo, setCommitInfo } = useMainContext();
 
-  const onCommitClicked = (commit: Commit<ReactSvgElement>) => {
-    if (selectedCommitRef !== commit) {
-      setSelectedCommit(commit);
-      setCommitInfo();
+  const prevCommitRect = useRef<SVGRectElement | null>()
+
+  const onCommitClicked = (commit: Commit<ReactSvgElement>, commitRect: SVGRectElement) => {
+    if (repoInfo && selectedCommitNode !== commit) {
+      setSelectedCommitNode(commit);
+      setSelectedCommit(commit.hash);
+      setCommitInfo(repoInfo.commit_history[commit.hash]);
+
+      if (prevCommitRect.current)
+        prevCommitRect.current.setAttribute("class", graphStyles.unselected);
+
+      commitRect.setAttribute("class", graphStyles.selected);
+      prevCommitRect.current = commitRect;
     }
-  }
+  };
+
+  useEffect(() => { console.log("selectedCommitNode has changed: ", selectedCommitNode) }, [selectedCommitNode])
 
   //TODO: MAKE GRAPH CUSTOMIZATION
   return (
@@ -34,19 +46,68 @@ const CommitGraph: React.FC = () => {
         />
       )}
     >
-      <div className={styles.container}>
+      <div className={`${styles.container} ${graphStyles.graph}`}>
         {repoInfo ? (
-          <Gitgraph options={{ template: TemplateName.Metro }}>
+          <Gitgraph options={{
+            template: templateExtend(TemplateName.Metro, {
+              colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
+              branch: {
+                lineWidth: 4,
+                spacing: 35,
+              },
+              commit: {
+                spacing: 50,
+                dot: {
+                  size: 12,
+                },
+                message: {
+                  displayAuthor: false,
+                  displayHash: false,
+                },
+              },
+            }),
+          }}>
             {(gitgraph) => {
+              //TODO: INVESTIGAR gitgraph.import() Y git2json
               gitgraph.clear();
+
+              console.log("\n")
+              console.log(repoInfo)
+              console.log("\n")
 
               const commitHistory = repoInfo.commit_history;
               const commits = Object.values(commitHistory);
               const branchMap = new Map<string, Branch>;
 
               let currentBranch: Branch;
-
               for (const commit of commits) {
+                const commitOptions: GitgraphCommitOptions<ReactSvgElement> = {
+                  subject: commit.subject,
+                  author: commit.author + " <" + commit.email + ">",
+                  hash: commit.sha,
+                  renderDot: (commit) => {
+                    const size = commit.style.dot.size;
+                    const color = commit.style.dot.color;
+                    return (
+                      <g>
+                        <rect width="700" height="31" className={graphStyles.unselected} />
+                        <circle
+                          cx={size}
+                          cy={size}
+                          r={size}
+                          fill={color}
+                          style={{ cursor: "pointer" }}
+                          onClick={e => {
+                            const rect = (e.target as SVGCircleElement).previousSibling as SVGRectElement | null;
+                            if (rect)
+                              onCommitClicked(commit, rect);
+                          }}
+                        />
+                      </g>
+                    );
+                  },
+                };
+
                 if (commit.parents.length > 1) {
                   const mergeRecieverBranch = branchMap.get(commit.branch);
                   const toBeMergedBranch = commitHistory[commit.parents[1]].branch;
@@ -54,7 +115,7 @@ const CommitGraph: React.FC = () => {
                     console.log("MERGE " + toBeMergedBranch + " INTO " + mergeRecieverBranch.name);
                     mergeRecieverBranch.merge({
                       branch: toBeMergedBranch,
-                      commitOptions: { author: commit.author, subject: commit.subject, hash: commit.sha }
+                      commitOptions
                     });
                   } else {
                     console.error("TARGET BRANCH UNDEFINED")
@@ -83,13 +144,7 @@ const CommitGraph: React.FC = () => {
 
 
                   console.log("COMMIT: " + commit.subject + " IN BRANCH: " + currentBranch.name);
-                  const author = commit.author + " <" + commit.email + ">";
-                  currentBranch.commit({
-                    subject: commit.subject,
-                    author,
-                    hash: commit.sha,
-                    onClick: (commit) => onCommitClicked(commit),
-                  });
+                  currentBranch.commit(commitOptions);
                 }
               }
 

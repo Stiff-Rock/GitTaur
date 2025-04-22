@@ -57,6 +57,8 @@ const CommitInfoSidebar: React.FC = () => {
     fetchChanges();
   }, [selectedCommit])
 
+  //BUG: SCROLLBAR BUG, CANT SCROLL ALL THE WAY DOWN
+
   return (
     <div className={`${styles.infoSidebar}`}>
       {commitInfo ? (
