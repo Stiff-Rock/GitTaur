@@ -8,25 +8,28 @@ import { ReactSvgElement } from "@gitgraph/react/lib/types";
 import type { Commit, GitgraphCommitOptions } from "@gitgraph/core";
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarsRef, setSelectedCommit, setSelectedCommitNode, selectedCommitNode, repoInfo, setCommitInfo } = useMainContext();
+  const { scrollbarsRef, selectedCommit, setSelectedCommit, setSelectedCommitNode, selectedCommitNode, repoInfo, setCommitInfo } = useMainContext();
+  const commitNodeRectMapRef = useRef<Map<string, SVGRectElement>>(new Map());
+  const prevCommitNodeRect = useRef<SVGRectElement | null>(null);
 
-  const prevCommitRect = useRef<SVGRectElement | null>()
-
-  const onCommitClicked = (commit: Commit<ReactSvgElement>, commitRect: SVGRectElement) => {
+  const onCommitClicked = (commit: Commit<ReactSvgElement>) => {
     if (repoInfo && selectedCommitNode !== commit) {
-      setSelectedCommitNode(commit);
+      setSelectedCommitNode(commit); //TODO: SCROLL TO COMMIT
       setSelectedCommit(commit.hash);
       setCommitInfo(repoInfo.commit_history[commit.hash]);
-
-      if (prevCommitRect.current)
-        prevCommitRect.current.setAttribute("class", graphStyles.unselected);
-
-      commitRect.setAttribute("class", graphStyles.selected);
-      prevCommitRect.current = commitRect;
     }
   };
 
-  useEffect(() => { console.log("selectedCommitNode has changed: ", selectedCommitNode) }, [selectedCommitNode])
+  useEffect(() => {
+    const commitRect = commitNodeRectMapRef.current.get(selectedCommit);
+    if (!commitRect) return;
+
+    if (prevCommitNodeRect.current)
+      prevCommitNodeRect.current.setAttribute("class", graphStyles.unselected);
+
+    commitRect.setAttribute("class", graphStyles.selected);
+    prevCommitNodeRect.current = commitRect;
+  }, [selectedCommit]);
 
   //TODO: MAKE GRAPH CUSTOMIZATION
   return (
@@ -90,7 +93,15 @@ const CommitGraph: React.FC = () => {
                     const color = commit.style.dot.color;
                     return (
                       <g>
-                        <rect width="700" height="31" className={graphStyles.unselected} />
+                        <rect
+                          width="700"
+                          height="31"
+                          className={graphStyles.unselected}
+                          ref={el => {
+                            if (el) commitNodeRectMapRef.current.set(commit.hash, el);
+                            else commitNodeRectMapRef.current.delete(commit.hash);
+                          }}
+                        />
                         <circle
                           cx={size}
                           cy={size}
@@ -100,7 +111,7 @@ const CommitGraph: React.FC = () => {
                           onClick={e => {
                             const rect = (e.target as SVGCircleElement).previousSibling as SVGRectElement | null;
                             if (rect)
-                              onCommitClicked(commit, rect);
+                              onCommitClicked(commit);
                           }}
                         />
                       </g>
