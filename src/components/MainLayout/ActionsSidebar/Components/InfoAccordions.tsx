@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from '../ActionSidebar.module.css';
 import Accordion from '../../../Common/Accordion/Accordion';
 import { CloudIcon, DeviceDesktopIcon, TagIcon } from "@primer/octicons-react";
@@ -9,19 +9,26 @@ import { GitBranchIcon, DatabaseIcon, FeedTagIcon } from "@primer/octicons-react
 const InfoAccordions: React.FC = () => {
   const { repoInfo } = useMainContext();
 
+  const [sortedRemotes, setSortedRemotes] = useState<Map<string, string[]>>();
+
   //TODO: REMOTES ACCORDION BUGGED AS FUCK
   useEffect(() => {
-    if (repoInfo) {
-      console.log("REPO:", repoInfo)
-      if (!repoInfo.remotes) {
-        console.log("FUCK")
-        return;
-      }
-      console.log("REMOTES:", repoInfo.remotes)
-      Object.entries(repoInfo.remotes).forEach(value => {
-        console.log("BRANCH:", value)
-      });
+    if (!repoInfo) return;
+
+    if (repoInfo.remotes) {
+      const sortedMap = new Map(
+        [...Object.entries(repoInfo.remotes)]
+          .sort(([a], [b]) => a.localeCompare(b))
+      );
+      setSortedRemotes(sortedMap);
     }
+
+    console.log("REPO:", repoInfo)
+    console.log("REMOTES:", repoInfo.remotes)
+    Object.entries(repoInfo.remotes).forEach(value => {
+      console.log("BRANCH:", value)
+    });
+
   }, [repoInfo])
 
   return (
@@ -49,7 +56,7 @@ const InfoAccordions: React.FC = () => {
       <Accordion className={styles.accordion} title="Remotes" icon={<CloudIcon />}>
         {repoInfo && (
           <ul>
-            {Object.entries(repoInfo.remotes).map(([remoteName, branches], index) => (
+            {sortedRemotes && [...sortedRemotes].map(([remoteName, branches], index) => (
               <li key={index}>
                 <Accordion className={styles.accordion} title={remoteName} icon={<DatabaseIcon />}>
                   <ul>
