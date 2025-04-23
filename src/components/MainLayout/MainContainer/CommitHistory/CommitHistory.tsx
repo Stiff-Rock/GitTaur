@@ -35,7 +35,7 @@ const CommitHistory: React.FC = () => {
     await menu.popup({ x: event.clientX, y: event.clientY } as any);
   }, []);
 
-  const showCommit = (commit: CommitNode) => {
+  const showCommit = (commit: CommitLog) => {
     setSelectedCommit(commit.sha);
     setCommitInfo(commit)
   }

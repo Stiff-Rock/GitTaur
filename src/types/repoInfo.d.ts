@@ -1,19 +1,29 @@
-interface FileChange {
-  file: string;
-  change_type: string;
-  patch: string;
+interface UserInfo {
+  name: string;
+  email: string;
+  timestamp: number;
 }
 
-interface CommitNode {
-  sha: string;
-  branch: string;
+interface FileStats {
+  additions: number | null;
+  deletions: number | null;
+  file: string;
+}
+
+interface CommitLog {
   refs: string[];
+  hash: string,
+  hashAbbrev: string,
+  tree: string,
+  treeAbbrev: string,
+  parents: string[],
+  parentsAbbrev: string[],
+  author: UserInfo;
+  commiter: UserInfo
   subject: string;
   body: string;
-  author: string;
-  email: string;
-  commit_date: string;
-  parents: string[];
+  notes: string;
+  stats: FileStats;
 }
 
 interface RepoInfo {
@@ -23,5 +33,5 @@ interface RepoInfo {
   local_branches: string[];
   remotes: Record<string, string[]>;
   tags: string[];
-  commit_history: Record<string, CommitNode>;
+  commit_history: Map<string, CommitLog>;
 }

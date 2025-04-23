@@ -8,7 +8,7 @@ interface MainContextType {
   // State 
   currentAppTab: AppTabs;
   repoInfo: RepoInfo | null;
-  commitInfo: CommitNode | null;
+  commitInfo: CommitLog | null;
   selectedCommit: string;
   selectedCommitNode: Commit<ReactSvgElement> | null;
   showInfoSidebar: boolean;
@@ -18,7 +18,7 @@ interface MainContextType {
   setCurrentAppTab: React.Dispatch<React.SetStateAction<AppTabs>>;
   setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
-  setCommitInfo: React.Dispatch<React.SetStateAction<CommitNode | null>>;
+  setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
   setSelectedCommitNode: React.Dispatch<React.SetStateAction<Commit<ReactSvgElement> | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,7 +36,7 @@ const MainContext = createContext<MainContextType | undefined>(undefined);
 export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
-  const [commitInfo, setCommitInfo] = useState<CommitNode | null>(null);
+  const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
   const [selectedCommitNode, setSelectedCommitNode] = useState<Commit<ReactSvgElement> | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
