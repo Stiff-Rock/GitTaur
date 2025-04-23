@@ -33,5 +33,5 @@ interface RepoInfo {
   local_branches: string[];
   remotes: Record<string, string[]>;
   tags: string[];
-  commit_history: Map<string, CommitLog>;
+  commit_history: Record<string, CommitLog>;
 }

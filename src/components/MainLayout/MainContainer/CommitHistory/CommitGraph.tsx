@@ -1,23 +1,23 @@
-import React, { useEffect, useRef } from "react";
-import { Branch, Gitgraph, templateExtend, TemplateName } from "@gitgraph/react";
+import React, { useEffect, useRef, useState } from "react";
 import Scrollbars from "react-custom-scrollbars-2";
 import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
-import { ReactSvgElement } from "@gitgraph/react/lib/types";
-import type { Commit, GitgraphCommitOptions } from "@gitgraph/core";
+import { Gitgraph } from "@gitgraph/react";
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarsRef, selectedCommit, setSelectedCommit, setSelectedCommitNode, selectedCommitNode, repoInfo, setCommitInfo } = useMainContext();
+  const { scrollbarsRef, selectedCommit, repoInfo } = useMainContext();
   const prevCommitNodeRect = useRef<HTMLElement | null>(null);
 
-  const onCommitClicked = (commit: Commit<ReactSvgElement>) => {
-    if (repoInfo && selectedCommitNode !== commit) {
-      setSelectedCommitNode(commit);
-      setSelectedCommit(commit.hash);
-      setCommitInfo(repoInfo.commit_history[commit.hash]);
+  const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
+
+  useEffect(() => {
+    if (!repoInfo) return;
+
+    if (repoInfo.commit_history) {
+      setCommitLogs(Object.values(repoInfo.commit_history));
     }
-  };
+  }, [repoInfo]);
 
   useEffect(() => {
     //TODO: GET A REFERENCE OF THE UP-MOST PARENT TO SET THE RECT HEIGHT AND WIDTH DYNAMICALLY
@@ -50,29 +50,11 @@ const CommitGraph: React.FC = () => {
       )}
     >
       <div className={`${styles.container} ${graphStyles.graph}`}>
-        {repoInfo ? (
-          <Gitgraph options={{
-            template: templateExtend(TemplateName.Metro, {
-              colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
-              branch: {
-                lineWidth: 4,
-                spacing: 35,
-              },
-              commit: {
-                spacing: 50,
-                dot: {
-                  size: 12,
-                },
-                message: {
-                  displayAuthor: false,
-                  displayHash: false,
-                },
-              },
-            }),
-          }}>
+        {commitLogs ? (
+          <Gitgraph>
             {(gitgraph) => {
               gitgraph.clear();
-              gitgraph.import(repoInfo.commit_history);
+              gitgraph.import(commitLogs);
             }}
           </Gitgraph>
         ) : (
