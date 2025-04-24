@@ -4,6 +4,7 @@ import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
 import { Gitgraph } from "@gitgraph/react";
+import CustomGitGraph from "./a.tsx";
 
 const CommitGraph: React.FC = () => {
   const { scrollbarsRef, selectedCommit, repoInfo } = useMainContext();
@@ -51,12 +52,12 @@ const CommitGraph: React.FC = () => {
     >
       <div className={`${styles.container} ${graphStyles.graph}`}>
         {commitLogs ? (
-          <Gitgraph>
+          <CustomGitGraph>
             {(gitgraph) => {
               gitgraph.clear();
               gitgraph.import(commitLogs);
             }}
-          </Gitgraph>
+          </CustomGitGraph>
         ) : (
           //TODO: REPLACE WITH LOADING ANIMATION
           <p>Loading repository info...</p>
