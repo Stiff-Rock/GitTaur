@@ -1,14 +1,46 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Scrollbars from "react-custom-scrollbars-2";
 import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
-import { Gitgraph } from "@gitgraph/react";
-import CustomGitGraph from "./a.tsx";
+import { GraphProvider } from "../../../../context/GraphContext.tsx";
+import { BranchLabel } from "../../../Gitgraph/BranchLabel.tsx";
+import { Gitgraph, templateExtend, TemplateName } from "./../../../Gitgraph";
+import { MergeStyle, Template } from "@gitgraph/core/lib/template";
+
+const font = "normal 12pt Calibri";
+
+BranchLabel.paddingX = 6;
+BranchLabel.paddingY = 4;
+
+const customTemplate: Template = templateExtend(TemplateName.Metro, {
+  colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
+  branch: {
+    lineWidth: 4,
+    spacing: 35,
+    mergeStyle: MergeStyle.Straight,
+    label: {
+      font: font,
+    }
+  },
+  commit: {
+    spacing: 40,
+    dot: {
+      size: 8,
+    },
+    message: {
+      displayAuthor: false,
+      displayHash: false,
+      font: font,
+    },
+  },
+  tag: {
+    font: font,
+  }
+});
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarsRef, selectedCommit, repoInfo } = useMainContext();
-  const prevCommitNodeRect = useRef<HTMLElement | null>(null);
+  const { scrollbarsRef, repoInfo } = useMainContext();
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
@@ -16,21 +48,10 @@ const CommitGraph: React.FC = () => {
     if (!repoInfo) return;
 
     if (repoInfo.commit_history) {
-      setCommitLogs(Object.values(repoInfo.commit_history));
+      const commitLogs = Object.values(repoInfo.commit_history);
+      setCommitLogs(commitLogs);
     }
   }, [repoInfo]);
-
-  useEffect(() => {
-    //TODO: GET A REFERENCE OF THE UP-MOST PARENT TO SET THE RECT HEIGHT AND WIDTH DYNAMICALLY
-    const commitRect = document.getElementById(`rect-${selectedCommit}`);
-    if (!commitRect) return;
-
-    if (prevCommitNodeRect.current)
-      prevCommitNodeRect.current.setAttribute("class", graphStyles.unselected);
-
-    commitRect.setAttribute("class", graphStyles.selected);
-    prevCommitNodeRect.current = commitRect;
-  }, [selectedCommit]);
 
   //TODO: MAKE GRAPH CUSTOMIZATION
   return (
@@ -52,12 +73,14 @@ const CommitGraph: React.FC = () => {
     >
       <div className={`${styles.container} ${graphStyles.graph}`}>
         {commitLogs ? (
-          <CustomGitGraph>
-            {(gitgraph) => {
-              gitgraph.clear();
-              gitgraph.import(commitLogs);
-            }}
-          </CustomGitGraph>
+          <GraphProvider>
+            <Gitgraph options={{ template: customTemplate, }} graphCommitOptions={{ showMessageBody: false }}>
+              {(gitgraph) => {
+                gitgraph.clear();
+                gitgraph.import(commitLogs);
+              }}
+            </Gitgraph>
+          </GraphProvider>
         ) : (
           //TODO: REPLACE WITH LOADING ANIMATION
           <p>Loading repository info...</p>

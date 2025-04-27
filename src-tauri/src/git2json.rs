@@ -1,8 +1,7 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap};
 
 use git2::Repository;
 use serde::{Deserialize, Serialize};
-use tauri::command;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +37,6 @@ pub struct FileStats {
     pub file: String,
 }
 
-#[command()]
 pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
     let repo = Repository::open(repo_path)
         .map_err(|e| format!("Falied to open repository {}", e.to_string()))?;
@@ -114,10 +112,10 @@ pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
             .to_string();
         let body = lines.next().unwrap_or("").trim().to_string();
 
-        //NOTE: FOR NOW, IM NOT DOING THE NOTES AND STATS
         let notes: String = String::new();
 
-        let stats: Vec<FileStats> = Vec::new();
+        let stats: Vec<FileStats> = get_commit_stats(&repo, &commit)
+            .map_err(|e| format!("Failed to get commit stats. {}", e))?;
 
         let commit_log = CommitLog {
             refs,
@@ -138,9 +136,73 @@ pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
         repo_json.push(commit_log);
     }
 
+    // FOR DEBUG PURPOSES
+    /*let file = std::fs::File::create("repo.json").map_err(|e| e.to_string())?;
+    serde_json::to_writer_pretty(std::io::BufWriter::new(file), &repo_json)
+        .map_err(|e| e.to_string())?;*/
+
     Ok(repo_json)
 }
 
+fn get_commit_stats(
+    repo: &Repository,
+    commit: &git2::Commit,
+) -> Result<Vec<FileStats>, git2::Error> {
+    let file_stats_map = RefCell::new(HashMap::new());
+
+    let diff = if commit.parent_count() == 0 {
+        let empty_tree = repo.find_tree(repo.treebuilder(None)?.write()?)?;
+        let commit_tree = commit.tree()?;
+        repo.diff_tree_to_tree(Some(&empty_tree), Some(&commit_tree), None)?
+    } else {
+        let parent = commit.parent(0)?;
+        let parent_tree = parent.tree()?;
+        let commit_tree = commit.tree()?;
+        repo.diff_tree_to_tree(Some(&parent_tree), Some(&commit_tree), None)?
+    };
+
+    diff.foreach(
+        &mut |delta, _| {
+            if let Some(path) = delta.new_file().path().or_else(|| delta.old_file().path()) {
+                let path_str = path.to_string_lossy().into_owned();
+                file_stats_map.borrow_mut().insert(
+                    path_str.clone(),
+                    FileStats {
+                        additions: Some(0),
+                        deletions: Some(0),
+                        file: path_str,
+                    },
+                );
+            }
+            true
+        },
+        None,
+        None,
+        Some(&mut |delta, _hunk, line| {
+            if let Some(path) = delta.new_file().path().or_else(|| delta.old_file().path()) {
+                let path_str = path.to_string_lossy().into_owned();
+
+                let mut map = file_stats_map.borrow_mut();
+                if let Some(stats) = map.get_mut(&path_str) {
+                    match line.origin() {
+                        '+' => {
+                            let additions = stats.additions.get_or_insert(0);
+                            *additions += 1;
+                        }
+                        '-' => {
+                            let deletions = stats.deletions.get_or_insert(0);
+                            *deletions += 1;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            true
+        }),
+    )?;
+
+    Ok(file_stats_map.into_inner().into_values().collect())
+}
 fn build_commit_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String>>, git2::Error> {
     let mut commit_to_refs: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -148,25 +210,29 @@ fn build_commit_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String
     for reference in refs {
         let reference = reference?;
 
-        if let Some(target_id) = reference.target() {
-            let target_str = target_id.to_string();
-
-            if let Some(name) = reference.name() {
-                let ref_name = name
-                    .strip_prefix("refs/heads/")
-                    .or_else(|| name.strip_prefix("heads/"))
-                    .or_else(|| name.strip_prefix("refs/remotes/"))
-                    .or_else(|| name.strip_prefix("remotes/"))
-                    .or_else(|| name.strip_prefix("refs/tags/"))
-                    .or_else(|| name.strip_prefix("refs/"))
-                    .unwrap_or(name)
-                    .to_string();
-
-                commit_to_refs
-                    .entry(target_str)
-                    .or_insert_with(Vec::new)
-                    .push(ref_name);
+        let commit_id = if reference.is_tag() {
+            match reference.peel_to_commit() {
+                Ok(commit) => commit.id(),
+                Err(_) => match reference.target() {
+                    Some(oid) => oid,
+                    None => continue,
+                },
             }
+        } else {
+            match reference.target() {
+                Some(oid) => oid,
+                None => continue,
+            }
+        };
+
+        let target_str = commit_id.to_string();
+
+        if let Some(name) = reference.name() {
+            let ref_name = name.split("/").last().unwrap_or("Unknown").to_string();
+            commit_to_refs
+                .entry(target_str)
+                .or_insert_with(Vec::new)
+                .push(ref_name);
         }
     }
 

@@ -1,11 +1,11 @@
 mod repo_info;
 mod repo_manager;
 mod tab;
-mod workspace;
-use git2::{BranchType, Oid, Repository};
+use git2::Repository;
+mod git2json;
 use indexmap::IndexMap;
 use regex::Regex;
-use repo_info::{FileChange, RepoInfo};
+use repo_info::RepoInfo;
 use repo_manager::RepoManager;
 use serde::Serialize;
 use std::fs;
@@ -13,6 +13,7 @@ use std::fs::{metadata, File};
 use std::io::{Read, Write};
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard, TryLockError};
+mod workspace;
 use tab::Tab;
 use tauri::command;
 use workspace::Workspace;
@@ -75,21 +76,12 @@ fn clone_repository(path: String, repo_url: String) -> String {
 }
 
 #[command]
-fn get_repo_info(path: String) -> Result<RepoInfo, String> {
+fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     let repos_manager = try_lock_repo()?;
 
     repos_manager
-        .get_repo_info(path.clone())
-        .map_err(|e| format!("Failed to get repo info with path <{}>: {}", path, e))
-}
-
-#[command]
-fn get_commit_changes(repo_path: String, sha: String) -> Result<Vec<FileChange>, String> {
-    let repos_manager = try_lock_repo()?;
-    let repo = repos_manager.open_repo(repo_path)?;
-    let oid = Oid::from_str(&sha).map_err(|e| e.to_string())?;
-    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-    Ok(RepoManager::get_commit_changes(&repo, &commit).map_err(|e| e.to_string())?)
+        .get_repo_info(repo_path.clone())
+        .map_err(|e| format!("Failed to get repo info with path <{}>: {}", repo_path, e))
 }
 
 #[command]
@@ -186,13 +178,13 @@ fn restore_session() {
         file.read_to_string(&mut contents)
             .expect("Error reading workspace file contents");
 
-        let repo_manager = match try_lock_repo() {
+        /*let repo_manager = match try_lock_repo() {
             Ok(repo_manager) => repo_manager,
             Err(e) => {
                 println!("Could not restore previous workspace session - {}", e);
                 return;
             }
-        };
+        };*/
 
         let mut workspace = match WORKSPACE.lock() {
             Ok(guard) => guard,
@@ -208,13 +200,21 @@ fn restore_session() {
                 continue;
             }
 
-            /*match Repository::open(key) {
-                Ok(repo) => repo_manager.insert(key.clone(), repo),
-                Err(e) => {
-                    println!("Failed to open repository while restoring session: {}", e);
-                    return;
+            /*for key in workspace.tabs.keys() {
+                if WELCOME_PAGE_REGEX.is_match(key) {
+                    continue;
                 }
-            };*/
+
+                match Repository::open(key) {
+                    Ok(repo) => repo_manager.insert(key.clone(), repo),
+                    Err(e) => {
+                        println!("Failed to open repository while restoring session: {}", e);
+                        return;
+                    }
+                };
+            }*/
+
+            //TODO: SINCE REPO MANAGER DOES NOT STORE OPENED REPOS ANYMROE THIS DOES NOT MAKE SENSE
         }
     }
 }
@@ -247,92 +247,6 @@ pub struct GitData {
     tags: Vec<TagInfo>,
 }
 
-// Extract git data - receives repository path directly as a parameter
-#[command]
-fn extract_git_data(repo_path: String) -> Result<GitData, String> {
-    // Open repository
-    let repo =
-        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {}", e))?;
-
-    let mut git_data = GitData {
-        commits: Vec::new(),
-        branches: Vec::new(),
-        tags: Vec::new(),
-    };
-
-    // Get commits
-    let mut revwalk = repo
-        .revwalk()
-        .map_err(|e| format!("Failed to create revwalk: {}", e))?;
-
-    // Configure revwalk to follow all branches
-    revwalk
-        .push_glob("refs/heads/*")
-        .map_err(|e| format!("Failed to push refs to revwalk: {}", e))?;
-
-    // Sort by time (topological and time sort ensures parents come before children)
-    revwalk
-        .set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME)
-        .map_err(|e| format!("Failed to set revwalk sorting: {}", e))?;
-
-    // Process each commit
-    for oid_result in revwalk {
-        let oid = oid_result.map_err(|e| format!("Failed to get commit oid: {}", e))?;
-        let commit = repo
-            .find_commit(oid)
-            .map_err(|e| format!("Failed to find commit: {}", e))?;
-
-        // Get parent IDs
-        let parent_ids = commit.parent_ids().map(|id| id.to_string()).collect();
-
-        // Get commit message
-        let message = commit.message().unwrap_or("").to_string();
-
-        // Get author
-        let author = commit.author().name().unwrap_or("").to_string();
-
-        git_data.commits.push(CommitInfo {
-            id: oid.to_string(),
-            message,
-            author,
-            timestamp: commit.time().seconds(),
-            parent_ids,
-        });
-    }
-
-    // Get branches
-    if let Ok(branches) = repo.branches(Some(BranchType::Local)) {
-        for branch_result in branches {
-            if let Ok((branch, _)) = branch_result {
-                if let Ok(Some(name)) = branch.name() {
-                    if let Ok(commit) = branch.get().peel_to_commit() {
-                        git_data.branches.push(BranchInfo {
-                            name: name.to_string(),
-                            commit_id: commit.id().to_string(),
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    // Get tags
-    if let Ok(tag_names) = repo.tag_names(None) {
-        for tag_name in tag_names.iter().flatten() {
-            if let Ok(tag_ref) = repo.find_reference(&format!("refs/tags/{}", tag_name)) {
-                if let Ok(commit) = tag_ref.peel_to_commit() {
-                    git_data.tags.push(TagInfo {
-                        name: tag_name.to_string(),
-                        commit_id: commit.id().to_string(),
-                    });
-                }
-            }
-        }
-    }
-
-    Ok(git_data)
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -348,8 +262,6 @@ pub fn run() {
             get_repo_info,
             save_workspace,
             open_terminal,
-            get_commit_changes,
-            extract_git_data
         ])
         .setup(|_| {
             restore_session();

@@ -726,7 +726,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@gitgraph/react@^1.6.0",
+        "npm:@gitgraph/core@^1.5.0",
         "npm:@primer/octicons-react@^19.15.1",
         "npm:@tauri-apps/api@^2.3.0",
         "npm:@tauri-apps/cli@2",

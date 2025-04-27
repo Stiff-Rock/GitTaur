@@ -1,6 +1,8 @@
-use crate::repo_info::{CommitNode, FileChange, RepoInfo};
-use chrono::DateTime;
-use git2::{BranchType, Commit, DiffOptions, Oid, Repository, Sort};
+use crate::{
+    git2json::{self, CommitLog},
+    repo_info::RepoInfo,
+};
+use git2::{BranchType, Repository};
 use indexmap::IndexMap;
 use std::{collections::HashMap, path::Path};
 
@@ -11,7 +13,7 @@ impl RepoManager {
         Self {}
     }
 
-    pub fn open_repo(&self, path: String) -> Result<Repository, String> {
+    pub fn _open_repo(&self, path: String) -> Result<Repository, String> {
         Repository::open(path).map_err(|e| format!("Error while opening repository: {}", e))
     }
 
@@ -57,9 +59,9 @@ impl RepoManager {
         }
     }
 
-    pub fn get_repo_info(&self, path: String) -> Result<RepoInfo, String> {
-        let repo = Repository::open(&path).map_err(|e| e.to_string())?;
-        let name = path.to_string();
+    pub fn get_repo_info(&self, repo_path: String) -> Result<RepoInfo, String> {
+        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+        let name = repo_path.to_string();
 
         // Get the branch that is considered the principal in this repo
         let main_branch: String;
@@ -96,159 +98,12 @@ impl RepoManager {
             .filter_map(|t| t.map(|s| s.to_string()))
             .collect::<Vec<String>>();
 
-        let commit_history = {
-            // Gets all branches in repo
-            let branches: Vec<_> = repo
-                .branches(None)
-                .map_err(|e| e.to_string())?
-                .filter_map(|b| b.ok())
-                .collect();
-
-            // Create revwalk
-            let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
-            revwalk
-                .set_sorting(Sort::TOPOLOGICAL | Sort::TIME)
-                .map_err(|e| e.to_string())?;
-
-            // Add branch tips to revwalk
-            for (branch, _) in &branches {
-                if let Some(oid) = branch.get().target() {
-                    revwalk.push(oid).map_err(|e| e.to_string())?;
-                }
-            }
-
-            // Maps out the commit-children relationship
-            let mut children_map: HashMap<Oid, Vec<Oid>> = HashMap::new();
-            let mut all_commits = Vec::new();
-            for oid in revwalk {
-                let oid = oid.map_err(|e| e.to_string())?;
-                all_commits.push(oid);
-
-                let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-                let parents: Vec<String> = commit.parent_ids().map(|id| id.to_string()).collect();
-
-                children_map.entry(oid).or_default();
-
-                for parent in &parents {
-                    children_map
-                        .entry(Oid::from_str(parent).map_err(|e| e.to_string())?)
-                        .or_default()
-                        .push(oid);
-                }
-            }
-
-            // Create commit history of composed of CommitNode
-            let mut commit_history: IndexMap<String, CommitNode> = IndexMap::new();
-            let mut commit_branches: HashMap<Oid, String> = HashMap::new();
-            for oid in all_commits {
-                let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-                let summary = commit.summary().unwrap_or("Unknown").to_string();
-                let parents: Vec<String> = commit.parent_ids().map(|id| id.to_string()).collect();
-                let children: Vec<Oid> = children_map.get(&oid).cloned().unwrap_or_else(Vec::new);
-
-                // Determines which one is the branch this commit belongs to for graph making
-                let branch_name = {
-                    let direct_branches: Vec<String> = branches
-                        .iter()
-                        .filter_map(|(branch, _)| {
-                            branch.get().target().and_then(|tip| {
-                                (tip == oid).then(|| branch.name().unwrap().unwrap().to_string())
-                            })
-                        })
-                        .collect();
-
-                    let repo_remotes = repo.remotes().map_err(|e| e.to_string())?;
-
-                    // Check branch via direct refs
-                    if !direct_branches.is_empty()
-                        && !repo_remotes
-                            .iter()
-                            .flatten()
-                            .any(|remote_name| direct_branches[0].contains(remote_name))
-                    {
-                        direct_branches[0].clone()
-
-                        // Check if direct branch ref is main branch
-                    } else if direct_branches.contains(&main_branch) {
-                        main_branch.clone()
-
-                        // Checks branch via children
-                    } else if !parents.is_empty() && !children.is_empty() {
-                        let index = if children.len() > 1 {
-                            let b1 = commit_branches
-                                .get(&children[0])
-                                .unwrap_or(&"NOT_FOUND".to_string())
-                                .clone();
-
-                            let b2 = commit_branches
-                                .get(&children[1])
-                                .unwrap_or(&"NOT_FOUND".to_string())
-                                .clone();
-
-                            if b1.contains(&main_branch) {
-                                0
-                            } else if b2.contains(&main_branch) {
-                                1
-                            } else {
-                                panic!(
-                                        "\nError determining commit's branch name for commit '{}'\n Children: {:#?}\nBRANCHES OBTAINED FROM CHILDREN: [\n{}\n{}\n]\n",
-                                        summary, children, b1, b2
-                                        );
-                            }
-                        } else {
-                            0
-                        };
-
-                        commit_branches
-                            .get(&children[index])
-                            .unwrap_or(&"NOT_FOUND".to_string())
-                            .clone()
-                    } else {
-                        main_branch.clone()
-                    }
-                };
-
-                //TODO: Get all commits refs despite above (make 'branches' field)
-                commit_branches.insert(oid, branch_name.clone());
-
-                let author = commit.author();
-                let author_name = author.name().unwrap_or("Unknown").to_string();
-                let email = author.email().unwrap_or("Unknown").to_string();
-
-                // Get the subject and body sepparately
-                let commit_msg = commit.message().unwrap_or("No commit message");
-                let (msg_subject, msg_body) = commit_msg
-                    .split_once("\n\n")
-                    .map(|(s, b)| (s.trim(), b.trim()))
-                    .unwrap_or_else(|| (commit_msg.trim(), ""));
-                let subject = msg_subject.to_string();
-                let body = msg_body.to_string();
-
-                // Get commit date
-                let commit_time = commit.time();
-                let timestamp = commit_time.seconds();
-                let date_time = DateTime::from_timestamp(timestamp, 0)
-                    .ok_or_else(|| "Invalid timestamp".to_string())?;
-                let formatted_date = date_time.format("%d/%m/%Y").to_string();
-
-                let node = CommitNode {
-                    sha: oid.to_string(),
-                    subject,
-                    body,
-                    author: author_name,
-                    email,
-                    commit_date: formatted_date,
-                    parents,
-                    branch: branch_name,
-                    refs: Vec::new(), //TODO: MAKE REAL REFS
-                };
-
-                commit_history.insert(oid.to_string(), node);
-            }
-
-            // Return reversed indexmap order for graph making
-            commit_history.into_iter().rev().collect()
-        };
+        let commit_history: IndexMap<String, CommitLog> = git2json::get_repo_json(repo_path)
+            .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
+            .into_iter()
+            .enumerate()
+            .map(|(i, v)| (format!("key_{}", i), v))
+            .collect();
 
         let remotes: HashMap<String, Vec<String>> = Self::get_remote_branches(&repo)?;
         println!("\n--REMOTES{:#?}--\n", remotes);

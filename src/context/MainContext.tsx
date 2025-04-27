@@ -1,8 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Scrollbars } from 'react-custom-scrollbars-2';
-import type { Commit } from "@gitgraph/core";
-import { ReactSvgElement } from '@gitgraph/react/lib/types';
 
 interface MainContextType {
   // State 
@@ -10,7 +8,6 @@ interface MainContextType {
   repoInfo: RepoInfo | null;
   commitInfo: CommitLog | null;
   selectedCommit: string;
-  selectedCommitNode: Commit<ReactSvgElement> | null;
   showInfoSidebar: boolean;
   shouldScroll: boolean;
 
@@ -19,7 +16,6 @@ interface MainContextType {
   setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
-  setSelectedCommitNode: React.Dispatch<React.SetStateAction<Commit<ReactSvgElement> | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -37,7 +33,6 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
   const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
-  const [selectedCommitNode, setSelectedCommitNode] = useState<Commit<ReactSvgElement> | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
 
@@ -76,7 +71,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [commitInfo]);
 
   const getRepoInfo = async (repoPath: string) => {
-    const info = await invoke<RepoInfo>("get_repo_info", { path: repoPath });
+    const info = await invoke<RepoInfo>("get_repo_info", { repoPath });
     setRepoInfo(info);
   }
 
@@ -123,7 +118,6 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
       repoInfo, setRepoInfo,
       commitInfo, setCommitInfo,
       selectedCommit, setSelectedCommit,
-      selectedCommitNode, setSelectedCommitNode,
       showInfoSidebar, setShowInfoSidebar,
       shouldScroll, setShouldScroll,
       getRepoInfo,
