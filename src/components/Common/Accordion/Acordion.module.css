@@ -48,7 +48,7 @@
 
 .customChildStyles li {
   display: flex;
-  width: 60%;
+  flex-direction: column;
   box-sizing: border-box;
   padding: 5px;
   margin-bottom: 10px;

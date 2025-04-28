@@ -11,7 +11,7 @@ const InfoAccordions: React.FC = () => {
 
   const [sortedRemotes, setSortedRemotes] = useState<Map<string, string[]>>();
 
-  //TODO: REMOTES ACCORDION BUGGED AS FUCK
+  //BUG: REMOTES ACCORDION BUGGED AS FUCK
   useEffect(() => {
     if (!repoInfo) return;
 
@@ -33,7 +33,7 @@ const InfoAccordions: React.FC = () => {
 
   return (
     <>
-      <Accordion className={styles.accordion} title="Local" icon={<DeviceDesktopIcon />} >
+      <Accordion containerClassName={styles.accordion} title="Local" icon={<DeviceDesktopIcon />} >
         {repoInfo &&
           <ul>
             {repoInfo.local_branches.map((item, index) => (
@@ -41,6 +41,7 @@ const InfoAccordions: React.FC = () => {
                 <div>
                   <GitBranchIcon />
                   {item}
+                  {/*BUG: SHOWING ACTIVE INDICATOR ON ALL*/}
                   <ActiveIndicator
                     style={repoInfo.current_branch !== item ? {} : { display: 'none' }}
                     className={`${styles.activeIndicator}`}
@@ -53,28 +54,33 @@ const InfoAccordions: React.FC = () => {
       </Accordion>
 
 
-      <Accordion className={styles.accordion} title="Remotes" icon={<CloudIcon />}>
+      <Accordion containerClassName={styles.accordion} childrenContainerClassName={styles.remoteEntries} title="Remotes" icon={<CloudIcon />}>
         {repoInfo && (
-          <ul>
+          <>
             {sortedRemotes && [...sortedRemotes].map(([remoteName, branches], index) => (
-              <li key={index}>
-                <Accordion className={styles.accordion} title={remoteName} icon={<DatabaseIcon />}>
-                  <ul>
-                    {branches.map((branch, branchIndex) => (
-                      <li key={`${remoteName}-${branch}-${branchIndex}`}>
-                        {branch}
-                      </li>
-                    ))}
-                  </ul>
-                </Accordion>
-              </li>
+              <Accordion
+                key={index}
+                containerClassName={`${styles.accordion} ${styles.remoteAccordion}`}
+                headerClassName={styles.remoteAccHeader}
+                title={remoteName}
+                icon={<DatabaseIcon />}
+              >
+                <ul>
+                  {branches.map((branch, branchIndex) => (
+                    <li key={`${remoteName}-${branch}-${branchIndex}`}>
+                      <GitBranchIcon />
+                      {branch}
+                    </li>
+                  ))}
+                </ul>
+              </Accordion>
             ))}
-          </ul>
+          </>
         )}
-      </Accordion>
+      </Accordion >
 
 
-      <Accordion className={styles.accordion} title="Tags" icon={<TagIcon />}>
+      <Accordion containerClassName={styles.accordion} title="Tags" icon={<TagIcon />}>
         {repoInfo &&
           <ul>
             {repoInfo.tags.map((item, index) => (

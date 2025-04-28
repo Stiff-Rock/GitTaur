@@ -26,6 +26,25 @@
   margin-left: 35px;
 }
 
+.remoteEntries {
+  margin-left: 35px !important;
+}
+
+.remoteAccordion div ul {
+  margin-left: 25px !important;
+}
+
+.remoteAccordion div ul li {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.remoteAccHeader {
+  flex-direction: row !important;
+}
+
 .activeIndicator {
   width: 10px;
   height: 10px;

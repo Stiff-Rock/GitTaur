@@ -4,25 +4,29 @@ import Collapsible from 'react-collapsible';
 import { ChevronRightIcon } from "@primer/octicons-react";
 
 interface AccordionProps {
-  className?: string;
+  containerClassName?: string;
+  headerClassName?: string;
+  childrenContainerClassName?: string;
   title: string;
   icon: ReactNode
   children: ReactNode;
 }
 
-const Accordion: React.FC<AccordionProps> = ({ className, title, icon, children }) => {
+const Accordion: React.FC<AccordionProps> = (props) => {
+  const { containerClassName, headerClassName, childrenContainerClassName, title, icon, children } = props;
+
   return (
-    <div className={`${className} ${styles.accordion}`}>
+    <div className={`${containerClassName} ${styles.accordion}`}>
       <Collapsible
         trigger={
-          <div className={`${styles.accordionHeader}`}>
+          <div className={`${headerClassName} ${styles.accordionHeader}`}>
             <ChevronRightIcon className={`${styles.arrow}`} />
             {icon}
             <span>{title}</span>
           </div>
         }
         triggerWhenOpen={
-          <div className={`${styles.accordionHeader}`}>
+          <div className={`${headerClassName} ${styles.accordionHeader}`}>
             <ChevronRightIcon className={`${styles.arrow}  ${styles.open}`} />
             {icon}
             <span>{title}</span>
@@ -30,7 +34,7 @@ const Accordion: React.FC<AccordionProps> = ({ className, title, icon, children 
         }
         transitionTime={100}
       >
-        <div className={`${styles.accordionContent} ${styles.customChildStyles}`}>
+        <div className={`${childrenContainerClassName} ${styles.accordionContent} ${styles.customChildStyles}`}>
           {children}
         </div>
       </Collapsible>
