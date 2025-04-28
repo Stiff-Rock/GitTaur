@@ -61,6 +61,13 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [showInfoSidebar]);
 
   useEffect(() => {
+    if (repoInfo && selectedCommit) {
+      const commitLog = repoInfo.commit_history[selectedCommit];
+      setCommitInfo(commitLog);
+    }
+  }, [selectedCommit]);
+
+  useEffect(() => {
     if (commitInfo) {
       setShowInfoSidebar(true);
     }

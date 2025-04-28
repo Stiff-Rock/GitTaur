@@ -23,7 +23,7 @@ interface CommitLog {
   subject: string;
   body: string;
   notes: string;
-  stats: FileStats;
+  stats: FileStats[];
 }
 
 interface RepoInfo {

@@ -206,7 +206,7 @@ export const Commit = (props: CommitsProps) => {
             showBody={showMessageBody}
           />
         )}
-        {/*TODO: TAGS AND BRANCLABLES ARE NOT CO-EXISTING*/}
+        {/*BUG: TAGS AND BRANCLABLES ARE NOT CO-EXISTING*/}
         {branchLabels}
         {tags}
       </g>

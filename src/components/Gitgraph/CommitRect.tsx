@@ -5,6 +5,7 @@ import {
 import { ReactSvgElement } from "./types";
 import graphStyles from './GraphStyles.module.css';
 import { RectDims, useGraphContext } from "../../context/GraphContext";
+import { useMainContext } from "../../context/MainContext";
 
 interface CommitRectProps {
   commit: CommitCore<ReactSvgElement>;
@@ -12,7 +13,8 @@ interface CommitRectProps {
 
 const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
   const { commit } = props;
-  const { selectedCommit, setSelectedCommit, bboxMap } = useGraphContext();
+  const { bboxMap } = useGraphContext();
+  const { selectedCommit, setSelectedCommit } = useMainContext();
 
   const [isMouseOver, setIsMouseOver] = React.useState<boolean>(false);
 

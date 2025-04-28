@@ -8,7 +8,7 @@ import { BranchLabel } from "../../../Gitgraph/BranchLabel.tsx";
 import { Gitgraph, templateExtend, TemplateName } from "./../../../Gitgraph";
 import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 
-const font = "normal 12pt Calibri";
+const font = "normal 12pt CaskaydiaMonoNerdFont";
 
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;

@@ -102,7 +102,7 @@ impl RepoManager {
             .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
             .into_iter()
             .enumerate()
-            .map(|(i, v)| (format!("key_{}", i), v))
+            .map(|(_, v)| (v.hash.clone(), v))
             .collect();
 
         let remotes: HashMap<String, Vec<String>> = Self::get_remote_branches(&repo)?;

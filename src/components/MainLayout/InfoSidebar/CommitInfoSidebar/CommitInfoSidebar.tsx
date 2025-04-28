@@ -3,16 +3,12 @@ import styles from './CommitInfoSidebar.module.css';
 import { useMainContext } from '../../../../context/MainContext';
 import CopyShaButton from './CopyShaButton';
 import { Scrollbars } from 'react-custom-scrollbars-2';
-import { invoke } from '@tauri-apps/api/core';
 import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
-import { useAppContext } from '../../../../context/AppContext';
 import md5 from "md5";
 
 const CommitInfoSidebar: React.FC = () => {
-  const { workspace } = useAppContext();
   const { commitInfo, selectedCommit, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
 
-  const [changes, setChanges] = useState<FileChange[]>();
   const [pfpUrl, setPfpUrl] = useState<string>("");
 
   const goToParent = (sha: string) => {
@@ -24,27 +20,12 @@ const CommitInfoSidebar: React.FC = () => {
       return;
     }
 
-    setSelectedCommit(commit.sha);
+    setSelectedCommit(commit.hash);
     setCommitInfo(commit);
     scrollToCommit();
   }
 
-  const fetchChanges = async () => {
-    try {
-      if (workspace?.activeTab && selectedCommit) {
-        invoke<FileChange[]>("get_commit_changes", {
-          repoPath: workspace.activeTab,
-          sha: selectedCommit
-        }).then(changes => {
-          setChanges(changes);
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching commit changes:", error);
-      setChanges([]);
-    }
-  };
-
+  //TODO: MOVE TO BACKEND TO AVOID WARNINGS
   const getGravatarUrl = (email: string, size: number, defaultImage: string) => {
     const trimmedEmail = email.trim().toLowerCase();
     const hash = md5(trimmedEmail);
@@ -53,8 +34,7 @@ const CommitInfoSidebar: React.FC = () => {
 
   useEffect(() => {
     if (!commitInfo) return;
-    setPfpUrl(getGravatarUrl(commitInfo.email, 50, "retro"));
-    fetchChanges();
+    setPfpUrl(getGravatarUrl(commitInfo.author.email, 50, "retro"));
   }, [selectedCommit])
 
   //BUG: SCROLLBAR BUG, CANT SCROLL ALL THE WAY DOWN
@@ -88,6 +68,8 @@ const CommitInfoSidebar: React.FC = () => {
         >
           <div className={styles.content}>
             <span className={styles.title}>Author</span>
+
+            {/* AUTHOR INFORMATION */}
             <div className={styles.authorContainer}>
               {pfpUrl ? (
                 <img src={pfpUrl} alt="Profile Picture" />
@@ -95,40 +77,48 @@ const CommitInfoSidebar: React.FC = () => {
                 <img src='../../../../../src/assets/pfp.svg' alt="Default Profile Picture" />
               )}
               <div className={styles.authorInfo}>
-                <span>{commitInfo.author}</span>
-                <span>{commitInfo.email && commitInfo.email.includes(".github.com") ? "From GitHub.com" : commitInfo.email}</span>
+                <span>{commitInfo.author.name}</span>
+                <span>{commitInfo.author.email && commitInfo.author.email.includes(".github.com") ? "From GitHub.com" : commitInfo.author.email}</span>
               </div>
             </div>
 
             <hr />
 
+            {/* COMMIT INFORMATION */}
             <span className={styles.title}>Commit Information</span>
             <div className={styles.commitContainer}>
+              {/* DATE */}
               <div className={styles.commitInfoField}>
                 <span className={styles.label}>DATE:</span>
-                <span className={styles.value}>{commitInfo.commit_date}</span>
+                <span className={styles.value}>{commitInfo.author.timestamp}</span>
               </div>
 
-              <div className={styles.commitInfoField}>
-                <span className={styles.label}>PARENTS:</span>
-                {commitInfo.parents.map((parent, index) => (
-                  <a onClick={() => goToParent(parent)} key={index} className={styles.value}>{parent.slice(0, 7)}</a>
-                ))}
-              </div>
+              {/* PARENTS */}
+              {commitInfo.parents.length > 0 &&
+                <div className={styles.commitInfoField}>
+                  <span className={styles.label}>PARENTS:</span>
+                  {commitInfo.parents.map((parent, index) => (
+                    <a onClick={() => goToParent(parent)} key={index} className={styles.value}>{parent.slice(0, 7)}</a>
+                  ))}
+                </div>
+              }
 
+              {/* SHA */}
               <div className={styles.shaField} >
                 <div className={styles.commitInfoField}>
                   <span className={styles.label}>SHA:</span>
-                  <span className={styles.value}>{commitInfo.sha}</span>
+                  <span className={styles.value}>{commitInfo.hash}</span>
                 </div>
-                <CopyShaButton sha={commitInfo.sha} />
+                <CopyShaButton sha={commitInfo.hash} />
               </div>
 
+              {/* SUBJECT */}
               <div className={styles.commitInfoField}>
                 <span className={styles.label}>SUBJECT:</span>
                 <span className={styles.value}>{commitInfo.subject}</span>
               </div>
 
+              {/* BODY */}
               {commitInfo.body &&
                 <div className={styles.commitInfoField}>
                   <span className={styles.label}>Body:</span>
@@ -139,17 +129,18 @@ const CommitInfoSidebar: React.FC = () => {
 
             <hr />
 
+            {/* CHANGES */}
             <span className={styles.title}>Changes</span>
             <div className={styles.commitContainer}>
-              {changes && changes.length > 0 ? (
-                changes.map((change, index) => (
+              {commitInfo.stats && commitInfo.stats.length > 0 ? (
+                commitInfo.stats.map((changes, index) => (
                   <div key={index} className={styles.changeItem}>
                     <span className={styles.changeType}>
-                      {change.change_type.includes("Modified") && <DiffIcon className={styles.diffIcon} />}
-                      {change.change_type.includes("Added") && <PlusIcon className={styles.plusIcon} />}
-                      {change.change_type.includes("Deleted") && <DashIcon className={styles.deletedIcon} />}
+                      {(changes.additions ?? 0) > 0 && (changes.deletions ?? 0) > 0 && <DiffIcon className={styles.diffIcon} />}
+                      {(changes.additions ?? 0) > 0 && (changes.deletions ?? 0) === 0 && <PlusIcon className={styles.plusIcon} />}
+                      {(changes.additions ?? 0) === 0 && (changes.deletions ?? 0) === 0 && <DashIcon className={styles.deletedIcon} />}
                     </span>
-                    <span className={styles.value}>{change.file}</span>
+                    <span className={styles.value}>{changes.file}</span>
                   </div>
                 ))
               ) : (

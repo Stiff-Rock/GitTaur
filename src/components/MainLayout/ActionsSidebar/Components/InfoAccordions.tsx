@@ -23,11 +23,11 @@ const InfoAccordions: React.FC = () => {
       setSortedRemotes(sortedMap);
     }
 
-    console.log("REPO:", repoInfo)
+    /*console.log("REPO:", repoInfo)
     console.log("REMOTES:", repoInfo.remotes)
     Object.entries(repoInfo.remotes).forEach(value => {
       console.log("BRANCH:", value)
-    });
+    });*/
 
   }, [repoInfo])
 
