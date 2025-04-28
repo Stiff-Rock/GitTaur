@@ -57,6 +57,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
     }
   }, [])
 
+  const panelMaxSize = 40;
+
   return (
     <div className={`${styles.appMain} ${isActive ? '' : styles.inactive}`}>
       <PanelGroup direction="horizontal">
@@ -66,7 +68,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
           order={1}
           minSize={20}
           defaultSize={leftSize}
-          maxSize={40}
+          maxSize={panelMaxSize}
           onResize={(size) => {
             if (!isProgrammaticResize.current) {
               setLeftSize(size);
@@ -94,7 +96,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
               className={styles.rightPanel}
               minSize={30}
               defaultSize={rightSize}
-              maxSize={40}
+              maxSize={panelMaxSize}
               onResize={(size) => {
                 if (!isProgrammaticResize.current) {
                   setRightSize(size);
