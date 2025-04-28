@@ -11,9 +11,11 @@ interface TabProps {
 
 const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
   const handleCloseClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    onClose();
+    if (event.button === 1) {
+      event.stopPropagation();
+      event.preventDefault();
+      onClose();
+    }
   };
 
   return (
