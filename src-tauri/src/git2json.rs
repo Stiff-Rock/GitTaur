@@ -44,7 +44,7 @@ pub enum ChangeType {
     Added,
 }
 
-pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
+pub fn get_repo_json(repo_path: &String) -> Result<Vec<CommitLog>, String> {
     let repo = Repository::open(repo_path)
         .map_err(|e| format!("Falied to open repository {}", e.to_string()))?;
 

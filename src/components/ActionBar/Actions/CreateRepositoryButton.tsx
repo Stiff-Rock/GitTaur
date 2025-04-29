@@ -8,9 +8,9 @@ const CreateRepositoryButton: React.FC = () => {
 
   async function createRepo() {
     try {
-      const path = await openDirectoryDialog();
-      if (path) {
-        const msg: string = await invoke("create_repository", { path });
+      const repoPath = await openDirectoryDialog();
+      if (repoPath) {
+        const msg: string = await invoke("create_repo", { repoPath });
         setResultMsg(msg);
       }
     } catch (error) {

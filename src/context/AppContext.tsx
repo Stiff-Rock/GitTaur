@@ -35,16 +35,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notification, setNotification] = useState("");
 
   const pattern = /^Welcome Page:\d+$/;
+  const isWelcomePage = (text: string): boolean => {
+    return pattern.test(text)
+  }
 
-  //TODO: I DONT REMEMBER THIS
+  //TODO: DELETE FOR RELEASE, PREVENTS DOUBLE LOADING
   const isLoaded = useRef(false);
 
   // The backend information of the workspace gets loaded on startup
   useEffect(() => {
+    //TODO: MAYBE THIS HAS TO BE ASYNC OR USE useLayoutEffect
     const fetchWorkspace = async () => {
       try {
         const workspaceData: Workspace = await invoke('get_workspace');
-
         if (Object.entries(workspaceData.tabs).length === 0) {
           const defaultPage: string = "Welcome Page:" + Date.now();
           const newTab: Tab = { label: "Welcome Page", repoPath: defaultPage };
@@ -79,35 +82,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       openWelcomePage();
     }
 
-    invoke<Workspace>("save_workspace", { workspace: workspace })
+    invoke<Workspace>("save_workspace", { workspace })
       .catch(error => console.error('Error while saving workspace:', error));
   }, [workspace]);
 
-  const isWelcomePage = (text: string): boolean => {
-    return pattern.test(text)
-  }
-
-  //TODO: SI ABRE UN REPO QUE ESTA ENN EL HISTORIAL, ABRELO DE AHI, ESTA FUNCION ESTA MAL
+  //TODO: SI ABRE UN REPO QUE ESTA EN EL HISTORIAL, ABRELO DE AHI, ESTA FUNCION ESTA MAL
   const openNewRepo = async () => {
-    const repoPath = await openDirectoryDialog();
-    if (!repoPath || !workspace) return;
+    if (!workspace) return;
 
+    const repoPath = await openDirectoryDialog();
+    if (!repoPath) return;
+
+    // If already present in worksapce, just show that tab (early return)
     if (Object.entries(workspace.tabs).some(([tabKey]) => tabKey === repoPath)) {
       setActiveTab(repoPath);
       return;
     }
 
-    const msg = await invoke<string>("open_repository", { path: repoPath });
+    //TODO: ESTO POR AHORA NO HACE NADA, MIRAR WORKSPACE EN RUST
+    const msg = await invoke<string>("open_repo", { repoPath });
     setNotification(msg);
 
-    const label = await invoke<string>("get_last_directory", { path: repoPath });
+    const split = repoPath.replace(/\\/g, '/').split("/");
+    const label = split[split.length - 1];
     const newTab: Tab = { label, repoPath }
     openWorkspaceTab(repoPath, newTab);
   }
 
   const cloneRepo = async (path: string, repoUrl: string): Promise<boolean> => {
     try {
-      const msg: string = await invoke("clone_repository", { path, repoUrl });
+      const msg: string = await invoke("clone_repo", { path, repoUrl });
       if (msg)
         console.error(msg);
       setNotification(msg);
@@ -120,54 +124,73 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const closeWorkspaceTab = (tabKey: string) => {
     if (!workspace) return;
 
-    if (Object.entries(workspace.tabs).length === 1 && isWelcomePage(tabKey)) {
+    const tabs = Object.entries(workspace.tabs);
+
+    // If the only tab is a welcome page, don't close it
+    if (tabs.length === 1 && isWelcomePage(tabKey)) return;
+
+    // Gets the position that tab was in before removing it
+    const removedTabIndex = tabs.findIndex(([key]) => key === tabKey);
+    if (removedTabIndex === -1) {
+      const msg = "Error: Could not find tab on workspace (returned -1): " + tabKey
+      console.error(msg)
       return;
     }
 
-    const remainingTabs = Object.fromEntries(
-      Object.entries(workspace.tabs).filter(([key]) => key !== tabKey)
-    );
+    // Removes the closed tab from the workspace
+    const remainingTabs = tabs.filter(([key]) => key !== tabKey)
 
+    // Checks whether there is any other tab opened and activates that instead, if not, goes to welcome page
     let newActiveTab = workspace.activeTab;
-
     if (tabKey === workspace.activeTab) {
-      const remainingEntries = Object.entries(remainingTabs);
-      newActiveTab = remainingEntries.length > 0
-        ? remainingEntries[remainingEntries.length - 1][0]
-        : "";
+      if (remainingTabs.length > 0) {
+        if (removedTabIndex < remainingTabs.length) {
+          newActiveTab = remainingTabs[removedTabIndex][0];
+        }
+        else {
+          newActiveTab = remainingTabs[remainingTabs.length - 1][0];
+        }
+      } else {
+        newActiveTab = "";
+      }
     }
 
-    setWorkspace(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        tabs: remainingTabs,
-        activeTab: newActiveTab
-      };
-    });
-  };
-
-  const openWorkspaceTab = (tabKey: string, newTab: Tab) => {
-    if (!workspace) return;
-
-    const currentTabs = Object.entries(workspace.tabs);
-    currentTabs.push([tabKey, newTab]);
-
-    let filteredTabs = currentTabs;
-
-    const currentActiveTab = workspace.activeTab;
-    if (!isWelcomePage(tabKey) && isWelcomePage(currentActiveTab)) {
-      filteredTabs = currentTabs.filter(([key]) => key !== currentActiveTab);
-    }
-
-    const newTabs = Object.fromEntries(filteredTabs);
-
+    const newTabs = Object.fromEntries(remainingTabs);
     setWorkspace(prev => {
       if (!prev) return prev;
       return {
         ...prev,
         tabs: newTabs,
-        activeTab: tabKey,
+        activeTab: newActiveTab
+      };
+    });
+  };
+
+  const openWorkspaceTab = (newTabKey: string, newTab: Tab) => {
+    if (!workspace) return;
+
+    // Gets the workspace tabs, and repalces the welcome page tab position with the new tab
+    const tabs = Object.entries(workspace.tabs);
+    console.log("OLDTABS:", tabs)
+    //const wpIndex = tabs.findIndex(([key]) => key === newTabKey);
+    //if (wpIndex !== -1) {
+    //BUG: IT NEVER FINDS THE WELCOME PAGE
+    //tabs.splice(wpIndex, 1, [newTabKey, newTab])
+    //} else {
+    tabs.push([newTabKey, newTab]);
+    //}
+    console.log("NEWTABS:", tabs)
+    //console.log("WPINDEX:", wpIndex, "TAB:", newTabKey)
+
+    // Updates the workspace with the new content
+    const newTabs = Object.fromEntries(tabs); //BUG: IS IN EHRE THAT THE ORDER GETS FUCKED UP
+    console.log("ENTRIES:", newTabs)
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        tabs: newTabs,
+        activeTab: newTabKey,
       };
     });
   };

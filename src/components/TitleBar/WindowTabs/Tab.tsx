@@ -10,6 +10,7 @@ interface TabProps {
 }
 
 const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
+  //TODO: CLOSING TAB DOES NOT SELECT THE NEXT ONE
   const handleCloseClick = (event: React.MouseEvent) => {
     if (event.button === 1) {
       event.stopPropagation();

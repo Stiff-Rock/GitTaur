@@ -31,8 +31,9 @@ const ActionBar: React.FC = () => {
           )}
         <OpenTerminalDirButton />
       </div>
-      <div className={`${styles.actions} ${styles.centerActions}`}>
-        {!isInWelcomePage && (
+
+      {!isInWelcomePage && (
+        <div className={`${styles.actions} ${styles.centerActions}`}>
           <>
             <button
               className={`actionButton ${styles.actionButton}`}
@@ -60,11 +61,11 @@ const ActionBar: React.FC = () => {
               <GitBranchIcon />
             </button>
           </>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className={`${styles.actions} ${styles.rightActions}`}>
-        {!isInWelcomePage && (
+      {!isInWelcomePage && (
+        <div className={`${styles.actions} ${styles.rightActions}`}>
           <button className={`actionButton ${styles.actionButton}`}>
             <svg
               className={styles.userAccountBg}
@@ -78,8 +79,8 @@ const ActionBar: React.FC = () => {
               </foreignObject>
             </svg>
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
