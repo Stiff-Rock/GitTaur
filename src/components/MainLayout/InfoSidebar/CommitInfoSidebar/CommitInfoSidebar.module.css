@@ -99,7 +99,7 @@ hr {
 
 .diffIcon,
 .plusIcon,
-.deletedIcon {
+.minusIcon {
   padding: 1px;
   border-radius: 3px;
   color: white;
@@ -113,7 +113,7 @@ hr {
   background-color: var(--file-added);
 }
 
-.deletedIcon {
+.minusIcon {
   background-color: var(--file-removed);
 }
 

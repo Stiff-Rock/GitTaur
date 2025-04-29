@@ -11,7 +11,7 @@ import { ToastContainer, toast, Zoom } from "react-toastify";
 //BUG: Failed to open repository while restoring session: failed to resolve path 'C:\Users\Yago\Desktop\ChatServer': El sistema no puede encontrar el archivo especificado.; class=Os (2); code=NotFound (-3)
 
 function App() {
-  const { workspace, notification, isInWelcomePage, isWelcomePage } = useAppContext();
+  const { workspace, notification, isWelcomePage } = useAppContext();
 
   useEffect(() => {
     if (notification) {
@@ -36,9 +36,10 @@ function App() {
         pauseOnFocusLoss
         transition={Zoom}
       />
-      {isInWelcomePage || !workspace ? (
-        <WelcomePage />
-      ) : (
+
+      <WelcomePage />
+
+      {workspace &&
         <PanelSyncProvider>
           {workspace.tabs && Object.entries(workspace.tabs).map(([key, tab]) => (
             !isWelcomePage(tab.repoPath) && (
@@ -52,7 +53,8 @@ function App() {
             )
           ))}
         </PanelSyncProvider>
-      )}
+      }
+
     </main>
   );
 }

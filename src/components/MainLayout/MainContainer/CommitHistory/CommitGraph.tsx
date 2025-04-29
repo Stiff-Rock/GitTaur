@@ -7,11 +7,13 @@ import { GraphProvider } from "../../../../context/GraphContext.tsx";
 import { BranchLabel } from "../../../Gitgraph/BranchLabel.tsx";
 import { Gitgraph, templateExtend, TemplateName } from "./../../../Gitgraph";
 import { MergeStyle, Template } from "@gitgraph/core/lib/template";
-
-const font = "normal 12pt CaskaydiaMonoNerdFont";
+import { GitgraphOptions } from "@gitgraph/core";
+import { GraphCommitOptions } from "../../../Gitgraph/Commit.tsx";
 
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;
+
+const font = "normal 12pt CaskaydiaMonoNerdFont";
 
 const customTemplate: Template = templateExtend(TemplateName.Metro, {
   colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
@@ -39,6 +41,14 @@ const customTemplate: Template = templateExtend(TemplateName.Metro, {
   }
 });
 
+const options: GitgraphOptions = {
+  template: customTemplate,
+}
+
+const graphCommitOptions: GraphCommitOptions = {
+  showMessageBody: false,
+}
+
 const CommitGraph: React.FC = () => {
   const { scrollbarsRef, repoInfo } = useMainContext();
 
@@ -54,6 +64,8 @@ const CommitGraph: React.FC = () => {
   }, [repoInfo]);
 
   //TODO: MAKE GRAPH CUSTOMIZATION
+  //TODO: MAKE GRAPHS STRAIGHT
+  //TODO: FIX VERTICAL AND HORIZONTAL SCROLLBARS
   return (
     <Scrollbars
       ref={scrollbarsRef}
@@ -74,7 +86,7 @@ const CommitGraph: React.FC = () => {
       <div className={`${styles.container} ${graphStyles.graph}`}>
         {commitLogs ? (
           <GraphProvider>
-            <Gitgraph options={{ template: customTemplate, }} graphCommitOptions={{ showMessageBody: false }}>
+            <Gitgraph options={options} graphCommitOptions={graphCommitOptions}>
               {(gitgraph) => {
                 gitgraph.clear();
                 gitgraph.import(commitLogs);

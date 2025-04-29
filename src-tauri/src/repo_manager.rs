@@ -4,15 +4,21 @@ use crate::{
 };
 use git2::{BranchType, Repository};
 use indexmap::IndexMap;
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, sync::Mutex};
 
-pub struct RepoManager;
+pub struct RepoManager {
+    state: Mutex<()>,
+    repos
+}
 
 impl RepoManager {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            state: Mutex::new(()),
+        }
     }
 
+    //NOTE: UNUSED FN
     pub fn _open_repo(&self, path: String) -> Result<Repository, String> {
         Repository::open(path).map_err(|e| format!("Error while opening repository: {}", e))
     }
@@ -119,7 +125,7 @@ impl RepoManager {
             commit_history,
         };
 
-        println!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
+        //println!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
 
         Ok(repo)
     }

@@ -132,17 +132,26 @@ const CommitInfoSidebar: React.FC = () => {
             {/* CHANGES */}
             <span className={styles.title}>Changes</span>
             <div className={styles.commitContainer}>
-              {commitInfo.stats && commitInfo.stats.length > 0 ? (
-                commitInfo.stats.map((changes, index) => (
-                  <div key={index} className={styles.changeItem}>
-                    <span className={styles.changeType}>
-                      {(changes.additions ?? 0) > 0 && (changes.deletions ?? 0) > 0 && <DiffIcon className={styles.diffIcon} />}
-                      {(changes.additions ?? 0) > 0 && (changes.deletions ?? 0) === 0 && <PlusIcon className={styles.plusIcon} />}
-                      {(changes.additions ?? 0) === 0 && (changes.deletions ?? 0) === 0 && <DashIcon className={styles.deletedIcon} />}
-                    </span>
-                    <span className={styles.value}>{changes.file}</span>
-                  </div>
-                ))
+              {commitInfo.changes && commitInfo.changes.length > 0 ? (
+                commitInfo.changes.map((changes, index) => {
+                  const type = changes.changeType;
+                  console.log("TYPE:", type)
+
+                  return (
+                    <div key={index} className={styles.changeItem}>
+                      <span className={styles.changeType}>
+                        {type === "modified" ? (
+                          <DiffIcon className={styles.diffIcon} />
+                        ) : type === "added" ? (
+                          <PlusIcon className={styles.plusIcon} />
+                        ) : type === "deleted" ? (
+                          <DashIcon className={styles.minusIcon} />
+                        ) : (<span>Error</span>)}
+                      </span>
+                      <span className={styles.value}>{changes.file}</span>
+                    </div>
+                  );
+                })
               ) : (
                 <span className={styles.value}>No changes</span>
               )}

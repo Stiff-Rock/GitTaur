@@ -36,6 +36,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const pattern = /^Welcome Page:\d+$/;
 
+  //TODO: I DONT REMEMBER THIS
   const isLoaded = useRef(false);
 
   // The backend information of the workspace gets loaded on startup
@@ -179,6 +180,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  //BUG: WHEN OPENING THE SAME
   const openWelcomePage = () => {
     if (!workspace) return;
 

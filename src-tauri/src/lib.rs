@@ -20,7 +20,8 @@ use workspace::Workspace;
 
 const WORKSPACE_PATH: &str = "./workspace.json";
 lazy_static::lazy_static! {
-    static ref REPO_MANAGER: Mutex<RepoManager>  = Mutex::new(RepoManager::new());
+    static ref REPO_MANAGER: RepoManager =RepoManager::new();
+    static ref REPO_MANAGER_MUTEX: Mutex<RepoManager>  = Mutex::new(REPO_MANAGER);
 
     static ref WORKSPACE: Mutex<Workspace> = Mutex::new(Workspace {
         tabs: IndexMap::new(),
@@ -31,7 +32,7 @@ lazy_static::lazy_static! {
 }
 
 fn try_lock_repo() -> Result<MutexGuard<'static, RepoManager>, String> {
-    match REPO_MANAGER.try_lock() {
+    match REPO_MANAGER_MUTEX.try_lock() {
         Ok(guard) => Ok(guard),
         Err(TryLockError::WouldBlock) => {
             Err("Another operation is currently in progress".to_string())
@@ -61,7 +62,7 @@ fn open_repository(path: String) -> String {
 
     match try_lock_repo() {
         Ok(_) => Repository::init(&path)
-            .map(|_| format!("Successfully opened repository at {}", path))
+            .map(|_| "".to_string())
             .unwrap_or_else(|e| format!("Error opening repository at '{}' - {}", path, e)),
         Err(msg) => return msg,
     }
@@ -76,8 +77,9 @@ fn clone_repository(path: String, repo_url: String) -> String {
 }
 
 #[command]
-fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
-    let repos_manager = try_lock_repo()?;
+async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
+    //TODO: MAYBE THIS OPERATION CAN BE QUEUED (normal .lock()) instead of inmedieatily negating
+    //let repos_manager = try_lock_repo()?;
 
     repos_manager
         .get_repo_info(repo_path.clone())

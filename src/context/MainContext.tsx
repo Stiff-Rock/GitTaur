@@ -22,8 +22,7 @@ interface MainContextType {
   // Refs
   scrollbarsRef: React.MutableRefObject<Scrollbars | null>;
 
-  // Global Function
-  getRepoInfo: (repoPath: string) => Promise<void>;
+  // Global Functions
   scrollToCommit: () => void;
 }
 
@@ -77,11 +76,6 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [commitInfo]);
 
-  const getRepoInfo = async (repoPath: string) => {
-    const info = await invoke<RepoInfo>("get_repo_info", { repoPath });
-    setRepoInfo(info);
-  }
-
   const scrollToCommit = () => {
     /*BUG: IT ALWAYS SCROLLS TO 320, ALMOST THERE
     if (!scrollbarsRef.current || !selectedCommitNode) return;
@@ -127,7 +121,6 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
       selectedCommit, setSelectedCommit,
       showInfoSidebar, setShowInfoSidebar,
       shouldScroll, setShouldScroll,
-      getRepoInfo,
       scrollToCommit,
       scrollbarsRef,
     }}>

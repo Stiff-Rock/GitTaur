@@ -27,7 +27,3 @@
 .closeButton:hover {
   background-color: var(--lighter-bg);
 }
-
-.inactive {
-  display: none;
-}

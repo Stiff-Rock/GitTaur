@@ -4,10 +4,10 @@ import styles from './WelcomePage.module.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 function WelcomePage() {
-  const { cloneRepoModalActive } = useAppContext();
+  const { cloneRepoModalActive, isInWelcomePage, workspace } = useAppContext();
 
   return (
-    <div className={styles.main}>
+    <div className={`${styles.main} ${isInWelcomePage || !workspace ? '' : 'inactive'}`}>
       <div className={styles.subContainer}>
         <span className={styles.title}>Let's start working</span>
         <Scrollbars

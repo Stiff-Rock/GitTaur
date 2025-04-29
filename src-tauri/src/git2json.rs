@@ -1,6 +1,6 @@
-use std::{cell::RefCell, collections::HashMap};
+use std::collections::HashMap;
 
-use git2::Repository;
+use git2::{Delta, Repository};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,7 +18,7 @@ pub struct CommitLog {
     pub subject: String,
     pub body: String,
     pub notes: String,
-    pub stats: Vec<FileStats>,
+    pub changes: Vec<FileChanges>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,10 +31,17 @@ pub struct UserInfo {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FileStats {
-    pub additions: Option<u32>,
-    pub deletions: Option<u32>,
+pub struct FileChanges {
+    pub change_type: ChangeType,
     pub file: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ChangeType {
+    Deleted,
+    Modified,
+    Added,
 }
 
 pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
@@ -114,7 +121,7 @@ pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
 
         let notes: String = String::new();
 
-        let stats: Vec<FileStats> = get_commit_stats(&repo, &commit)
+        let changes: Vec<FileChanges> = get_commit_changes(&repo, &commit)
             .map_err(|e| format!("Failed to get commit stats. {}", e))?;
 
         let commit_log = CommitLog {
@@ -130,7 +137,7 @@ pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
             subject,
             body,
             notes,
-            stats,
+            changes,
         };
 
         repo_json.push(commit_log);
@@ -144,65 +151,53 @@ pub fn get_repo_json(repo_path: String) -> Result<Vec<CommitLog>, String> {
     Ok(repo_json)
 }
 
-fn get_commit_stats(
+fn get_commit_changes(
     repo: &Repository,
     commit: &git2::Commit,
-) -> Result<Vec<FileStats>, git2::Error> {
-    let file_stats_map = RefCell::new(HashMap::new());
+) -> Result<Vec<FileChanges>, git2::Error> {
+    let mut changes = Vec::new();
 
-    let diff = if commit.parent_count() == 0 {
-        let empty_tree = repo.find_tree(repo.treebuilder(None)?.write()?)?;
-        let commit_tree = commit.tree()?;
-        repo.diff_tree_to_tree(Some(&empty_tree), Some(&commit_tree), None)?
+    let commit_tree = commit.tree()?;
+
+    let parent_tree = if commit.parent_count() > 0 {
+        Some(commit.parent(0)?.tree()?)
     } else {
-        let parent = commit.parent(0)?;
-        let parent_tree = parent.tree()?;
-        let commit_tree = commit.tree()?;
-        repo.diff_tree_to_tree(Some(&parent_tree), Some(&commit_tree), None)?
+        None
     };
+
+    let diff_options = None;
+    let diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), diff_options)?;
 
     diff.foreach(
         &mut |delta, _| {
-            if let Some(path) = delta.new_file().path().or_else(|| delta.old_file().path()) {
-                let path_str = path.to_string_lossy().into_owned();
-                file_stats_map.borrow_mut().insert(
-                    path_str.clone(),
-                    FileStats {
-                        additions: Some(0),
-                        deletions: Some(0),
-                        file: path_str,
-                    },
-                );
+            let file_path = match delta.status() {
+                Delta::Deleted => delta.old_file().path(),
+                _ => delta.new_file().path(),
+            };
+
+            if let Some(file_path) = file_path {
+                let change_type = match delta.status() {
+                    Delta::Added => ChangeType::Added,
+                    Delta::Deleted => ChangeType::Deleted,
+                    _ => ChangeType::Modified,
+                };
+
+                changes.push(FileChanges {
+                    change_type,
+                    file: file_path.to_string_lossy().into_owned(),
+                });
             }
+
             true
         },
         None,
         None,
-        Some(&mut |delta, _hunk, line| {
-            if let Some(path) = delta.new_file().path().or_else(|| delta.old_file().path()) {
-                let path_str = path.to_string_lossy().into_owned();
-
-                let mut map = file_stats_map.borrow_mut();
-                if let Some(stats) = map.get_mut(&path_str) {
-                    match line.origin() {
-                        '+' => {
-                            let additions = stats.additions.get_or_insert(0);
-                            *additions += 1;
-                        }
-                        '-' => {
-                            let deletions = stats.deletions.get_or_insert(0);
-                            *deletions += 1;
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            true
-        }),
+        None,
     )?;
 
-    Ok(file_stats_map.into_inner().into_values().collect())
+    Ok(changes)
 }
+
 fn build_commit_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String>>, git2::Error> {
     let mut commit_to_refs: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -228,7 +223,9 @@ fn build_commit_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String
         let target_str = commit_id.to_string();
 
         if let Some(name) = reference.name() {
-            let ref_name = name.split("/").last().unwrap_or("Unknown").to_string();
+            println!("{}", name);
+            let split = name.split("/");
+            let ref_name = split.last().unwrap_or("Unknown").to_string();
             commit_to_refs
                 .entry(target_str)
                 .or_insert_with(Vec::new)

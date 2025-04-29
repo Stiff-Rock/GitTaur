@@ -4,9 +4,10 @@ interface UserInfo {
   timestamp: number;
 }
 
-interface FileStats {
-  additions: number | null;
-  deletions: number | null;
+type ChangeType = "deleted" | "modified" | "added";
+
+interface FileChanges {
+  changeType: ChangeType;
   file: string;
 }
 
@@ -19,11 +20,11 @@ interface CommitLog {
   parents: string[],
   parentsAbbrev: string[],
   author: UserInfo;
-  commiter: UserInfo
+  committer: UserInfo
   subject: string;
   body: string;
   notes: string;
-  stats: FileStats[];
+  changes: FileChanges[];
 }
 
 interface RepoInfo {

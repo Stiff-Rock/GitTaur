@@ -11,14 +11,18 @@ import TodoPanel from './MainContainer/TodoPanel/TodoPanel';
 import LocalChangesInfoSidebar from './InfoSidebar/LocalChanges/LocalChangesInfoSidebar';
 import TodoPanelInfoSidebar from './InfoSidebar/TodoPanel/TodoPanelInfoSidebar';
 import CommitGraph from './MainContainer/CommitHistory/CommitGraph';
+import { invoke } from '@tauri-apps/api/core';
+import { useAppContext } from '../../context/AppContext';
 
 interface MainLayoutProps {
   repoPath: string;
   isActive: boolean;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
-  const { currentAppTab, showInfoSidebar, setShowInfoSidebar, getRepoInfo } = useMainContext();
+const MainLayout: React.FC<MainLayoutProps> = (props) => {
+  const { repoPath, isActive } = props;
+  const { currentAppTab, showInfoSidebar, setShowInfoSidebar, setRepoInfo, repoInfo } = useMainContext();
+  const { setNotification } = useAppContext();
 
   const {
     leftSize,
@@ -31,6 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
   const panelRightRef = useRef<any>(null);
   const isProgrammaticResize = useRef(false);
 
+  // Panel resizing synchronization
   useEffect(() => {
     if (!panelLeftRef.current) return;
 
@@ -51,16 +56,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ repoPath, isActive }) => {
     }, 0);
   }, [rightSize, showInfoSidebar]);
 
+  // Fetch repo data on load
+  //TODO: WHEN SIWTCHING TABS THIS GET RE-RENDERED
+  const effectRan = useRef(false);
   useEffect(() => {
+    if (effectRan.current || repoInfo) return;
+
     if (!/^Welcome Page:\d+$/.test(repoPath)) {
-      getRepoInfo(repoPath);
+      invoke<RepoInfo>("get_repo_info", { repoPath }).then((data) => setRepoInfo(data)).catch((e) => { if (e) { setNotification("Error: " + e) } });
     }
+
+    effectRan.current = true;
   }, [])
 
   const panelMaxSize = 40;
 
   return (
-    <div className={`${styles.appMain} ${isActive ? '' : styles.inactive}`}>
+    <div className={`${styles.appMain} ${isActive ? '' : 'inactive'}`}>
       <PanelGroup direction="horizontal">
         <Panel
           ref={panelLeftRef}

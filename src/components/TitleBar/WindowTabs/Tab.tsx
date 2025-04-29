@@ -36,11 +36,11 @@ const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
       <button
         className='actionButton'
         title='Close tab'
-        onClick={handleCloseClick}
+        onClick={onClose}
       >
         <XIcon className={`${styles.closeIcon}`} />
       </button>
-    </div>
+    </div >
   );
 };
 
