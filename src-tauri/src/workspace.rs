@@ -21,13 +21,6 @@ pub struct Workspace {
     pub active_tab: String,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct WorkspaceDTO {
-    pub tabs: Vec<(String, Tab)>,
-    pub active_tab: String,
-}
-
 impl Workspace {
     pub fn new() -> Self {
         Self {
@@ -35,16 +28,35 @@ impl Workspace {
             active_tab: String::new(),
         }
     }
+
+    pub fn to_dto(&self) -> WorkspaceDTO {
+        WorkspaceDTO {
+            tabs: self.tabs.clone().into_iter().collect(),
+            active_tab: self.active_tab.clone(),
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceDTO {
+    pub tabs: Vec<(String, Tab)>,
+    pub active_tab: String,
+}
+
+impl WorkspaceDTO {
+    pub fn into_workspace(self) -> Workspace {
+        Workspace {
+            tabs: self.tabs.into_iter().collect(),
+            active_tab: self.active_tab,
+        }
+    }
 }
 
 #[command]
 pub fn save_workspace(workspace_dto: WorkspaceDTO) -> Result<(), String> {
     let mut workspace = WORKSPACE.lock().map_err(|e| e.to_string())?;
-
-    *workspace = Workspace {
-        tabs: workspace_dto.tabs.into_iter().collect(),
-        active_tab: workspace_dto.active_tab.clone(),
-    };
+    *workspace = workspace_dto.into_workspace();
 
     let json_data = serde_json::to_string_pretty(&*workspace).map_err(|e| e.to_string())?;
     fs::write(WORKSPACE_PATH, json_data).map_err(|e| format!("Failed to save: {}", e))?;
@@ -54,11 +66,7 @@ pub fn save_workspace(workspace_dto: WorkspaceDTO) -> Result<(), String> {
 
 #[command]
 pub fn get_workspace() -> WorkspaceDTO {
-    let workspace = workspace();
-    WorkspaceDTO {
-        tabs: workspace.tabs.clone().into_iter().collect(),
-        active_tab: workspace.active_tab.clone(),
-    }
+    workspace().to_dto()
 }
 
 pub fn workspace() -> MutexGuard<'static, Workspace> {
@@ -77,30 +85,33 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
 }
 
 //TODO: FOR RELEASE Use Tauri's App Data Directory
-pub fn restore_workspace() -> Workspace {
+pub fn restore_workspace() -> String {
     let path = Path::new(WORKSPACE_PATH);
 
     // If the workspace file is empty, craete a new empty one, if not, load it
     let mut workspace = workspace();
     if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
-        let json_data = serde_json::to_string_pretty(&*workspace)
+        let workspace_json: String = serde_json::to_string_pretty(&*workspace)
             .map_err(|e| e.to_string())
             .expect("Failed to serialize workspace");
 
         let mut file = File::create(WORKSPACE_PATH).expect("Failed to create workspace.json");
-        file.write_all(json_data.as_bytes())
+        file.write_all(workspace_json.as_bytes())
             .expect("Failed to write default JSON content");
 
         *workspace = Workspace::new();
     } else {
         let mut file = File::open(path).expect("Error while reading workspace file");
 
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)
+        let mut workspace_json: String = String::new();
+        file.read_to_string(&mut workspace_json)
             .expect("Error reading workspace file contents");
 
-        *workspace = serde_json::from_str(&contents).expect("Failed to load workspace info");
+        *workspace = serde_json::from_str(&workspace_json).expect("Failed to load workspace info");
     }
 
-    workspace.clone()
+    serde_json::to_string(&workspace.to_dto()).unwrap_or_else(|e| {
+        eprintln!("Error during setup dto serialization - {}", e);
+        String::from("{}")
+    })
 }

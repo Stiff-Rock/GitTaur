@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { createContext, useState, useContext, useRef, useLayoutEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 
@@ -33,19 +33,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cloneRepoModalActive, setCloneRepoModalActive] = useState(false);
   const [notification, setNotification] = useState("");
 
-  const setActiveTab = (tabKey: string) => {
-    setIsInWelcomePage(isWelcomePage(tabKey));
-    setWorkspace(prev => {
-      if (!prev) return prev;
-      return { ...prev, activeTab: tabKey };
-    });
-  };
-
-  const pattern = /^Welcome Page:\d+$/;
-  const isWelcomePage = (text: string): boolean => {
-    return pattern.test(text)
-  }
-
   const DtoToWorkspace = (dto: WorkspaceDTO): Workspace => {
     return {
       tabs: new Map<string, Tab>(dto.tabs),
@@ -60,42 +47,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }
 
+  // The backend information of the workspace gets loaded on startup
+  const loadWorkspace = (workspace_dto: WorkspaceDTO) => {
+    const workspace = DtoToWorkspace(workspace_dto);
+    if (workspace.tabs.size === 0) {
+      const pageLabel = "Welcome Page";
+      const defaultPage: string = pageLabel + ":" + Date.now();
+      const newTab: Tab = { label: pageLabel, repoPath: defaultPage };
+
+      const newTabs = new Map<string, Tab>(workspace.tabs);
+      newTabs.set(defaultPage, newTab);
+
+      const newWorkspace: Workspace = {
+        tabs: newTabs,
+        activeTab: defaultPage
+      };
+
+      setWorkspace(newWorkspace);
+    } else {
+      setWorkspace(workspace);
+    }
+  }
+
+  const fetchWorkspace = () => {
+    try {
+      let workspace_dto = window.__WORKSPACE_DTO__;
+
+      if (!workspace_dto) {
+        invoke("get_workspace")
+          .then((dto) => {
+            if (dto) loadWorkspace(dto as WorkspaceDTO)
+            else throw "Unable to load workspace"
+          });
+      } else {
+        loadWorkspace(workspace_dto)
+      }
+    } catch (error) {
+      console.error('Failed to load workspace:', error);
+    }
+  }
+
   //TODO: DELETE FOR RELEASE, PREVENTS DOUBLE LOADING
   const isLoaded = useRef(false);
-  // The backend information of the workspace gets loaded on startup
-  useEffect(() => {
-    //TODO: MAYBE THIS HAS TO BE ASYNC OR USE useLayoutEffect
-    const fetchWorkspace = async () => {
-      try {
-        const workspace = DtoToWorkspace(await invoke('get_workspace'));
+  if (!isLoaded.current) {
+    fetchWorkspace();
+    isLoaded.current = true;
+  }
 
-        if (workspace.tabs.size === 0) {
-          const pageLabel = "Welcome Page";
-          const defaultPage: string = pageLabel + ":" + Date.now();
-          const newTab: Tab = { label: pageLabel, repoPath: defaultPage };
+  const setActiveTab = (tabKey: string) => {
+    setIsInWelcomePage(isWelcomePage(tabKey));
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      return { ...prev, activeTab: tabKey };
+    });
+  };
 
-          const newTabs = new Map<string, Tab>(workspace.tabs);
-          newTabs.set(defaultPage, newTab);
-
-          const newWorkspace: Workspace = {
-            tabs: newTabs,
-            activeTab: defaultPage
-          };
-
-          setWorkspace(newWorkspace);
-        } else {
-          setWorkspace(workspace);
-        }
-      } catch (error) {
-        console.error('Failed to load workspace:', error);
-      }
-    };
-
-    if (!isLoaded.current) {
-      fetchWorkspace();
-      isLoaded.current = true;
-    }
-  }, []);
+  const isWelcomePage = (text: string): boolean => {
+    return /^Welcome Page:\d+$/.test(text)
+  }
 
   useLayoutEffect(() => {
     if (!workspace) return;

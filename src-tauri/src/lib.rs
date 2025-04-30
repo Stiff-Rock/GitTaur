@@ -47,7 +47,6 @@ fn open_terminal(path: String) -> Result<(), String> {
     Ok(())
 }
 
-//TODO: Make WORKSPACE module functions for save workspace and get workspace
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -64,10 +63,13 @@ pub fn run() {
             open_terminal,
         ])
         .setup(|app| {
-            let workspace: workspace::Workspace = workspace::restore_workspace();
             let window = app.get_webview_window("main").unwrap();
-            //BUG:: HEREEEE
-            window.eval(&format!("window.__WORKSPACE__ = {}", workspace));
+            let workspace: String = workspace::restore_workspace();
+            window.eval(&format!(
+                "window.__WORKSPACE_DTO__ = JSON.parse('{}')",
+                workspace.replace("'", "\\'")
+            ))?;
+
             Ok(())
         })
         .run(tauri::generate_context!())
