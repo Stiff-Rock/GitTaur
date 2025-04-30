@@ -16,8 +16,8 @@ const WindowTabs: React.FC = () => {
         <CodespacesIcon className={`${styles.workspaceIcon}`} />
       </button>
 
-      {workspace && workspace.tabs && Object.entries(workspace.tabs).length > 0 ? (
-        Object.entries(workspace.tabs).map(([key, tab]) => (
+      {workspace && workspace.tabs.size > 0 ? (
+        [...workspace.tabs.entries()].map(([key, tab]) => (
           <Tab
             key={key}
             label={tab.label}
@@ -27,9 +27,8 @@ const WindowTabs: React.FC = () => {
           />
         ))
       ) : (
-        <span>ERROR</span>
-      )
-      }
+        <span> -- ERROR -- </span>
+      )}
 
       <button
         className='actionButton'

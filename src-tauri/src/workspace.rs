@@ -5,7 +5,7 @@ use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
     path::Path,
-    sync::{LazyLock, Mutex},
+    sync::{LazyLock, Mutex, MutexGuard},
 };
 use tauri::command;
 
@@ -16,7 +16,15 @@ const WORKSPACE_PATH: &str = "./workspace.json";
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Workspace {
+    #[serde(with = "indexmap::map::serde_seq")]
     pub tabs: IndexMap<String, Tab>,
+    pub active_tab: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceDTO {
+    pub tabs: Vec<(String, Tab)>,
     pub active_tab: String,
 }
 
@@ -30,28 +38,38 @@ impl Workspace {
 }
 
 #[command]
-pub fn save_workspace(workspace: Workspace) -> Result<(), String> {
-    let mut workspace_lock = WORKSPACE.lock().map_err(|e| e.to_string())?;
-    *workspace_lock = workspace.clone();
+pub fn save_workspace(workspace_dto: WorkspaceDTO) -> Result<(), String> {
+    let mut workspace = WORKSPACE.lock().map_err(|e| e.to_string())?;
 
-    let json_data = serde_json::to_string_pretty(&workspace).map_err(|e| e.to_string())?;
+    *workspace = Workspace {
+        tabs: workspace_dto.tabs.into_iter().collect(),
+        active_tab: workspace_dto.active_tab.clone(),
+    };
+
+    let json_data = serde_json::to_string_pretty(&*workspace).map_err(|e| e.to_string())?;
     fs::write(WORKSPACE_PATH, json_data).map_err(|e| format!("Failed to save: {}", e))?;
 
     Ok(())
 }
 
-//TODO: MAYBE THIS DOESNT MAKE SENSE ANY MORE
 #[command]
-pub fn get_workspace() -> Workspace {
-    let workspace_lock = WORKSPACE.lock().unwrap();
-    workspace_lock.clone()
+pub fn get_workspace() -> WorkspaceDTO {
+    let workspace = workspace();
+    WorkspaceDTO {
+        tabs: workspace.tabs.clone().into_iter().collect(),
+        active_tab: workspace.active_tab.clone(),
+    }
+}
+
+pub fn workspace() -> MutexGuard<'static, Workspace> {
+    WORKSPACE.lock().unwrap()
 }
 
 //TODO: THIS DOES NOT ACTUALLY HAVE TO OPEN THE REPO IN GIT2, IT HAS TO REGISTER AND CACHE IT AS A
 //RECENTLY OPENED ONE
 #[command]
 pub fn open_repo(repo_path: String) -> Result<String, String> {
-    if get_workspace().tabs.contains_key(&repo_path) {
+    if workspace().tabs.contains_key(&repo_path) {
         return Ok("".to_string());
     }
 

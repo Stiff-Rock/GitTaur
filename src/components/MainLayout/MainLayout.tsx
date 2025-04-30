@@ -63,7 +63,9 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
     if (effectRan.current || repoInfo) return;
 
     if (!/^Welcome Page:\d+$/.test(repoPath)) {
-      invoke<RepoInfo>("get_repo_info", { repoPath }).then((data) => setRepoInfo(data)).catch((e) => { if (e) { setNotification("Error: " + e) } });
+      invoke<RepoInfo>("get_repo_info", { repoPath })
+        .then((data) => setRepoInfo(data))
+        .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
     }
 
     effectRan.current = true;

@@ -1,4 +1,9 @@
 interface Workspace {
-  tabs: Record<string, Tab>;
+  tabs: Map<string, Tab>;
+  activeTab: string;
+}
+
+interface WorkspaceDTO {
+  tabs: [string, Tab][];
   activeTab: string;
 }

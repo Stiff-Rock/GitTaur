@@ -41,7 +41,7 @@ function App() {
 
       {workspace &&
         <PanelSyncProvider>
-          {workspace.tabs && Object.entries(workspace.tabs).map(([key, tab]) => (
+          {workspace.tabs && [...workspace.tabs].map(([key, tab]) => (
             !isWelcomePage(tab.repoPath) && (
               <MainProvider key={key}>
                 <MainLayout
