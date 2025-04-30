@@ -57,10 +57,10 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
   }, [rightSize, showInfoSidebar]);
 
   // Fetch repo data on load
-  //TODO: WHEN SIWTCHING TABS THIS GET RE-RENDERED
-  const effectRan = useRef(false);
+  //TODO: DELETE REF ON RELEASE
+  const isLoaded = useRef(false);
   useEffect(() => {
-    if (effectRan.current || repoInfo) return;
+    if (isLoaded.current || repoInfo) return;
 
     if (!/^Welcome Page:\d+$/.test(repoPath)) {
       invoke<RepoInfo>("get_repo_info", { repoPath })
@@ -68,7 +68,7 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
         .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
     }
 
-    effectRan.current = true;
+    isLoaded.current = true;
   }, [])
 
   const panelMaxSize = 40;

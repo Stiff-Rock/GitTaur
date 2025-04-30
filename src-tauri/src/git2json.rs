@@ -223,7 +223,6 @@ fn build_commit_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String
         let target_str = commit_id.to_string();
 
         if let Some(name) = reference.name() {
-            println!("{}", name);
             let split = name.split("/");
             let ref_name = split.last().unwrap_or("Unknown").to_string();
             commit_to_refs

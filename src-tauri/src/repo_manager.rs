@@ -145,7 +145,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
 
     // Get current branch
     let current_branch = match repo.head() {
-        Ok(head) => head.name().unwrap_or("Unknown").to_string(),
+        Ok(head) => head.shorthand().unwrap_or("Unknown").to_string(),
         Err(_) => "Unknown".to_string(),
     };
 
@@ -172,7 +172,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         .collect();
 
     let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
-    println!("\n--REMOTES{:#?}--\n", remotes);
 
     //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS
     let repo = RepoInfo {
@@ -210,8 +209,6 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
                 );
                 "(invalid)"
             });
-
-        println!("{}", branch_full_name);
 
         let info: Vec<&str> = branch_full_name.split('/').collect();
 

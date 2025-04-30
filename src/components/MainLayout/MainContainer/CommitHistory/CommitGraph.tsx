@@ -13,22 +13,24 @@ import { GraphCommitOptions } from "../../../Gitgraph/Commit.tsx";
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;
 
-const font = "normal 12pt CaskaydiaMonoNerdFont";
+const scale = 0.8;
 
+const font = `normal ${12 * scale}pt CaskaydiaMonoNerdFont`;
 const customTemplate: Template = templateExtend(TemplateName.Metro, {
+  //TODO: GENERATE COLORSHCEME, LET USER CUSTOMIZE
   colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
   branch: {
-    lineWidth: 4,
-    spacing: 35,
+    lineWidth: 4 * scale,
+    spacing: 35 * scale,
     mergeStyle: MergeStyle.Straight,
     label: {
       font: font,
     }
   },
   commit: {
-    spacing: 40,
+    spacing: 40 * scale,
     dot: {
-      size: 8,
+      size: 8 * scale,
     },
     message: {
       displayAuthor: false,
@@ -66,6 +68,7 @@ const CommitGraph: React.FC = () => {
   //TODO: MAKE GRAPH CUSTOMIZATION
   //TODO: MAKE GRAPHS STRAIGHT
   //TODO: FIX VERTICAL AND HORIZONTAL SCROLLBARS
+  //TODO: RECTS HAVE TO FIT ENTERILY AND SELECTED COMMTIS ARE BUGGER SOMEHOW
   return (
     <Scrollbars
       ref={scrollbarsRef}

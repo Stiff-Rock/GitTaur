@@ -11,7 +11,6 @@ const InfoAccordions: React.FC = () => {
 
   const [sortedRemotes, setSortedRemotes] = useState<Map<string, string[]>>();
 
-  //BUG: REMOTES ACCORDION BUGGED AS FUCK
   useEffect(() => {
     if (!repoInfo) return;
 
@@ -22,13 +21,6 @@ const InfoAccordions: React.FC = () => {
       );
       setSortedRemotes(sortedMap);
     }
-
-    /*console.log("REPO:", repoInfo)
-    console.log("REMOTES:", repoInfo.remotes)
-    Object.entries(repoInfo.remotes).forEach(value => {
-      console.log("BRANCH:", value)
-    });*/
-
   }, [repoInfo])
 
   return (
@@ -41,9 +33,8 @@ const InfoAccordions: React.FC = () => {
                 <div>
                   <GitBranchIcon />
                   {item}
-                  {/*BUG: SHOWING ACTIVE INDICATOR ON ALL*/}
                   <ActiveIndicator
-                    style={repoInfo.current_branch !== item ? {} : { display: 'none' }}
+                    style={repoInfo.current_branch === item ? {} : { display: 'none' }}
                     className={`${styles.activeIndicator}`}
                   />
                 </div>

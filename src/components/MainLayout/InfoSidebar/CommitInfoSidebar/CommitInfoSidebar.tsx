@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styles from './CommitInfoSidebar.module.css';
 import { useMainContext } from '../../../../context/MainContext';
 import CopyShaButton from './CopyShaButton';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
-import md5 from "md5";
+import UserAvatar from './UserAvatar';
 
 const CommitInfoSidebar: React.FC = () => {
-  const { commitInfo, selectedCommit, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
-
-  const [pfpUrl, setPfpUrl] = useState<string>("");
+  const { commitInfo, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
 
   const goToParent = (sha: string) => {
     if (!repoInfo) return;
@@ -24,20 +22,6 @@ const CommitInfoSidebar: React.FC = () => {
     setCommitInfo(commit);
     scrollToCommit();
   }
-
-  //TODO: MOVE TO BACKEND TO AVOID WARNINGS
-  const getGravatarUrl = (email: string, size: number, defaultImage: string) => {
-    const trimmedEmail = email.trim().toLowerCase();
-    const hash = md5(trimmedEmail);
-    return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=${defaultImage}`;
-  };
-
-  useEffect(() => {
-    if (!commitInfo) return;
-    setPfpUrl(getGravatarUrl(commitInfo.author.email, 50, "retro"));
-  }, [selectedCommit])
-
-  //BUG: SCROLLBAR BUG, CANT SCROLL ALL THE WAY DOWN
 
   return (
     <div className={`${styles.infoSidebar}`}>
@@ -71,11 +55,11 @@ const CommitInfoSidebar: React.FC = () => {
 
             {/* AUTHOR INFORMATION */}
             <div className={styles.authorContainer}>
-              {pfpUrl ? (
-                <img src={pfpUrl} alt="Profile Picture" />
-              ) : (
-                <img src='../../../../../src/assets/pfp.svg' alt="Default Profile Picture" />
-              )}
+              <UserAvatar
+                email={commitInfo.author.email}
+                name={commitInfo.author.name}
+                size={50}
+              />
               <div className={styles.authorInfo}>
                 <span>{commitInfo.author.name}</span>
                 <span>{commitInfo.author.email && commitInfo.author.email.includes(".github.com") ? "From GitHub.com" : commitInfo.author.email}</span>
