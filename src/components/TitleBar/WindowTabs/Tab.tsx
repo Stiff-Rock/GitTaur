@@ -10,13 +10,18 @@ interface TabProps {
 }
 
 const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
-  //TODO: CLOSING TAB DOES NOT SELECT THE NEXT ONE
   const handleCloseClick = (event: React.MouseEvent) => {
     if (event.button === 1) {
       event.stopPropagation();
       event.preventDefault();
       onClose();
     }
+  };
+
+  const handleXClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    onClose();
   };
 
   return (
@@ -37,7 +42,7 @@ const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
       <button
         className='actionButton'
         title='Close tab'
-        onClick={onClose}
+        onClick={handleXClick}
       >
         <XIcon className={`${styles.closeIcon}`} />
       </button>

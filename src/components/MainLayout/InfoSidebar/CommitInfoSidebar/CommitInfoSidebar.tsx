@@ -135,8 +135,6 @@ const CommitInfoSidebar: React.FC = () => {
               {commitInfo.changes && commitInfo.changes.length > 0 ? (
                 commitInfo.changes.map((changes, index) => {
                   const type = changes.changeType;
-                  console.log("TYPE:", type)
-
                   return (
                     <div key={index} className={styles.changeItem}>
                       <span className={styles.changeType}>

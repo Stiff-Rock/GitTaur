@@ -33,6 +33,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cloneRepoModalActive, setCloneRepoModalActive] = useState(false);
   const [notification, setNotification] = useState("");
 
+  const setActiveTab = (tabKey: string) => {
+    setIsInWelcomePage(isWelcomePage(tabKey));
+    setWorkspace(prev => {
+      if (!prev) return prev;
+      return { ...prev, activeTab: tabKey };
+    });
+  };
+
   const pattern = /^Welcome Page:\d+$/;
   const isWelcomePage = (text: string): boolean => {
     return pattern.test(text)
@@ -66,11 +74,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const defaultPage: string = pageLabel + ":" + Date.now();
           const newTab: Tab = { label: pageLabel, repoPath: defaultPage };
 
-          const newTabs = new Map<string, Tab>();
+          const newTabs = new Map<string, Tab>(workspace.tabs);
           newTabs.set(defaultPage, newTab);
 
           const newWorkspace: Workspace = {
-            ...workspace,
             tabs: newTabs,
             activeTab: defaultPage
           };
@@ -93,20 +100,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useLayoutEffect(() => {
     if (!workspace) return;
 
-    console.log("WORK", workspace)
+    if (workspace.tabs.size <= 0) {
+      openWelcomePage();
+    } else if (workspace.activeTab == "" || !workspace.tabs.has(workspace.activeTab)) {
+      console.warn(`Found not valid active tab ${workspace.activeTab}. Attempting fallback...`)
+      const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
+      setActiveTab(fallbackTab);
+    }
+
+    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
+
     const workspaceDto = WorkspaceToDto(workspace);
 
     invoke<Workspace>("save_workspace", { workspaceDto })
       .catch(error => console.error('Error while saving workspace:', error));
-
-    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
-
-    if (workspace.tabs.size === 0) {
-      openWelcomePage();
-    } else if (workspace.activeTab = "") {
-      const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
-      setActiveTab(fallbackTab);
-    }
   }, [workspace]);
 
   //TODO: SI ABRE UN REPO QUE ESTA EN EL HISTORIAL, ABRELO DE AHI, DEBERIA ESTAR CACHEADO
@@ -147,14 +154,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const closeWorkspaceTab = (tabKey: string) => {
     if (!workspace) return;
 
-    const tabs = workspace.tabs;
-    console.log("Tabs:", tabs);
+    const tabs = new Map<string, Tab>(workspace.tabs);
 
     // If the only tab is a welcome page, don't close it
     if (tabs.size === 1 && isWelcomePage(tabKey)) return;
 
     // Gets the position that tab was in before removing it
-    const removedTabIndex = [...workspace.tabs.keys()].indexOf(tabKey);
+    const removedTabIndex = [...tabs.keys()].indexOf(tabKey);
     if (removedTabIndex === -1) {
       const msg = "Error: Could not find tab on workspace (returned -1): " + tabKey
       console.error(msg)
@@ -175,13 +181,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           activeTab = [...tabs.keys()][removedTabIndex - 1];
         }
       } else {
+        console.warn("No active tab could be assined while closing " + tabKey + ":", tabs)
         activeTab = "";
       }
     }
-    console.log("newActiveTab:", activeTab);
 
     const newWorkspace: Workspace = { tabs, activeTab }
-    console.log("NEW:", newWorkspace)
 
     setWorkspace(newWorkspace);
   };
@@ -204,14 +209,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     tabs = new Map(entries);
 
     setWorkspace({ activeTab: newTabKey, tabs });
-  };
-
-  const setActiveTab = (tabId: string) => {
-    setIsInWelcomePage(isWelcomePage(tabId));
-    setWorkspace(prev => {
-      if (!prev) return prev;
-      return { ...prev, activeTab: tabId };
-    });
   };
 
   //BUG: WHEN OPENING THE SAME
