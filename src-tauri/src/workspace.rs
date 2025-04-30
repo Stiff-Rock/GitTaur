@@ -77,19 +77,21 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
 }
 
 //TODO: FOR RELEASE Use Tauri's App Data Directory
-pub fn restore_workspace() {
+pub fn restore_workspace() -> Workspace {
     let path = Path::new(WORKSPACE_PATH);
 
+    // If the workspace file is empty, craete a new empty one, if not, load it
+    let mut workspace = workspace();
     if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
-        let workspace_instance = WORKSPACE.lock().unwrap();
-
-        let json_data = serde_json::to_string_pretty(&*workspace_instance)
+        let json_data = serde_json::to_string_pretty(&*workspace)
             .map_err(|e| e.to_string())
             .expect("Failed to serialize workspace");
 
         let mut file = File::create(WORKSPACE_PATH).expect("Failed to create workspace.json");
         file.write_all(json_data.as_bytes())
             .expect("Failed to write default JSON content");
+
+        *workspace = Workspace::new();
     } else {
         let mut file = File::open(path).expect("Error while reading workspace file");
 
@@ -97,13 +99,8 @@ pub fn restore_workspace() {
         file.read_to_string(&mut contents)
             .expect("Error reading workspace file contents");
 
-        let mut workspace = match WORKSPACE.lock() {
-            Ok(guard) => guard,
-            Err(e) => {
-                println!("Could not restore previous workspace session - {}", e);
-                return;
-            }
-        };
         *workspace = serde_json::from_str(&contents).expect("Failed to load workspace info");
     }
+
+    workspace.clone()
 }

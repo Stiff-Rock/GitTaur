@@ -5,6 +5,7 @@ mod tab;
 mod workspace;
 use tab::Tab;
 use tauri::command;
+use tauri::Manager;
 
 #[command]
 fn open_terminal(path: String) -> Result<(), String> {
@@ -62,8 +63,11 @@ pub fn run() {
             repo_manager::get_repo_info,
             open_terminal,
         ])
-        .setup(|_| {
-            workspace::restore_workspace();
+        .setup(|app| {
+            let workspace: workspace::Workspace = workspace::restore_workspace();
+            let window = app.get_webview_window("main").unwrap();
+            //BUG:: HEREEEE
+            window.eval(&format!("window.__WORKSPACE__ = {}", workspace));
             Ok(())
         })
         .run(tauri::generate_context!())
