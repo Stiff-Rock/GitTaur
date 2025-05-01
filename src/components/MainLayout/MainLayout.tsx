@@ -92,7 +92,7 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
           <ActionsSidebar />
         </Panel>
 
-        <PanelResizeHandle className={styles.resizeHandle} />
+        {isActive && <PanelResizeHandle className={styles.resizeHandle} />}
 
         <Panel id="center-panel" order={2}>
           {currentAppTab === "commit-history" && <CommitGraph />}
@@ -102,7 +102,7 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
 
         {showInfoSidebar && (
           <>
-            <PanelResizeHandle className={styles.resizeHandle} />
+            {isActive && <PanelResizeHandle className={styles.resizeHandle} />}
             <Panel
               ref={panelRightRef}
               id="right-panel"

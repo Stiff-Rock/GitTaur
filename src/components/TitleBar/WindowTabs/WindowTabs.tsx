@@ -1,20 +1,19 @@
 import React from "react";
 import styles from "./WindowTabs.module.css";
-import { CodespacesIcon, PlusIcon } from "@primer/octicons-react";
+import barStyles from '../TitleBar.module.css';
 import { useAppContext } from '../../../context/AppContext';
 import Tab from "./Tab";
+import NewTabButton from "./NewTabButton";
+import WorkspaceButton from "../TitleBarOptions/WorkspaceButton";
+import SettingsButton from "../TitleBarOptions/SettingsButton";
 
 const WindowTabs: React.FC = () => {
-  const { workspace, setActiveTab, closeWorkspaceTab, openWelcomePage } = useAppContext();
+  const { workspace, setActiveTab, closeWorkspaceTab } = useAppContext();
 
   return (
-    <div className={`${styles.tabs}`}>
-      <button
-        className='actionButton'
-        title="Switch workspace"
-      >
-        <CodespacesIcon className={`${styles.workspaceIcon}`} />
-      </button>
+    <div className={`${barStyles.windowTabs} ${styles.tabs}`}>
+      <SettingsButton />
+      <WorkspaceButton />
 
       {workspace?.tabs && [...workspace.tabs.entries()].map(([key, tab]) => (
         <Tab
@@ -26,13 +25,7 @@ const WindowTabs: React.FC = () => {
         />
       ))}
 
-      <button
-        className='actionButton'
-        title="Open new tab"
-        onClick={openWelcomePage}
-      >
-        <PlusIcon className={`${styles.workspaceIcon}`} />
-      </button>
+      <NewTabButton />
     </div>
   );
 };

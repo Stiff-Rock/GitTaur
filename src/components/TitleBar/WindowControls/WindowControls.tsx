@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import {
   XIcon,
   DashIcon,
@@ -13,7 +13,7 @@ const WindowControls: React.FC = () => {
   const [isMaximized, setIsMaximized] = useState(false);
 
   // Listens to window maximized state changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     const checkMaximized = async () => {
       const maximized = await appWindow.isMaximized();
       setIsMaximized(maximized);
@@ -31,6 +31,24 @@ const WindowControls: React.FC = () => {
     };
   }, [appWindow]);
 
+  const handleMinimize = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    appWindow.minimize()
+  }
+
+  const handleToggleMaximize = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    appWindow.toggleMaximize()
+  }
+
+  const handleClose = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    appWindow.close()
+  }
+
   return (
     <div className={styles.windowControls}>
 
@@ -38,13 +56,13 @@ const WindowControls: React.FC = () => {
       <div className={styles.draggable} />
 
       <div className={styles.windowActions}>
-        <button className={`${styles.controlBtn} ${styles.minimize}`} onClick={() => appWindow.minimize()}>
+        <button className={`${styles.controlBtn} ${styles.minimize}`} onClick={handleMinimize}>
           <DashIcon />
         </button>
-        <button className={styles.controlBtn} onClick={() => appWindow.toggleMaximize()}>
+        <button className={styles.controlBtn} onClick={handleToggleMaximize}>
           {isMaximized ? <ScreenNormalIcon /> : <ScreenFullIcon />}
         </button>
-        <button className={`${styles.controlBtn} ${styles.close}`} onClick={() => appWindow.close()}>
+        <button className={`${styles.controlBtn} ${styles.close}`} onClick={handleClose}>
           <XIcon />
         </button>
       </div>

@@ -9,5 +9,27 @@
 .windowTabs {
   min-width: 0;
   display: flex;
+  flex: 1;
+  height: 38px;
+  width: 100%;
+}
+
+.titleBarIcon {
+  border-radius: 5px;
+  padding: 5px;
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
   -webkit-app-region: no-drag;
+}
+
+.titleBarIcon svg {
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+}
+
+.titleBarIcon:hover {
+  background-color: var(--lighter-bg);
 }

@@ -22,6 +22,7 @@
   gap: 20px;
   transition: all 0.1s ease;
   overflow: hidden;
+  -webkit-app-region: no-drag;
 }
 
 .tab span {
@@ -49,22 +50,6 @@
   width: var(--icon-secondary-size);
   height: var(--icon-secondary-size);
   border-radius: 5px;
-}
-
-.workspaceIcon {
-  width: var(--icon-primary-size);
-  height: var(--icon-primary-size);
-  border-radius: 5px;
-  padding: 5px;
-  margin-right: 10px;
-  margin-left: 10px;
-  margin-bottom: 5px;
-  cursor: pointer;
-  transition: background-color 0.1s ease;
-}
-
-.workspaceIcon:hover {
-  background-color: var(--lighter-bg);
 }
 
 .closeIcon {
