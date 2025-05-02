@@ -8,7 +8,14 @@ use tauri::command;
 use tauri::Manager;
 
 #[command]
-fn open_terminal(path: String) -> Result<(), String> {
+fn open_terminal(mut path: String) -> Result<(), String> {
+    if path.is_empty() {
+        path = dirs::home_dir()
+            .ok_or_else(|| "Could not determine home directory".to_string())?
+            .to_string_lossy()
+            .to_string();
+    }
+
     #[cfg(target_os = "windows")]
     {
         if let Err(e) = std::process::Command::new("cmd.exe")

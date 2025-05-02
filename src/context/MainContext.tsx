@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef, useLayoutEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
@@ -40,7 +40,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   let lastInfoSidebarState = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (currentAppTab === "local-changes" || currentAppTab === "todo-panel") {
       setShowInfoSidebar(true);
     } else {

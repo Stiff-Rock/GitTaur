@@ -6,19 +6,18 @@ interface AppContextType {
   // State 
   workspace: Workspace | null;
   isInWelcomePage: boolean
-  cloneRepoModalActive: boolean;
+  activeModal: AppModals;
   notification: string;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
-  setCloneRepoModalActive: React.Dispatch<React.SetStateAction<boolean>>;
+  setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
 
   // Global Functions
   isWelcomePage: (text: string) => boolean;
-  openNewRepo: () => void;
-  cloneRepo: (path: string, repoUrl: string) => Promise<boolean>;
+  openNewRepo: (path: string) => void;
   setActiveTab: (tabId: string) => void;
   closeWorkspaceTab: (tabKey: string) => void;
   openWelcomePage: () => void;
@@ -30,7 +29,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const { openDirectoryDialog } = useDialog();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
-  const [cloneRepoModalActive, setCloneRepoModalActive] = useState(false);
+  const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
 
   const DtoToWorkspace = (dto: WorkspaceDTO): Workspace => {
@@ -70,20 +69,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   const fetchWorkspace = () => {
-    try {
-      let workspace_dto = window.__WORKSPACE_DTO__;
+    let workspace_dto = window.__WORKSPACE_DTO__;
 
-      if (!workspace_dto) {
-        invoke("get_workspace")
-          .then((dto) => {
-            if (dto) loadWorkspace(dto as WorkspaceDTO)
-            else throw "Unable to load workspace"
-          });
-      } else {
-        loadWorkspace(workspace_dto)
-      }
-    } catch (error) {
-      console.error('Failed to load workspace:', error);
+    if (!workspace_dto) {
+      invoke("get_workspace")
+        .then((dto) => {
+          if (dto) loadWorkspace(dto as WorkspaceDTO)
+          else throw "Unable to load workspace"
+        }).catch((e) => {
+          console.error('Failed to load workspace:', e);
+        });
+    } else {
+      loadWorkspace(workspace_dto)
     }
   }
 
@@ -126,10 +123,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [workspace]);
 
   //TODO: SI ABRE UN REPO QUE ESTA EN EL HISTORIAL, ABRELO DE AHI, DEBERIA ESTAR CACHEADO
-  const openNewRepo = async () => {
+  const openNewRepo = async (path: string = "") => {
     if (!workspace) return;
 
-    const repoPath = await openDirectoryDialog();
+    const repoPath = path || await openDirectoryDialog();
     if (!repoPath) return;
 
     // If already present in worksapce, just show that tab (early return)
@@ -138,27 +135,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    //TODO: ESTO POR AHORA NO HACE NADA, MIRAR WORKSPACE EN RUST
-    const msg = await invoke<string>("open_repo", { repoPath });
-    setNotification(msg);
+    try {
+      const result = await invoke<string>("open_repo", { repoPath });
+      setNotification(result);
+    } catch (e) {
+      const error = e as string;
+      setNotification(error);
+      if (!error.includes("not a repository")) {
+        console.error(e);
+      }
+      return;
+    }
 
     const split = repoPath.replace(/\\/g, '/').split("/");
     const label = split[split.length - 1];
     const newTab: Tab = { label, repoPath }
     openWorkspaceTab(repoPath, newTab);
   }
-
-  const cloneRepo = async (path: string, repoUrl: string): Promise<boolean> => {
-    try {
-      const msg: string = await invoke("clone_repo", { path, repoUrl });
-      if (msg)
-        console.error(msg);
-      setNotification(msg);
-    } catch (error) {
-      console.error('Error clonando repositorio:', error)
-    }
-    return true;
-  };
 
   const closeWorkspaceTab = (tabKey: string) => {
     if (!workspace) return;
@@ -220,7 +213,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setWorkspace({ activeTab: newTabKey, tabs });
   };
 
-  //BUG: WHEN OPENING THE SAME
   const openWelcomePage = () => {
     if (!workspace) return;
 
@@ -241,12 +233,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // States and Setters
       workspace, setWorkspace,
       isInWelcomePage, setIsInWelcomePage,
-      cloneRepoModalActive, setCloneRepoModalActive,
+      activeModal, setActiveModal,
       notification, setNotification,
       // Global Functions
       isWelcomePage,
       openNewRepo,
-      cloneRepo,
       closeWorkspaceTab,
       setActiveTab,
       openWelcomePage,

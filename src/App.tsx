@@ -11,16 +11,17 @@ import { ToastContainer, toast, Zoom } from "react-toastify";
 //BUG: Failed to open repository while restoring session: failed to resolve path 'C:\Users\Yago\Desktop\ChatServer': El sistema no puede encontrar el archivo especificado.; class=Os (2); code=NotFound (-3)
 
 function App() {
-  const { workspace, notification, isWelcomePage } = useAppContext();
+  const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
 
   useEffect(() => {
-    if (notification) {
-      if (notification.toLowerCase().includes("error"))
-        toast.error(notification);
-      else
-        toast.info(notification);
-    }
-  }, [notification])
+    if (!notification) return;
+
+    if (notification.toLowerCase().includes("error")) toast.error(notification);
+    else toast.info(notification);
+
+    setNotification("");
+
+  }, [notification]);
 
   return (
     <main className="container">

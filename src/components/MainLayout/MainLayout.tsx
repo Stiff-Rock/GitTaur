@@ -92,7 +92,7 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
           <ActionsSidebar />
         </Panel>
 
-        {isActive && <PanelResizeHandle className={styles.resizeHandle} />}
+        <PanelResizeHandle className={styles.resizeHandle} disabled={!isActive} />
 
         <Panel id="center-panel" order={2}>
           {currentAppTab === "commit-history" && <CommitGraph />}
@@ -102,7 +102,7 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
 
         {showInfoSidebar && (
           <>
-            {isActive && <PanelResizeHandle className={styles.resizeHandle} />}
+            <PanelResizeHandle className={styles.resizeHandle} disabled={!isActive} />
             <Panel
               ref={panelRightRef}
               id="right-panel"
@@ -117,15 +117,20 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
                 }
               }}
             >
+
               <button
                 onClick={() => setShowInfoSidebar(false)}
-                className='actionButton'
+                className={`actionButton ${currentAppTab !== "commit-history" ? 'inactive' : ''}`}
               >
                 <DashIcon className={styles.closeButton} />
               </button>
-              {currentAppTab === "commit-history" && <CommitInfoSidebar />}
-              {currentAppTab === "local-changes" && <LocalChangesInfoSidebar />}
-              {currentAppTab === "todo-panel" && <TodoPanelInfoSidebar />}
+
+              <CommitInfoSidebar />
+
+              <LocalChangesInfoSidebar />
+
+              <TodoPanelInfoSidebar />
+
             </Panel>
           </>
         )}

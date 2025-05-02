@@ -1,14 +1,14 @@
 import React from 'react';
-import { useAppContext } from "../../../context/AppContext";
+import { useAppContext } from "../../../../context/AppContext";
 import { RepoCloneIcon } from "@primer/octicons-react";
-import styles from '../ActionBar.module.css';
+import styles from '../../ActionBar.module.css';
 
 const CloneRepositoryButton: React.FC = () => {
-  const { setCloneRepoModalActive } = useAppContext();
+  const { setActiveModal } = useAppContext();
 
   return (
     <button
-      onClick={() => setCloneRepoModalActive(true)}
+      onClick={() => setActiveModal("cloneRepo")}
       className={`actionButton ${styles.actionButton}`}
       title='Clone repository'
     >

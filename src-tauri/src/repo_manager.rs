@@ -46,33 +46,38 @@ pub fn release_repo(repo_path: &String) {
     }
 }
 
+pub fn is_repo(repo_path: &String) -> Result<bool, String> {
+    if is_repo_busy(repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let result = match Repository::open(repo_path) {
+        Ok(_) => Ok(true),
+        Err(_) => Ok(false),
+    };
+
+    release_repo(repo_path);
+
+    result
+}
+
 #[command]
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
     if is_repo_busy(&repo_path) {
         return Err(BUSY_MSG.to_string());
     }
 
-    let result = Repository::init(&repo_path)
-        .map(|_| format!("Successfully created repository at {}", repo_path))
-        .map_err(|e| format!("Error creating repository at '{}' - {}", repo_path, e));
+    let create_result = if is_repo(&repo_path)? {
+        Err("This directory already contains a repository".to_string())
+    } else {
+        Repository::init(&repo_path)
+            .map(|_| format!("Successfully created repository at {}", repo_path))
+            .map_err(|e| format!("Error creating repository at '{}' - {}", repo_path, e))
+    };
 
     release_repo(&repo_path);
 
-    result
-}
-
-//NOTE: UNUSED FN
-pub fn _open_repo(repo_path: String) -> Result<Repository, String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
-
-    let result =
-        Repository::open(&repo_path).map_err(|e| format!("Error while opening repository: {}", e));
-
-    release_repo(&repo_path);
-
-    result
+    create_result
 }
 
 #[command]
@@ -126,69 +131,78 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         return Err(BUSY_MSG.to_string());
     }
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-    let name = repo_path.to_string();
-
-    // Get the branch that is considered the principal in this repo
-    let main_branch: String;
-    if repo.head_detached().map_err(|e| e.to_string())? {
-        println!("HEAD is detached.");
-        main_branch = "master".to_string();
-    } else {
-        let head = repo.head().map_err(|e| e.to_string())?;
-        if let Some(branch_name) = head.shorthand() {
-            main_branch = branch_name.to_string();
-        } else {
-            panic!("\nCould not determine the current branch.");
-        }
+    if !is_repo(&repo_path)? {
+        return Err(format!("{} is not a repository", &repo_path));
     }
 
-    // Get current branch
-    let current_branch = match repo.head() {
-        Ok(head) => head.shorthand().unwrap_or("Unknown").to_string(),
-        Err(_) => "Unknown".to_string(),
-    };
+    let result = (|| {
+        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+        let name = repo_path.to_string();
 
-    // Get local branches
-    let local_branches = repo
-        .branches(Some(git2::BranchType::Local))
-        .map_err(|e| e.to_string())?
-        .filter_map(|b| b.ok())
-        .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
-        .collect::<Vec<String>>();
+        // Get the branch that is considered the principal in this repo
+        let main_branch: String;
+        if repo.head_detached().map_err(|e| e.to_string())? {
+            println!("HEAD is detached.");
+            main_branch = "master".to_string();
+        } else {
+            println!("TRYING TO GET HEAD");
+            let head = repo.head().map_err(|e| e.to_string())?;
+            if let Some(branch_name) = head.shorthand() {
+                main_branch = branch_name.to_string();
+            } else {
+                panic!("\nCould not determine the current branch.");
+            }
+        }
 
-    let tags = repo
-        .tag_names(None)
-        .map_err(|e| e.to_string())?
-        .iter()
-        .filter_map(|t| t.map(|s| s.to_string()))
-        .collect::<Vec<String>>();
+        // Get current branch
+        let current_branch = match repo.head() {
+            Ok(head) => head.shorthand().unwrap_or("Unknown").to_string(),
+            Err(_) => "Unknown".to_string(),
+        };
 
-    let commit_history: IndexMap<String, CommitLog> = git2json::get_repo_json(&repo_path)
-        .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
-        .into_iter()
-        .enumerate()
-        .map(|(_, v)| (v.hash.clone(), v))
-        .collect();
+        // Get local branches
+        let local_branches = repo
+            .branches(Some(git2::BranchType::Local))
+            .map_err(|e| e.to_string())?
+            .filter_map(|b| b.ok())
+            .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
+            .collect::<Vec<String>>();
 
-    let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
+        let tags = repo
+            .tag_names(None)
+            .map_err(|e| e.to_string())?
+            .iter()
+            .filter_map(|t| t.map(|s| s.to_string()))
+            .collect::<Vec<String>>();
 
-    //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS
-    let repo = RepoInfo {
-        name,
-        main_branch,
-        current_branch,
-        local_branches,
-        remotes,
-        tags,
-        commit_history,
-    };
+        let commit_history: IndexMap<String, CommitLog> = git2json::get_repo_json(&repo_path)
+            .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
+            .into_iter()
+            .enumerate()
+            .map(|(_, v)| (v.hash.clone(), v))
+            .collect();
+
+        let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
+
+        //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS
+        let repo = RepoInfo {
+            name,
+            main_branch,
+            current_branch,
+            local_branches,
+            remotes,
+            tags,
+            commit_history,
+        };
+
+        //println!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
+
+        Ok(repo)
+    })();
 
     release_repo(&repo_path);
 
-    //println!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
-
-    Ok(repo)
+    result
 }
 
 fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>, String> {

@@ -1,0 +1,1 @@
+type AppModals = "" | "createRepo" | "cloneRepo";

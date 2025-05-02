@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileDirectorySymlinkIcon } from "@primer/octicons-react";
-import styles from '../ActionBar.module.css';
-import { useAppContext } from '../../../context/AppContext';
+import styles from '../../ActionBar.module.css';
+import { useAppContext } from '../../../../context/AppContext';
 import { openPath } from '@tauri-apps/plugin-opener';
 
 const OpenRepoDirButton: React.FC = () => {

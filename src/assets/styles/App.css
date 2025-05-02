@@ -45,30 +45,6 @@ body {
   color: inherit;
 }
 
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: var(--modal-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--tertiary-bg);
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  text-align: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 input {
   border: 1px solid var(--lighter-bg);
   background-color: var(--secondary-bg);

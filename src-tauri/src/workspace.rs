@@ -1,4 +1,4 @@
-use crate::Tab;
+use crate::{repo_manager::is_repo, Tab};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -73,15 +73,18 @@ pub fn workspace() -> MutexGuard<'static, Workspace> {
     WORKSPACE.lock().unwrap()
 }
 
-//TODO: THIS DOES NOT ACTUALLY HAVE TO OPEN THE REPO IN GIT2, IT HAS TO REGISTER AND CACHE IT AS A
-//RECENTLY OPENED ONE
+//TODO: THIS DOES NOT ACTUALLY HAVE TO OPEN THE REPO IN GIT2, IT HAS TO REGISTER AND CACHE IT AS A RECENTLY OPENED ONE
 #[command]
 pub fn open_repo(repo_path: String) -> Result<String, String> {
     if workspace().tabs.contains_key(&repo_path) {
         return Ok("".to_string());
     }
 
-    Ok("IMPLEMENT".to_string())
+    if !is_repo(&repo_path)? {
+        return Err("Error: the selected directory is not a repository".to_string());
+    }
+
+    Ok("".to_string())
 }
 
 //TODO: FOR RELEASE Use Tauri's App Data Directory

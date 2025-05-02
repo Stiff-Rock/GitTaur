@@ -1,0 +1,70 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--tertiary-bg);
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 8px;
+}
+
+.modalTitle {
+  margin-bottom: 12px;
+}
+
+/* Common modal component styles */
+.pathInputSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.pathInputSection input {
+  flex: 1;
+}
+
+.actionButton {
+  height: fit-content;
+  width: auto;
+  padding: 2px;
+  border-radius: 5px;
+  transition: 0.1s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--lighter-bg);
+}
+
+.actionButton svg {
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+  padding: 1px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.buttonsContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.buttonsContainer button {
+  flex: 1;
+}

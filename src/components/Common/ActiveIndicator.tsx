@@ -5,7 +5,9 @@ interface ActiveIndicatorProps {
   style?: React.CSSProperties;
 }
 
-const ActiveIndicator: React.FC<ActiveIndicatorProps> = ({ className, style }) => {
+const ActiveIndicator: React.FC<ActiveIndicatorProps> = (props) => {
+  const { className, style } = props;
+
   return (
     <svg
       className={className}

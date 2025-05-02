@@ -7,7 +7,7 @@ import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
 import UserAvatar from './UserAvatar';
 
 const CommitInfoSidebar: React.FC = () => {
-  const { commitInfo, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
+  const { currentAppTab, commitInfo, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
 
   const goToParent = (sha: string) => {
     if (!repoInfo) return;
@@ -24,7 +24,7 @@ const CommitInfoSidebar: React.FC = () => {
   }
 
   return (
-    <div className={`${styles.infoSidebar}`}>
+    <div className={`${styles.infoSidebar} ${currentAppTab === "commit-history" ? '' : 'inactive'}`}>
       {commitInfo ? (
         <Scrollbars
           autoHide

@@ -9,10 +9,11 @@ import {
   PersonIcon,
 } from "@primer/octicons-react";
 import { useAppContext } from '../../context/AppContext';
-import OpenRepositoryButton from './Actions/OpenRepositoryButton';
-import CloneRepositoryButton from './Actions/CloneRepositoryButton';
-import OpenRepoDirButton from './Actions/OpenRepoDirButton';
-import OpenTerminalDirButton from './Actions/OpenTerminalButton';
+import OpenRepositoryButton from './Actions/WelcomePageActions/OpenRepositoryButton';
+import CloneRepositoryButton from './Actions/WelcomePageActions/CloneRepositoryButton';
+import OpenRepoDirButton from './Actions/WelcomePageActions/OpenRepoDirButton';
+import OpenTerminalDirButton from './Actions/WelcomePageActions/OpenTerminalButton';
+import CreateRepositoryButton from './Actions/WelcomePageActions/CreateRepositoryButton';
 
 const ActionBar: React.FC = () => {
   const { isInWelcomePage } = useAppContext();
@@ -25,6 +26,7 @@ const ActionBar: React.FC = () => {
             <>
               <OpenRepositoryButton />
               <CloneRepositoryButton />
+              <CreateRepositoryButton />
             </>
           ) : (
             <OpenRepoDirButton />
@@ -34,33 +36,31 @@ const ActionBar: React.FC = () => {
 
       {!isInWelcomePage && (
         <div className={`${styles.actions} ${styles.centerActions}`}>
-          <>
-            <button
-              className={`actionButton ${styles.actionButton}`}
-            >
-              <DownloadIcon />
-            </button>
-            <button
-              className={`actionButton ${styles.actionButton}`}
-            >
-              <MoveToBottomIcon />
-            </button>
-            <button
-              className={`actionButton ${styles.actionButton}`}
-            >
-              <MoveToTopIcon />
-            </button>
-            <button
-              className={`actionButton ${styles.actionButton}`}
-            >
-              <GitCommitIcon />
-            </button>
-            <button
-              className={`actionButton ${styles.actionButton}`}
-            >
-              <GitBranchIcon />
-            </button>
-          </>
+          <button
+            className={`actionButton ${styles.actionButton}`}
+          >
+            <DownloadIcon />
+          </button>
+          <button
+            className={`actionButton ${styles.actionButton}`}
+          >
+            <MoveToBottomIcon />
+          </button>
+          <button
+            className={`actionButton ${styles.actionButton}`}
+          >
+            <MoveToTopIcon />
+          </button>
+          <button
+            className={`actionButton ${styles.actionButton}`}
+          >
+            <GitCommitIcon />
+          </button>
+          <button
+            className={`actionButton ${styles.actionButton}`}
+          >
+            <GitBranchIcon />
+          </button>
         </div>
       )}
 
