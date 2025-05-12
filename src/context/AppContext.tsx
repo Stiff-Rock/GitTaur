@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useRef, useLayoutEffect, useEffect } from 'react';
+import React, { createContext, useState, useContext, useRef, useLayoutEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 
@@ -9,6 +9,7 @@ interface AppContextType {
   activeModal: AppModals;
   notification: string;
   activeRepoInfo: RepoInfo | null;
+  repoUpdateTrigger: number;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
@@ -16,6 +17,7 @@ interface AppContextType {
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
   setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
+  setRepoUpdateTrigger: React.Dispatch<React.SetStateAction<number>>;
 
   // Global Functions
   isWelcomePage: (text: string) => boolean;
@@ -27,6 +29,33 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const DtoToWorkspace = (dto: WorkspaceDTO): Workspace => {
+  return {
+    tabs: new Map<string, Tab>(dto.tabs),
+    activeTab: dto.activeTab
+  };
+}
+
+const WorkspaceToDto = (workspace: Workspace): WorkspaceDTO => {
+  return {
+    tabs: [...workspace.tabs],
+    activeTab: workspace.activeTab
+  };
+}
+
+const isWelcomePage = (text: string): boolean => {
+  return /^Welcome Page:\d+$/.test(text)
+}
+
+let initWorkspace: Workspace | null = null;
+(() => {
+  const workspace_dto = window.__WORKSPACE_DTO__;
+  if (!workspace_dto) return;
+  initWorkspace = DtoToWorkspace(workspace_dto);
+})();
+
+
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { openDirectoryDialog } = useDialog();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -34,24 +63,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
-
-  const DtoToWorkspace = (dto: WorkspaceDTO): Workspace => {
-    return {
-      tabs: new Map<string, Tab>(dto.tabs),
-      activeTab: dto.activeTab
-    };
-  }
-
-  const WorkspaceToDto = (workspace: Workspace): WorkspaceDTO => {
-    return {
-      tabs: [...workspace.tabs],
-      activeTab: workspace.activeTab
-    };
-  }
+  const [repoUpdateTrigger, setRepoUpdateTrigger] = useState(0);
 
   // The backend information of the workspace gets loaded on startup
-  const loadWorkspace = (workspace_dto: WorkspaceDTO) => {
-    const workspace = DtoToWorkspace(workspace_dto);
+  const loadWorkspace = (workspace_dto: WorkspaceDTO | null) => {
+    const workspace = workspace_dto ? DtoToWorkspace(workspace_dto) : initWorkspace!;
+
     if (workspace.tabs.size === 0) {
       const pageLabel = "Welcome Page";
       const defaultPage: string = pageLabel + ":" + Date.now();
@@ -72,22 +89,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   const fetchWorkspace = () => {
-    let workspace_dto = window.__WORKSPACE_DTO__;
-
-    if (!workspace_dto) {
-      invoke("get_workspace")
+    if (!initWorkspace) {
+      invoke<WorkspaceDTO>("get_workspace")
         .then((dto) => {
-          if (dto) loadWorkspace(dto as WorkspaceDTO)
+          if (dto) loadWorkspace(dto)
           else throw "Unable to load workspace"
         }).catch((e) => {
           console.error('Failed to load workspace:', e);
         });
     } else {
-      loadWorkspace(workspace_dto)
+      loadWorkspace(null)
     }
   }
-
-  //TODO: DELETE FOR RELEASE, PREVENTS DOUBLE LOADING
+  //TODO: DELETE FOR RELEASE, IT PREVENTS DOUBLE LOADING OF STRICT MODE
   const isLoaded = useRef(false);
   if (!isLoaded.current) {
     fetchWorkspace();
@@ -101,10 +115,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { ...prev, activeTab: tabKey };
     });
   };
-
-  const isWelcomePage = (text: string): boolean => {
-    return /^Welcome Page:\d+$/.test(text)
-  }
 
   //TODO: SI ABRE UN REPO QUE ESTA EN EL HISTORIAL, ABRELO DE AHI, DEBERIA ESTAR CACHEADO
   const openNewRepo = async (path: string = "") => {
@@ -239,6 +249,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       activeModal, setActiveModal,
       notification, setNotification,
       activeRepoInfo, setActiveRepoInfo,
+      repoUpdateTrigger, setRepoUpdateTrigger,
+
       // Global Functions
       isWelcomePage,
       openNewRepo,

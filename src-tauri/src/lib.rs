@@ -68,15 +68,18 @@ pub fn run() {
             repo_manager::clone_repo,
             repo_manager::get_repo_info,
             repo_manager::fetch_remote,
+            repo_manager::pull_remote,
+            repo_manager::push_remote,
+            repo_manager::create_branch,
             open_terminal,
+            repo_manager::reset,
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
-            let workspace: String = workspace::restore_workspace();
-            window.eval(&format!(
-                "window.__WORKSPACE_DTO__ = JSON.parse('{}')",
-                workspace.replace("'", "\\'")
-            ))?;
+            let workspace_json: String = workspace::restore_workspace();
+
+            let eval_command = &format!("window.__WORKSPACE_DTO__ = {}", workspace_json);
+            window.eval(eval_command)?;
 
             Ok(())
         })

@@ -2,7 +2,7 @@ use crate::{
     git2json::{self, CommitLog},
     repo_info::RepoInfo,
 };
-use git2::{BranchType, FetchOptions, Repository};
+use git2::{AnnotatedCommit, BranchType, FetchOptions, MergeOptions, Reference, Repository};
 use indexmap::IndexMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -16,6 +16,18 @@ static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
 
 const BUSY_MSG: &str =
     "Repository is currently in use. Please try again when other operations complete.";
+
+#[command]
+pub async fn reset() -> Result<(), String> {
+    match ACTIVE_REPOS.lock() {
+        Ok(mut active_repos) => {
+            active_repos.clear();
+            Ok(())
+        }
+
+        Err(e) => Err(e.to_string()),
+    }
+}
 
 fn is_repo_busy(repo_path: &String) -> bool {
     match ACTIVE_REPOS.lock() {
@@ -126,6 +138,13 @@ pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String
     result
 }
 
+fn get_current_branch(repo: &Repository) -> String {
+    match repo.head() {
+        Ok(head) => head.shorthand().unwrap_or("Unknown").to_string(),
+        Err(_) => "Unknown".to_string(),
+    }
+}
+
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     if is_repo_busy(&repo_path) {
@@ -155,10 +174,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         }
 
         // Get current branch
-        let current_branch = match repo.head() {
-            Ok(head) => head.shorthand().unwrap_or("Unknown").to_string(),
-            Err(_) => "Unknown".to_string(),
-        };
+        let current_branch = get_current_branch(&repo);
 
         // Get local branches
         let local_branches = repo
@@ -244,25 +260,264 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
     Ok(remote_branches_map)
 }
 
-//TODO: AUTH
+//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
-pub async fn fetch_remote(
-    repo_path: String,
-    remote: String,
-    fetch_all: bool,
-) -> Result<(), String> {
+pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
     if is_repo_busy(&repo_path) {
         return Err(BUSY_MSG.to_string());
     }
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-    let mut remote = repo.find_remote(&remote).map_err(|e| e.to_string())?;
+    let mut any_updates = false;
+
+    for remote_name in remotes {
+        let refs_before = get_remote_refs(&repo, &remote_name)?;
+
+        let mut remote = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
+        let mut fetch_options = FetchOptions::new();
+
+        remote
+            .fetch(&[] as &[&str], Some(&mut fetch_options), None)
+            .map_err(|e| format!("Failed to fetch from remote '{}': {}", &remote_name, e))?;
+
+        let refs_after = get_remote_refs(&repo, &remote_name)?;
+
+        if find_updated_refs(&refs_before, &refs_after) {
+            any_updates = true;
+        }
+    }
+
+    release_repo(&repo_path);
+
+    if any_updates {
+        Ok("Successfully fetched remotes".to_string())
+    } else {
+        Ok("Already up-to-date".to_string())
+    }
+}
+
+fn get_remote_refs(
+    repo: &Repository,
+    remote_name: &str,
+) -> Result<HashMap<String, git2::Oid>, String> {
+    let mut refs = HashMap::new();
+    let remote_prefix = format!("refs/remotes/{}/", remote_name);
+
+    let references = repo.references().map_err(|e| e.to_string())?;
+    for reference_result in references {
+        let reference = reference_result.map_err(|e| e.to_string())?;
+        if let Some(name) = reference.name() {
+            if name.starts_with(&remote_prefix) {
+                if let Some(target) = reference.target() {
+                    refs.insert(name.to_string(), target);
+                }
+            }
+        }
+    }
+
+    Ok(refs)
+}
+
+fn find_updated_refs(
+    before: &HashMap<String, git2::Oid>,
+    after: &HashMap<String, git2::Oid>,
+) -> bool {
+    for (name, oid_after) in after {
+        match before.get(name) {
+            Some(oid_before) if oid_before != oid_after => {
+                return true;
+            }
+            None => {
+                return true;
+            }
+            _ => {}
+        }
+    }
+
+    false
+}
+
+//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
+#[command]
+pub async fn pull_remote(
+    repo_path: String,
+    remote_name: String,
+    branches: Vec<String>,
+) -> Result<String, String> {
+    if is_repo_busy(&repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
     let mut fetch_options = FetchOptions::new();
 
-    remote
-        .fetch(&[] as &[&str], Some(&mut fetch_options), None)
-        .map_err(|e| e.to_string())?;
+    let mut remote = repo
+        .find_remote(&remote_name)
+        .map_err(|e| format!("Couldn't find remote '{}': {}", remote_name, e))?;
+
+    // Get the current branch ref
+    let current_branch_name = get_current_branch(&repo);
+    let current_branch_ref = format!("refs/heads/{}", current_branch_name);
+
+    let mut has_updated_content: bool = false;
+    for branch_name in branches {
+        remote
+            .fetch(&[branch_name], Some(&mut fetch_options), None)
+            .map_err(|e| format!("Failed to fetch from '{}': {}", &remote_name, e))?;
+
+        // 2. Get the fetched commit to merge
+        let fetch_head = repo
+            .find_reference("FETCH_HEAD")
+            .map_err(|e| format!("Failed to find FETCH_HEAD: {}", e))?;
+
+        let fetch_commit = repo
+            .reference_to_annotated_commit(&fetch_head)
+            .map_err(|e| format!("Failed to get commit from FETCH_HEAD: {}", e))?;
+
+        let mut current_ref = repo
+            .find_reference(&current_branch_ref)
+            .map_err(|e| format!("Failed to find reference '{}': {}", current_branch_ref, e))?;
+
+        let current_commit = repo
+            .reference_to_annotated_commit(&current_ref)
+            .map_err(|e| format!("Failed to get commit from reference: {}", e))?;
+
+        // 4. Do the merge analysis
+        let (merge_analysis, _merge_preference) = repo
+            .merge_analysis(&[&fetch_commit])
+            .map_err(|e| format!("Failed to perform merge analysis: {}", e))?;
+
+        if merge_analysis.is_fast_forward() {
+            // Fast-forward merge
+            let res = fast_forward(&repo, &mut current_ref, &fetch_commit);
+
+            if res.is_err() {
+                return res;
+            }
+
+            has_updated_content = true;
+        } else if merge_analysis.is_normal() {
+            // Normal (non-fast-forward) merge
+            let res = normal_merge(&repo, &current_commit, &fetch_commit);
+
+            if res.is_err() {
+                return res;
+            }
+
+            has_updated_content = true;
+        }
+    }
+
+    release_repo(&repo_path);
+
+    let msg: String = if has_updated_content {
+        "Successfully pulled changes".to_string()
+    } else {
+        "Already up-to-date".to_string()
+    };
+
+    Ok(msg)
+}
+
+// Handle a fast-forward merge
+fn fast_forward(
+    repo: &Repository,
+    reference: &mut Reference,
+    fetch_commit: &AnnotatedCommit,
+) -> Result<String, String> {
+    let commit_id = fetch_commit.id();
+    let name = reference.name().unwrap_or("unknown").to_string();
+
+    // Fast-forward the reference
+    reference
+        .set_target(
+            commit_id,
+            &format!("Fast-forward: Setting {} to id: {}", name, commit_id),
+        )
+        .map_err(|e| format!("Failed to fast-forward: {}", e))?;
+
+    // Update the working directory
+    repo.checkout_tree(
+        &repo.find_object(commit_id, None).unwrap(),
+        Some(git2::build::CheckoutBuilder::new().force()),
+    )
+    .map_err(|e| format!("Failed to update working directory: {}", e))?;
+
+    repo.set_head(&name)
+        .map_err(|e| format!("Failed to update HEAD: {}", e))?;
+
+    Ok(format!("Fast-forward merge successful to {}", commit_id))
+}
+
+fn normal_merge(
+    repo: &Repository,
+    local_commit: &AnnotatedCommit,
+    remote_commit: &AnnotatedCommit,
+) -> Result<String, String> {
+    // Set up merge options
+    let mut merge_options = MergeOptions::new();
+    merge_options.fail_on_conflict(false);
+
+    // Perform the merge
+    repo.merge(&[remote_commit], Some(&mut merge_options), None)
+        .map_err(|e| format!("Failed to merge: {}", e))?;
+
+    // Check for conflicts
+    if repo.index().map_err(|e| e.to_string())?.has_conflicts() {
+        repo.cleanup_state()
+            .map_err(|e| format!("Failed to clean up state: {}", e))?;
+        return Err("Merge conflicts detected. Please resolve them manually.".to_string());
+    }
+
+    // Create the merge commit
+    let sig = repo
+        .signature()
+        .map_err(|e| format!("Failed to get signature: {}", e))?;
+    let tree_id = repo.index().unwrap().write_tree().unwrap();
+    let tree = repo.find_tree(tree_id).unwrap();
+
+    // Get the parent commits
+    let local_commit_obj = repo.find_commit(local_commit.id()).unwrap();
+    let remote_commit_obj = repo.find_commit(remote_commit.id()).unwrap();
+
+    // Create the merge commit
+    repo.commit(
+        Some("HEAD"),
+        &sig,
+        &sig,
+        &format!("Merge: {} into {}", remote_commit.id(), local_commit.id()),
+        &tree,
+        &[&local_commit_obj, &remote_commit_obj],
+    )
+    .map_err(|e| format!("Failed to create merge commit: {}", e))?;
+
+    // Cleanup
+    repo.cleanup_state()
+        .map_err(|e| format!("Failed to clean up state: {}", e))?;
+
+    Ok("Merge successful".to_string())
+}
+
+//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
+#[command]
+pub async fn push_remote(repo_path: String) -> Result<(), String> {
+    if is_repo_busy(&repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let _repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    release_repo(&repo_path);
+
+    Ok(())
+}
+
+#[command]
+pub async fn create_branch(repo_path: String) -> Result<(), String> {
+    if is_repo_busy(&repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
 
     release_repo(&repo_path);
 

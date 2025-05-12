@@ -5,38 +5,44 @@ import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import "react-widgets/styles.css";
 
-const FetchRemoteModal: React.FC = () => {
+const PullRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo, setRepoUpdateTrigger } = useAppContext();
-  const [remote, setRemote] = useState<string>("");
-  const [fetchAll, setFetchAll] = useState<boolean>(false);
+  const [remoteName, setRemote] = useState<string>("");
+  const [branch, setBranch] = useState<string>("");
+  const [pullAll, setPullAll] = useState<boolean>(true);
 
-  const placeHolder = "No remotes aviable";
+  const remotePlaceHolder = "Choose a remote";
+  const branchPlaceHolder = "Choose a branch";
 
   useLayoutEffect(() => {
     if (!activeRepoInfo) return;
 
     const remoteNames = Object.keys(activeRepoInfo.remotes);
-
-    let text = placeHolder;
+    let remoteText = remotePlaceHolder;
     if (remoteNames.length > 0) {
-      text = remoteNames.includes("origin")
+      remoteText = remoteNames.includes("origin")
         ? "origin"
         : remoteNames[0];
     }
+    setRemote(remoteText);
 
-    setRemote(text);
+    let branchText = branchPlaceHolder;
+    if (!remoteText.includes(remotePlaceHolder)) {
+      branchText = activeRepoInfo.remotes[remoteText][0]
+    }
+    setBranch(branchText)
   }, [activeRepoInfo]);
 
   //TODO: LOADING INDICATOR
-  const handleFetchRemote = () => {
+  const handlePullRemote = () => {
     if (!workspace) return;
 
-    if (remote && !remote.includes(placeHolder)) {
+    if (branch && !branch.includes(remotePlaceHolder)) {
       const repoPath = workspace.activeTab;
 
-      const remotes: Array<string> = fetchAll ? Object.keys(activeRepoInfo!.remotes) : new Array(remote);
+      const branches: Array<string> = pullAll ? activeRepoInfo!.remotes[remoteName] : new Array(branch);
 
-      invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
+      invoke<string>("pull_remote", { repoPath, remoteName, branches }).then((msg) => {
         if (msg.includes("Successfully"))
           setRepoUpdateTrigger(prev => prev + 1);
 
@@ -54,31 +60,40 @@ const FetchRemoteModal: React.FC = () => {
   }
 
   return (
-    <BaseModal title="Fetch Remote Changes">
-
+    <BaseModal title="Pull Remote Changes">
       <select
         className={baseStyle.modalInputSection}
-        disabled={fetchAll}
         onChange={(e) => setRemote(e.target.value)}
-        value={remote}
+        value={remoteName}
       >
         {activeRepoInfo && Object.keys(activeRepoInfo.remotes).map((remote) => (
           <option value={remote} key={remote}>{remote}</option>
         ))}
       </select>
 
+      <select
+        className={baseStyle.modalInputSection}
+        disabled={pullAll}
+        onChange={(e) => setBranch(e.target.value)}
+        value={branch}
+      >
+        {remoteName && activeRepoInfo && activeRepoInfo.remotes[remoteName].map((branch) => (
+          <option value={branch} key={branch}>{branch}</option>
+        ))}
+      </select>
+
       <div className="checkbox">
         <input
           type="checkbox"
-          id="fetchAllRemotes"
-          checked={fetchAll}
-          onChange={(e) => setFetchAll(e.target.checked)}
+          id="pullAllBranches"
+          checked={pullAll}
+          onChange={(e) => setPullAll(e.target.checked)}
         />
-        <label htmlFor="fetchAllRemotes">Fetch all remotes</label>
+        <label htmlFor="pullAllBranches">Pull all branches</label>
       </div>
 
       <div className={baseStyle.buttonsContainer}>
-        <button className='appButton' onClick={handleFetchRemote}>Fetch</button>
+        <button className='appButton' onClick={handlePullRemote}>Pull</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
 
@@ -86,4 +101,4 @@ const FetchRemoteModal: React.FC = () => {
   );
 };
 
-export default FetchRemoteModal;
+export default PullRemoteModal;

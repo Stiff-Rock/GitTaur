@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import Scrollbars from "react-custom-scrollbars-2";
 import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
@@ -10,12 +10,13 @@ import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 import { GitgraphOptions } from "@gitgraph/core";
 import { GraphCommitOptions } from "../../../Gitgraph/Commit.tsx";
 
+//WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
+
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;
-
 const scale = 0.8;
-
 const font = `normal ${12 * scale}pt CaskaydiaMonoNerdFont`;
+
 const customTemplate: Template = templateExtend(TemplateName.Metro, {
   //TODO: GENERATE COLORSHCEME, LET USER CUSTOMIZE
   colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
@@ -56,7 +57,7 @@ const CommitGraph: React.FC = () => {
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!repoInfo) return;
 
     if (repoInfo.commit_history) {
@@ -88,7 +89,7 @@ const CommitGraph: React.FC = () => {
     >
       <div className={`${styles.container} ${graphStyles.graph}`}>
         {commitLogs ? (
-          <GraphProvider>
+          <GraphProvider key={commitLogs!.length}>
             <Gitgraph options={options} graphCommitOptions={graphCommitOptions}>
               {(gitgraph) => {
                 console.log("RE-RENDER")

@@ -5,30 +5,20 @@ import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import "react-widgets/styles.css";
 
-const FetchRemoteModal: React.FC = () => {
+const PushRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo, setRepoUpdateTrigger } = useAppContext();
   const [remote, setRemote] = useState<string>("");
   const [fetchAll, setFetchAll] = useState<boolean>(false);
 
-  const placeHolder = "No remotes aviable";
+  const placeHolder = "Choose a remote";
 
   useLayoutEffect(() => {
     if (!activeRepoInfo) return;
-
-    const remoteNames = Object.keys(activeRepoInfo.remotes);
-
-    let text = placeHolder;
-    if (remoteNames.length > 0) {
-      text = remoteNames.includes("origin")
-        ? "origin"
-        : remoteNames[0];
-    }
-
-    setRemote(text);
+    setRemote(Object.keys(activeRepoInfo.remotes).includes("origin") ? "origin" : placeHolder)
   }, [activeRepoInfo]);
 
   //TODO: LOADING INDICATOR
-  const handleFetchRemote = () => {
+  const handlePushRemote = () => {
     if (!workspace) return;
 
     if (remote && !remote.includes(placeHolder)) {
@@ -36,12 +26,13 @@ const FetchRemoteModal: React.FC = () => {
 
       const remotes: Array<string> = fetchAll ? Object.keys(activeRepoInfo!.remotes) : new Array(remote);
 
-      invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
+      invoke<string>("push_remote", { repoPath, remotes }).then((msg) => {
         if (msg.includes("Successfully"))
           setRepoUpdateTrigger(prev => prev + 1);
 
         setActiveModal("");
-        setNotification(msg);
+        setNotification(msg as string);
+        //TODO: MAYBE ADD release_repo call to all catch claues from here
       }).catch((e) => {
         if (e) {
           setNotification(e);
@@ -54,7 +45,7 @@ const FetchRemoteModal: React.FC = () => {
   }
 
   return (
-    <BaseModal title="Fetch Remote Changes">
+    <BaseModal title="Create Repository">
 
       <select
         className={baseStyle.modalInputSection}
@@ -78,7 +69,7 @@ const FetchRemoteModal: React.FC = () => {
       </div>
 
       <div className={baseStyle.buttonsContainer}>
-        <button className='appButton' onClick={handleFetchRemote}>Fetch</button>
+        <button className='appButton' onClick={handlePushRemote}>Fetch</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
 
@@ -86,4 +77,4 @@ const FetchRemoteModal: React.FC = () => {
   );
 };
 
-export default FetchRemoteModal;
+export default PushRemoteModal;

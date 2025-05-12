@@ -10,7 +10,7 @@ import CreateRepositoryButton from './Actions/WelcomePageActions/CreateRepositor
 import FetchRepositoryButton from './Actions/GitActions/FetchRepositoryButton';
 import PullRepositoryButton from './Actions/GitActions/PullRepositoryButton';
 import PushRepositoryButton from './Actions/GitActions/PushRepositoryButton';
-import GitBranchButton from './Actions/GitActions/GitBranchButton';
+import GitBranchButton from './Actions/GitActions/CreateBranchButton';
 
 const ActionBar: React.FC = () => {
   const { isInWelcomePage } = useAppContext();

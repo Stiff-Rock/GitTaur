@@ -14,6 +14,8 @@ import CommitGraph from './MainContainer/CommitHistory/CommitGraph';
 import { invoke } from '@tauri-apps/api/core';
 import { useAppContext } from '../../context/AppContext';
 import FetchRemoteModal from '../Common/Modals/FetchRemote/FetchRemoteModal';
+import PullRemoteModal from '../Common/Modals/PullRemote/PullRemoteModal';
+import PushRemoteModal from '../Common/Modals/PushRemote/PushRemoteModal';
 
 interface MainLayoutProps {
   repoPath: string;
@@ -23,7 +25,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = (props) => {
   const { repoPath, isActive } = props;
   const { currentAppTab, showInfoSidebar, setShowInfoSidebar, setRepoInfo, repoInfo } = useMainContext();
-  const { setNotification, activeModal, setActiveRepoInfo } = useAppContext();
+  const { setNotification, activeModal, setActiveRepoInfo, repoUpdateTrigger, isWelcomePage, workspace } = useAppContext();
 
   const {
     leftSize,
@@ -36,25 +38,29 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
   const panelRightRef = useRef<any>(null);
   const isProgrammaticResize = useRef(false);
 
+  const getRepoInfo = () => {
+    if (!workspace || isWelcomePage(workspace.activeTab)) return;
+    invoke<RepoInfo>("get_repo_info", { repoPath })
+      .then((data) => setRepoInfo(data))
+      .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
+  }
+
   // Fetch repo data on load
   //TODO: DELETE REF ON RELEASE
   const isLoaded = useRef(false);
   useEffect(() => {
-    if (isLoaded.current || repoInfo) return;
-
-    if (!/^Welcome Page:\d+$/.test(repoPath)) {
-      invoke<RepoInfo>("get_repo_info", { repoPath })
-        .then((data) => setRepoInfo(data))
-        .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
-    }
-
+    if (isLoaded.current || repoInfo || !isActive) return;
+    getRepoInfo();
     isLoaded.current = true;
   }, [])
 
   useEffect(() => {
-    if (isActive)
-      setActiveRepoInfo(repoInfo);
-  }, [isActive, repoInfo]);
+    if (repoUpdateTrigger > 0) getRepoInfo();
+  }, [repoUpdateTrigger])
+
+  useEffect(() => {
+    if (isActive) setActiveRepoInfo(repoInfo);
+  }, [repoInfo]);
 
   // Panel resizing synchronization
   useEffect(() => {
@@ -143,6 +149,8 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
       </PanelGroup>
 
       {activeModal === "fetch" && <FetchRemoteModal />}
+      {activeModal === "pull" && <PullRemoteModal />}
+      {activeModal === "push" && <PushRemoteModal />}
     </div>
   );
 };

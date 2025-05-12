@@ -3,15 +3,16 @@ import ActionBar from "./components/ActionBar/ActionBar";
 import TitleBar from "./components/TitleBar/TitleBar";
 import { useAppContext } from "./context/AppContext";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MainProvider } from './context/MainContext';
 import { PanelSyncProvider } from "./context/PanelSyncContext";
 import { ToastContainer, toast, Zoom } from "react-toastify";
+import { invoke } from "@tauri-apps/api/core";
 
-//BUG: Failed to open repository while restoring session: failed to resolve path 'C:\Users\Yago\Desktop\ChatServer': El sistema no puede encontrar el archivo especificado.; class=Os (2); code=NotFound (-3)
+//BUG: Failed to open repository while restoring session with incorrect workspace/non existen paths
 
 function App() {
-  const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
+  const { workspace, notification, setNotification, isWelcomePage, isInWelcomePage } = useAppContext();
 
   useEffect(() => {
     if (!notification) return;
@@ -22,6 +23,13 @@ function App() {
     setNotification("");
 
   }, [notification]);
+
+  //TODO: DELETE THIS SYSTEM IN RELEASE
+  const appLoaded = useRef<boolean>(false);
+  useEffect(() => {
+    if (!appLoaded.current) appLoaded.current = true;
+    else invoke("reset").catch((e) => console.error(e))
+  }, []);
 
   return (
     <main className="container">
@@ -55,7 +63,6 @@ function App() {
           ))}
         </PanelSyncProvider>
       }
-
     </main>
   );
 }
