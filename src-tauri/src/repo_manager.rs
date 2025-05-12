@@ -2,7 +2,7 @@ use crate::{
     git2json::{self, CommitLog},
     repo_info::RepoInfo,
 };
-use git2::{BranchType, Repository};
+use git2::{BranchType, FetchOptions, Repository};
 use indexmap::IndexMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -46,8 +46,8 @@ pub fn release_repo(repo_path: &String) {
     }
 }
 
-pub fn is_repo(repo_path: &String) -> Result<bool, String> {
-    if is_repo_busy(repo_path) {
+pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
+    if !has_lock && is_repo_busy(repo_path) {
         return Err(BUSY_MSG.to_string());
     }
 
@@ -67,7 +67,7 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
         return Err(BUSY_MSG.to_string());
     }
 
-    let create_result = if is_repo(&repo_path)? {
+    let create_result = if is_repo(&repo_path, true)? {
         Err("This directory already contains a repository".to_string())
     } else {
         Repository::init(&repo_path)
@@ -80,6 +80,7 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
     create_result
 }
 
+//TODO: AUTH
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
     if is_repo_busy(&path) {
@@ -90,7 +91,7 @@ pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String
     let result = match Repository::clone(&repo_url, &clone_path) {
         Ok(_) => Ok("Repository cloned successfully".to_string()),
         Err(e) => {
-            println!("Technical error details: {:?}", e);
+            eprintln!("Technical error details: {:?}", e);
 
             Err(match e.code() {
                 git2::ErrorCode::Auth => {
@@ -100,7 +101,7 @@ pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String
                     format!("Repository not found for the provided URL:\n{}", repo_url)
                 }
                 git2::ErrorCode::Exists => format!(
-                    "The target directory already exists at:\n{}",
+                    "The target directory is not empty:\n{}",
                     clone_path.display()
                 ),
                 git2::ErrorCode::Certificate => "SSL certificate verification failed".to_string(),
@@ -131,7 +132,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         return Err(BUSY_MSG.to_string());
     }
 
-    if !is_repo(&repo_path)? {
+    if !is_repo(&repo_path, true)? {
         return Err(format!("{} is not a repository", &repo_path));
     }
 
@@ -145,7 +146,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
             println!("HEAD is detached.");
             main_branch = "master".to_string();
         } else {
-            println!("TRYING TO GET HEAD");
             let head = repo.head().map_err(|e| e.to_string())?;
             if let Some(branch_name) = head.shorthand() {
                 main_branch = branch_name.to_string();
@@ -242,4 +242,25 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
     }
 
     Ok(remote_branches_map)
+}
+
+//TODO: AUTH
+#[command]
+pub async fn fetch_remote(repo_path: String, remote: String) -> Result<(), String> {
+    if is_repo_busy(&repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let mut remote = repo.find_remote(&remote).map_err(|e| e.to_string())?;
+
+    let mut fetch_options = FetchOptions::new();
+
+    remote
+        .fetch(&[] as &[&str], Some(&mut fetch_options), None)
+        .map_err(|e| e.to_string())?;
+
+    release_repo(&repo_path);
+
+    Ok(())
 }

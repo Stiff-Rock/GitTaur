@@ -7,7 +7,7 @@ import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 
 const CloneRepositoryModal: React.FC = () => {
-  const { setActiveModal, setNotification } = useAppContext();
+  const { setActiveModal, setNotification, openNewRepo } = useAppContext();
   const { openDirectoryDialog } = useDialog();
 
   const [path, setParentFolder] = useState("");
@@ -37,6 +37,7 @@ const CloneRepositoryModal: React.FC = () => {
 
     invoke<string>("clone_repo", { path, repoUrl })
       .then((msg) => {
+        openNewRepo(path);
         setNotification(msg);
       })
       .catch((e) => {

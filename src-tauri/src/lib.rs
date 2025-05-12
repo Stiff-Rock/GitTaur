@@ -67,6 +67,7 @@ pub fn run() {
             repo_manager::create_repo,
             repo_manager::clone_repo,
             repo_manager::get_repo_info,
+            repo_manager::fetch_remote,
             open_terminal,
         ])
         .setup(|app| {

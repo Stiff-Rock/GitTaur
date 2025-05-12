@@ -1,19 +1,16 @@
 import React from 'react';
 import styles from './ActionBar.module.css';
-import {
-  GitCommitIcon,
-  DownloadIcon,
-  MoveToBottomIcon,
-  MoveToTopIcon,
-  GitBranchIcon,
-  PersonIcon,
-} from "@primer/octicons-react";
+import { PersonIcon } from "@primer/octicons-react";
 import { useAppContext } from '../../context/AppContext';
 import OpenRepositoryButton from './Actions/WelcomePageActions/OpenRepositoryButton';
 import CloneRepositoryButton from './Actions/WelcomePageActions/CloneRepositoryButton';
 import OpenRepoDirButton from './Actions/WelcomePageActions/OpenRepoDirButton';
 import OpenTerminalDirButton from './Actions/WelcomePageActions/OpenTerminalButton';
 import CreateRepositoryButton from './Actions/WelcomePageActions/CreateRepositoryButton';
+import FetchRepositoryButton from './Actions/GitActions/FetchRepositoryButton';
+import PullRepositoryButton from './Actions/GitActions/PullRepositoryButton';
+import PushRepositoryButton from './Actions/GitActions/PushRepositoryButton';
+import GitBranchButton from './Actions/GitActions/GitBranchButton';
 
 const ActionBar: React.FC = () => {
   const { isInWelcomePage } = useAppContext();
@@ -36,31 +33,13 @@ const ActionBar: React.FC = () => {
 
       {!isInWelcomePage && (
         <div className={`${styles.actions} ${styles.centerActions}`}>
-          <button
-            className={`actionButton ${styles.actionButton}`}
-          >
-            <DownloadIcon />
-          </button>
-          <button
-            className={`actionButton ${styles.actionButton}`}
-          >
-            <MoveToBottomIcon />
-          </button>
-          <button
-            className={`actionButton ${styles.actionButton}`}
-          >
-            <MoveToTopIcon />
-          </button>
-          <button
-            className={`actionButton ${styles.actionButton}`}
-          >
-            <GitCommitIcon />
-          </button>
-          <button
-            className={`actionButton ${styles.actionButton}`}
-          >
-            <GitBranchIcon />
-          </button>
+          <FetchRepositoryButton />
+
+          <PullRepositoryButton />
+
+          <PushRepositoryButton />
+
+          <GitBranchButton />
         </div>
       )}
 

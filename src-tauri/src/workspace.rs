@@ -80,7 +80,7 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
         return Ok("".to_string());
     }
 
-    if !is_repo(&repo_path)? {
+    if !is_repo(&repo_path, false)? {
         return Err("Error: the selected directory is not a repository".to_string());
     }
 
