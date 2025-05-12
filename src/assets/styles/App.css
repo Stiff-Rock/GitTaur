@@ -12,7 +12,9 @@ html {
 }
 
 input,
-button {
+button,
+select,
+option {
   font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
   color: var(--primary-text);
 }
@@ -45,11 +47,22 @@ body {
   color: inherit;
 }
 
-input {
+input,
+select,
+.checkbox {
   border: 1px solid var(--lighter-bg);
   background-color: var(--secondary-bg);
   padding: 5px;
   border-radius: 5px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .appButton {

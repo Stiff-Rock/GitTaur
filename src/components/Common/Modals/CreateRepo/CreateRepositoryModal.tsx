@@ -36,7 +36,7 @@ const CreateRepositoryModal: React.FC = () => {
   return (
     <BaseModal title="Create Repository">
 
-      <div className={baseStyle.pathInputSection}>
+      <div className={baseStyle.modalInputSection}>
         <input
           type="text"
           placeholder="Parent directory"

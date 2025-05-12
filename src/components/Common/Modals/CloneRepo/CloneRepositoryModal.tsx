@@ -50,7 +50,7 @@ const CloneRepositoryModal: React.FC = () => {
   return (
     <BaseModal title="Clone Repository">
 
-      <div className={baseStyle.pathInputSection}>
+      <div className={baseStyle.modalInputSection}>
         <input
           type="text"
           placeholder="Parent directory"

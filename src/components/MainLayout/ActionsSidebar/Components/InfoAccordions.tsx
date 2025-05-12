@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import styles from '../ActionSidebar.module.css';
 import Accordion from '../../../Common/Accordion/Accordion';
-import { CloudIcon, DeviceDesktopIcon, TagIcon } from "@primer/octicons-react";
+import { CloudIcon, DeviceDesktopIcon, TagIcon, GitBranchIcon, DatabaseIcon, FeedTagIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../../../context/MainContext';
 import ActiveIndicator from '../../../Common/ActiveIndicator';
-import { GitBranchIcon, DatabaseIcon, FeedTagIcon } from "@primer/octicons-react";
 
 const InfoAccordions: React.FC = () => {
   const { repoInfo } = useMainContext();

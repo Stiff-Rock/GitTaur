@@ -246,7 +246,11 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 
 //TODO: AUTH
 #[command]
-pub async fn fetch_remote(repo_path: String, remote: String) -> Result<(), String> {
+pub async fn fetch_remote(
+    repo_path: String,
+    remote: String,
+    fetch_all: bool,
+) -> Result<(), String> {
     if is_repo_busy(&repo_path) {
         return Err(BUSY_MSG.to_string());
     }

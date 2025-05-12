@@ -13,6 +13,7 @@ import TodoPanelInfoSidebar from './InfoSidebar/TodoPanel/TodoPanelInfoSidebar';
 import CommitGraph from './MainContainer/CommitHistory/CommitGraph';
 import { invoke } from '@tauri-apps/api/core';
 import { useAppContext } from '../../context/AppContext';
+import FetchRemoteModal from '../Common/Modals/FetchRemote/FetchRemoteModal';
 
 interface MainLayoutProps {
   repoPath: string;
@@ -22,7 +23,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = (props) => {
   const { repoPath, isActive } = props;
   const { currentAppTab, showInfoSidebar, setShowInfoSidebar, setRepoInfo, repoInfo } = useMainContext();
-  const { setNotification } = useAppContext();
+  const { setNotification, activeModal, setActiveRepoInfo } = useAppContext();
 
   const {
     leftSize,
@@ -34,6 +35,26 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
   const panelLeftRef = useRef<any>(null);
   const panelRightRef = useRef<any>(null);
   const isProgrammaticResize = useRef(false);
+
+  // Fetch repo data on load
+  //TODO: DELETE REF ON RELEASE
+  const isLoaded = useRef(false);
+  useEffect(() => {
+    if (isLoaded.current || repoInfo) return;
+
+    if (!/^Welcome Page:\d+$/.test(repoPath)) {
+      invoke<RepoInfo>("get_repo_info", { repoPath })
+        .then((data) => setRepoInfo(data))
+        .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
+    }
+
+    isLoaded.current = true;
+  }, [])
+
+  useEffect(() => {
+    if (isActive)
+      setActiveRepoInfo(repoInfo);
+  }, [isActive, repoInfo]);
 
   // Panel resizing synchronization
   useEffect(() => {
@@ -55,21 +76,6 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
       isProgrammaticResize.current = false;
     }, 0);
   }, [rightSize, showInfoSidebar]);
-
-  // Fetch repo data on load
-  //TODO: DELETE REF ON RELEASE
-  const isLoaded = useRef(false);
-  useEffect(() => {
-    if (isLoaded.current || repoInfo) return;
-
-    if (!/^Welcome Page:\d+$/.test(repoPath)) {
-      invoke<RepoInfo>("get_repo_info", { repoPath })
-        .then((data) => setRepoInfo(data))
-        .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
-    }
-
-    isLoaded.current = true;
-  }, [])
 
   const panelMaxSize = 40;
 
@@ -135,6 +141,8 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
           </>
         )}
       </PanelGroup>
+
+      {activeModal === "fetch" && <FetchRemoteModal />}
     </div>
   );
 };

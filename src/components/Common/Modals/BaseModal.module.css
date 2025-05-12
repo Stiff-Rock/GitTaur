@@ -28,7 +28,7 @@
 }
 
 /* Common modal component styles */
-.pathInputSection {
+.modalInputSection {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,7 +36,7 @@
   width: 100%;
 }
 
-.pathInputSection input {
+.modalInputSection input {
   flex: 1;
 }
 

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useRef, useLayoutEffect } from 'react';
+import React, { createContext, useState, useContext, useRef, useLayoutEffect, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 
@@ -8,12 +8,14 @@ interface AppContextType {
   isInWelcomePage: boolean
   activeModal: AppModals;
   notification: string;
+  activeRepoInfo: RepoInfo | null;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
+  setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
 
   // Global Functions
   isWelcomePage: (text: string) => boolean;
@@ -31,6 +33,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
+  const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
 
   const DtoToWorkspace = (dto: WorkspaceDTO): Workspace => {
     return {
@@ -102,25 +105,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isWelcomePage = (text: string): boolean => {
     return /^Welcome Page:\d+$/.test(text)
   }
-
-  useLayoutEffect(() => {
-    if (!workspace) return;
-
-    if (workspace.tabs.size <= 0) {
-      openWelcomePage();
-    } else if (workspace.activeTab == "" || !workspace.tabs.has(workspace.activeTab)) {
-      console.warn(`Found not valid active tab ${workspace.activeTab}. Attempting fallback...`)
-      const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
-      setActiveTab(fallbackTab);
-    }
-
-    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
-
-    const workspaceDto = WorkspaceToDto(workspace);
-
-    invoke<Workspace>("save_workspace", { workspaceDto })
-      .catch(error => console.error('Error while saving workspace:', error));
-  }, [workspace]);
 
   //TODO: SI ABRE UN REPO QUE ESTA EN EL HISTORIAL, ABRELO DE AHI, DEBERIA ESTAR CACHEADO
   const openNewRepo = async (path: string = "") => {
@@ -228,6 +212,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     openWorkspaceTab(key, newTab);
   }
 
+  useLayoutEffect(() => {
+    if (!workspace) return;
+
+    if (workspace.tabs.size <= 0) {
+      openWelcomePage();
+    } else if (workspace.activeTab == "" || !workspace.tabs.has(workspace.activeTab)) {
+      console.warn(`Found not valid active tab ${workspace.activeTab}. Attempting fallback...`)
+      const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
+      setActiveTab(fallbackTab);
+    }
+
+    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
+
+    const workspaceDto = WorkspaceToDto(workspace);
+
+    invoke<Workspace>("save_workspace", { workspaceDto })
+      .catch(error => console.error('Error while saving workspace:', error));
+  }, [workspace]);
+
   return (
     <AppContext.Provider value={{
       // States and Setters
@@ -235,6 +238,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isInWelcomePage, setIsInWelcomePage,
       activeModal, setActiveModal,
       notification, setNotification,
+      activeRepoInfo, setActiveRepoInfo,
       // Global Functions
       isWelcomePage,
       openNewRepo,

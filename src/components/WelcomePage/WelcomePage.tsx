@@ -1,12 +1,18 @@
+import { useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import CreateRepositoryButton from '../ActionBar/Actions/WelcomePageActions/CreateRepositoryButton';
 import CloneRepositoryModal from '../Common/Modals/CloneRepo/CloneRepositoryModal';
 import CreateRepositoryModal from '../Common/Modals/CreateRepo/CreateRepositoryModal';
 import styles from './WelcomePage.module.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 function WelcomePage() {
-  const { activeModal, isInWelcomePage, workspace } = useAppContext();
+  const { activeModal, isInWelcomePage, workspace, setActiveRepoInfo } = useAppContext();
+
+  useEffect(() => {
+    if (isInWelcomePage) {
+      setActiveRepoInfo(null);
+    }
+  }, []);
 
   return (
     <div className={`${styles.main} ${isInWelcomePage || !workspace ? '' : 'inactive'}`}>

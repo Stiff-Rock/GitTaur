@@ -6,7 +6,6 @@ import styles from '../../ActionBar.module.css';
 const CloneRepositoryButton: React.FC = () => {
   const { setActiveModal } = useAppContext();
 
-  //TODO: IF SUCCESSUL, OPEN IT
   return (
     <button
       onClick={() => setActiveModal("cloneRepo")}
