@@ -1,8 +1,11 @@
 use crate::{
-    git2json::{self, CommitLog},
+    git2json::{self, ChangeType, CommitLog, FileChanges},
     repo_info::RepoInfo,
 };
-use git2::{AnnotatedCommit, BranchType, FetchOptions, MergeOptions, Reference, Repository};
+use git2::{
+    AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, Reference, Repository,
+    Status, StatusOptions,
+};
 use indexmap::IndexMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -258,6 +261,90 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
     }
 
     Ok(remote_branches_map)
+}
+
+//TODO: THIS NEEDS AN ACTIVE LISTENER
+#[command]
+pub async fn get_unstaged_files(repo_path: &str) -> Result<Vec<FileChanges>, String> {
+    // Open the repository
+    let repo = Repository::open(repo_path).map_err(|e| e.to_string())?;
+
+    // Configure status options
+    let mut status_opts = StatusOptions::new();
+    status_opts
+        .include_untracked(true) // Include untracked files
+        .show(git2::StatusShow::Workdir) // Only look at working directory changes
+        .include_unmodified(false); // Skip unmodified files
+
+    // Get statuses
+    let statuses = repo
+        .statuses(Some(&mut status_opts))
+        .map_err(|e| e.to_string())?;
+
+    let mut unstaged_files = Vec::new();
+
+    // Find all unstaged files
+    for entry in statuses.iter() {
+        if let Some(path) = entry.path() {
+            // Check if the file has changes in the working directory
+            let status = entry.status();
+            if status.intersects(
+                Status::WT_NEW |       // Untracked files
+                Status::WT_MODIFIED |  // Modified but not staged
+                Status::WT_DELETED |   // Deleted but not staged
+                Status::WT_RENAMED |   // Renamed but not staged
+                Status::WT_TYPECHANGE, // Type changed but not staged
+            ) {
+                let change_type = if status.contains(Status::WT_DELETED) {
+                    ChangeType::Deleted
+                } else if status.contains(Status::WT_NEW) {
+                    ChangeType::Added
+                } else {
+                    ChangeType::Modified
+                };
+
+                let unstaged_file = FileChanges {
+                    change_type,
+                    file: path.to_string(),
+                };
+
+                unstaged_files.push(unstaged_file);
+            }
+        }
+    }
+
+    Ok(unstaged_files)
+}
+
+#[command]
+pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<(), String> {
+    if is_repo_busy(&repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut index = repo.index().map_err(|e| e.to_string())?;
+
+    if files.is_empty() {
+        index
+            .add_all(["*"].iter(), IndexAddOption::DEFAULT, None)
+            .map_err(|e| e.to_string())?;
+    } else if files.len() == 1 {
+        index
+            .add_path(Path::new(files[0]))
+            .map_err(|e| e.to_string())?;
+    } else {
+        for file in &files {
+            index.add_path(Path::new(file)).map_err(|e| e.to_string())?;
+        }
+    }
+
+    index.write().map_err(|e| e.to_string())?;
+
+    release_repo(&repo_path);
+
+    Ok(())
 }
 
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();

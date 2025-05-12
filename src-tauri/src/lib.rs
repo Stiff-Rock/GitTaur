@@ -67,11 +67,14 @@ pub fn run() {
             repo_manager::create_repo,
             repo_manager::clone_repo,
             repo_manager::get_repo_info,
+            repo_manager::get_unstaged_files,
+            repo_manager::add_to_staging_area,
             repo_manager::fetch_remote,
             repo_manager::pull_remote,
             repo_manager::push_remote,
             repo_manager::create_branch,
             open_terminal,
+            //TODO: DELETE ON RELEASE
             repo_manager::reset,
         ])
         .setup(|app| {
