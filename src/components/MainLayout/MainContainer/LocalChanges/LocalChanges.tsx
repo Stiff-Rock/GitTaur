@@ -6,6 +6,8 @@ import { listen } from "@tauri-apps/api/event";
 import { useMainContext } from "../../../../context/MainContext";
 import FileChangeItem from "../../../Common/FileChangeItem/FileChangeItem";
 import { DiffModifiedIcon, CheckboxIcon } from '@primer/octicons-react'
+import StageAllButton from './StageAllButton';
+import UnstageAllButton from './UnstageAllButton';
 
 interface LocalChangesProps {
   repoPath: string;
@@ -47,10 +49,13 @@ const LocalChanges: React.FC<LocalChangesProps> = ({ repoPath }) => {
         <DiffModifiedIcon />
         <span>Unstaged Files</span>
         <span>({repoStatus?.unstagedFiles.length || 0})</span>
+        <div className={styles.actionsContainer}>
+          <StageAllButton />
+        </div>
       </div>
       <div className={`${styles.section}`}>
         {repoStatus && repoStatus.unstagedFiles.map((changes, index) => (
-          <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} />
+          <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} className={styles.fileChangeItem} />
         ))}
       </div>
 
@@ -58,10 +63,13 @@ const LocalChanges: React.FC<LocalChangesProps> = ({ repoPath }) => {
         <CheckboxIcon />
         <span>Staged Files</span>
         <span>({repoStatus?.stagedFiles.length || 0})</span>
+        <div className={styles.actionsContainer}>
+          <UnstageAllButton />
+        </div>
       </div>
       <div className={`${styles.section}`}>
         {repoStatus && repoStatus.stagedFiles.map((changes, index) => (
-          <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} />
+          <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} className={styles.fileChangeItem} />
         ))}
       </div>
     </div >
