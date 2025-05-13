@@ -358,7 +358,7 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 }
 
 #[command]
-pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<(), String> {
+pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     println!("ADD STAGING AREA - CHECKING");
     if is_repo_busy(&repo_path) {
         println!("ADD STAGING AREA - REPO BUSY");
@@ -373,10 +373,6 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<
         index
             .add_all(["*"].iter(), IndexAddOption::DEFAULT, None)
             .map_err(|e| e.to_string())?;
-    } else if files.len() == 1 {
-        index
-            .add_path(Path::new(files[0]))
-            .map_err(|e| e.to_string())?;
     } else {
         for file in &files {
             index.add_path(Path::new(file)).map_err(|e| e.to_string())?;
@@ -386,6 +382,42 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<
     index.write().map_err(|e| e.to_string())?;
 
     println!("ADD TO STAGING AREA - RELEASING");
+    release_repo(&repo_path);
+
+    Ok(())
+}
+
+#[command]
+pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
+    println!("REMOVE FROM STAGING AREA - CHECKING");
+    if is_repo_busy(&repo_path) {
+        println!("REMOVE FROM STAGING AREA - REPO BUSY");
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut index = repo.index().map_err(|e| e.to_string())?;
+
+    if files.is_empty() {
+        let head = repo.head().map_err(|e| e.to_string())?;
+        let obj = head
+            .peel(git2::ObjectType::Tree)
+            .map_err(|e| e.to_string())?;
+        let tree = obj.as_tree().ok_or("Could not find tree")?;
+
+        index.read_tree(&tree).map_err(|e| e.to_string())?;
+    } else {
+        for file in &files {
+            index
+                .remove_path(Path::new(file))
+                .map_err(|e| e.to_string())?;
+        }
+    }
+
+    index.write().map_err(|e| e.to_string())?;
+
+    println!("REMOVE FROM STAGING AREA - RELEASING");
     release_repo(&repo_path);
 
     Ok(())

@@ -5,13 +5,15 @@
 .section {
   height: 50%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-.sectionTitle {
+.sectionBar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  flex-shrink: 0;
+  height: 48px;
   padding: 10px;
   background-color: var(--secondary-bg);
   border-style: solid;
@@ -19,33 +21,42 @@
   box-sizing: border-box;
 }
 
-.sectionTitle :nth-child(1) {
-  width: 25%;
+.sectionBar div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
-.sectionTitle :nth-child(2) {
+.sectionIcon {
+  width: 25%;
+  justify-content: flex-start !important;
+}
+
+.sectionName {
   width: 50%;
 }
 
-.sectionTitle :nth-child(3) {
-  width: 10%;
-}
-
-.sectionTitle :nth-child(4) {
-  width: 15%;
-}
-
 .actionsContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 25%;
+  justify-content: flex-end !important;
 }
 
-.unstagedSectionTitle {
+.actionsContainer svg {
+  padding: 5px;
+  border-radius: 5px;
+  transition: 0.1s ease;
+}
+
+.actionsContainer svg:hover {
+  background-color: var(--lighter-bg);
+}
+
+.unstagedSectionBar {
   border-width: 0 0 1px 0;
 }
 
-.stagedSectionTitle {
+.stagedSectionBar {
   border-width: 1px 0 1px 0;
 }
 

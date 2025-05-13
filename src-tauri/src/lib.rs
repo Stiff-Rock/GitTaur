@@ -70,6 +70,7 @@ pub fn run() {
             repo_manager::get_repo_info,
             repo_manager::get_repo_status,
             repo_manager::add_to_staging_area,
+            repo_manager::remove_from_staging_area,
             repo_manager::fetch_remote,
             repo_manager::pull_remote,
             repo_manager::push_remote,

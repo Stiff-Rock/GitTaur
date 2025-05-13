@@ -28,6 +28,7 @@ const AppTabChooser: React.FC = () => {
       >
         <FileDiffIcon className={`${currentAppTab === "local-changes" ? styles.active : styles.inactive}`} />
         <span>Changes</span>
+        {/*TODO: THE NUMBERS ARE NOT CENTERED AT ALL (TRY 2 DIGITS) AND MAYBE USE LINE-HEIGHT: 1*/}
         {totalChanges > 0 && <div className={styles.changesStatusIndicator}>{totalChanges > 999 ? '+999' : totalChanges}</div>}
       </div>
 

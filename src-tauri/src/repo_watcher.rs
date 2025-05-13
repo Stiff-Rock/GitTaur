@@ -70,9 +70,9 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
 pub async fn stop_git_watcher(repo_path: String) -> Result<(), String> {
     let removed = WATCHER_STORE.lock().unwrap().remove(&repo_path);
 
-    if removed.is_some() {
-        Ok(())
-    } else {
-        Err(format!("No watcher found for {}", repo_path))
+    if !removed.is_some() {
+        eprintln!("No watcher found for {}", repo_path);
     }
+
+    Ok(())
 }
