@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './AppTabs.module.css';
 import { HistoryIcon, FileDiffIcon, ChecklistIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../../../context/MainContext';
 
 const AppTabChooser: React.FC = () => {
-  const { setCurrentAppTab, currentAppTab } = useMainContext();
+  const { setCurrentAppTab, currentAppTab, repoStatus } = useMainContext();
+  const [totalChanges, setTotalChanges] = useState<number>(0);
+
+  useEffect(() => {
+    if (!repoStatus) return;
+    setTotalChanges(repoStatus.unstagedFiles.length + repoStatus.stagedFiles.length);
+  }, [repoStatus])
+
   return (
     <div className={styles.tabs}>
       <div
@@ -21,6 +28,7 @@ const AppTabChooser: React.FC = () => {
       >
         <FileDiffIcon className={`${currentAppTab === "local-changes" ? styles.active : styles.inactive}`} />
         <span>Changes</span>
+        {totalChanges > 0 && <div className={styles.changesStatusIndicator}>{totalChanges > 999 ? '+999' : totalChanges}</div>}
       </div>
 
       <div

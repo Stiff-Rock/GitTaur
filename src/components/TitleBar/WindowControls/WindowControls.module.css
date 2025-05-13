@@ -43,9 +43,6 @@
 .sepparator {
   width: 1px;
   height: 60%;
-  background-color: var(--lighter-bg);
-  border: none;
-  box-sizing: border-box;
 }
 
 .draggable {

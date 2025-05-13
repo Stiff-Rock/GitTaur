@@ -28,7 +28,6 @@ body,
   overflow: hidden;
 }
 
-/* References all containers in the app */
 .container {
   display: flex;
   flex-direction: column;
@@ -93,6 +92,13 @@ a {
   cursor: pointer;
   text-decoration: underline;
   user-select: none;
+}
+
+hr {
+  height: 1px;
+  background-color: var(--lighter-bg);
+  border: none;
+  box-sizing: border-box;
 }
 
 .inactive {

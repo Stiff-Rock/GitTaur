@@ -152,8 +152,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const tabs = new Map<string, Tab>(workspace.tabs);
 
-    // If the only tab is a welcome page, don't close it
-    if (tabs.size === 1 && isWelcomePage(tabKey)) return;
+    // If it is the only tab and it's a welcome page, don't close it
+    const tabIsWelcomePage = isWelcomePage(tabKey);
+    if (tabs.size === 1 && tabIsWelcomePage) return;
+
+    if (!tabIsWelcomePage)
+      invoke("stop_git_watcher", { repoPath: tabKey }).catch((e) => {
+        const msg = `Error stopping status watcher - ${e}`;
+        console.error(msg);
+        setNotification(msg);
+      });
 
     // Gets the position that tab was in before removing it
     const removedTabIndex = [...tabs.keys()].indexOf(tabKey);

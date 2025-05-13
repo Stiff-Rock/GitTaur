@@ -5,6 +5,7 @@ interface MainContextType {
   // State 
   currentAppTab: AppTabs;
   repoInfo: RepoInfo | null;
+  repoStatus: RepoStatus | null;
   commitInfo: CommitLog | null;
   selectedCommit: string;
   showInfoSidebar: boolean;
@@ -13,6 +14,7 @@ interface MainContextType {
   // Setters 
   setCurrentAppTab: React.Dispatch<React.SetStateAction<AppTabs>>;
   setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
+  setRepoStatus: React.Dispatch<React.SetStateAction<RepoStatus | null>>;
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,6 +33,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
+  const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
 
   const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
@@ -119,6 +122,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <MainContext.Provider value={{
       currentAppTab, setCurrentAppTab,
       repoInfo, setRepoInfo,
+      repoStatus, setRepoStatus,
       commitInfo, setCommitInfo,
       selectedCommit, setSelectedCommit,
       showInfoSidebar, setShowInfoSidebar,

@@ -93,7 +93,6 @@ const CommitGraph: React.FC = () => {
           <GraphProvider key={commitLogs!.length}>
             <Gitgraph options={options} graphCommitOptions={graphCommitOptions}>
               {(gitgraph) => {
-                console.log("RE-RENDER")
                 gitgraph.clear();
                 gitgraph.import(commitLogs);
               }}

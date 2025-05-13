@@ -3,10 +3,27 @@
 }
 
 .section {
-  border-style: solid;
-  border-color: white;
-  border-width: 4px 4px 2px 4px;
   height: 50%;
   padding: 10px;
   box-sizing: border-box;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: var(--secondary-bg);
+  border-style: solid;
+  border-color: var(--border-color);
+  box-sizing: border-box;
+}
+
+.unstagedSectionTitle {
+  border-width: 0 0 1px 0;
+}
+
+.stagedSectionTitle {
+  border-width: 1px 0 1px 0;
 }

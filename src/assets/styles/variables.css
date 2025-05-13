@@ -1,5 +1,5 @@
 :root {
-  /* COLORS */
+  /* BG COLORS */
   --primary-bg: #121212;
 
   --secondary-bg: #1A1A1A;
@@ -11,23 +11,28 @@
   --border-color: #0f0f0f;
 
 
+  /* FONT COLORS */
   --primary-text: #d1d5db;
 
   --secondary-text: #868e96;
 
-
-  --link-color: #7FDBFF;
-
-  --active-color: #50FA7B;
-
-  --modal-bg: rgba(0, 0, 0, 0.5);
+  --tertiary-text: #404040;
 
 
+  /* FILE CHANGE ITEM COLORS */
   --file-added: #4CAF50;
 
   --file-removed: #F44336;
 
   --file-changed: #FF9800;
+
+
+  /* MISC COLORS */
+  --link-color: #7FDBFF;
+
+  --active-color: #50FA7B;
+
+  --modal-bg: rgba(0, 0, 0, 0.5);
 
 
   /* FONT SIZES */
@@ -39,8 +44,13 @@
 
   --font-size-tab: 14px;
 
+  --font-size-small: 10px;
+
+
   /* ICON SIZES */
   --icon-primary-size: 20px;
 
   --icon-secondary-size: 15px;
+
+  --icon-badge-size: 12px;
 }

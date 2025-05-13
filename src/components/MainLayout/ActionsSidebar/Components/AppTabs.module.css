@@ -19,6 +19,7 @@
   background-color: var(--secondary-bg);
   cursor: pointer;
   transition: background-color 0.1s ease;
+  position: relative;
 }
 
 .tab span {
@@ -35,6 +36,25 @@
 
 .inactive {
   color: var(--secondary-text);
+}
+
+.changesStatusIndicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: var(--link-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: var(--icon-badge-size);
+  width: auto;
+  min-width: var(--icon-badge-size);
+  padding: 2px;
+  border-radius: 50%;
+  z-index: 1;
+  font-size: var(--font-size-small);
+  font-weight: bold;
+  color: var(--tertiary-text);
 }
 
 @container (max-width: 310px) {

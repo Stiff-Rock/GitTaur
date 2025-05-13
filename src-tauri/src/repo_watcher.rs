@@ -11,6 +11,9 @@ use tauri::{command, AppHandle, Emitter};
 static WATCHER_STORE: LazyLock<Arc<Mutex<HashMap<String, RecommendedWatcher>>>> =
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
+//TODO: MAKE WATCHER FOR COMMITING ("{}/.git/HEAD") AND BRANCHING ("{}/.git/refs") AND MAYBE INIT
+//ALL OF THEM AT ONCE
+
 #[command]
 pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Result<(), String> {
     let mut watchers = WATCHER_STORE.lock().unwrap();
