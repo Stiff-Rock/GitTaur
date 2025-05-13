@@ -1,0 +1,46 @@
+.changeItem {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: var(--tertiary-bg);
+  border-radius: 4px;
+  gap: 10px;
+}
+
+.changeType {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.diffIcon,
+.plusIcon,
+.minusIcon {
+  padding: 1px;
+  border-radius: 3px;
+  color: white;
+}
+
+.diffIcon {
+  background-color: var(--file-changed);
+}
+
+.plusIcon {
+  background-color: var(--file-added);
+}
+
+.minusIcon {
+  background-color: var(--file-removed);
+}
+
+.changeField {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.value {
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}

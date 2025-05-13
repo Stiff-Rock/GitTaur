@@ -96,8 +96,8 @@ a {
 }
 
 .inactive {
-  position: absolute;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
+  position: absolute !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }

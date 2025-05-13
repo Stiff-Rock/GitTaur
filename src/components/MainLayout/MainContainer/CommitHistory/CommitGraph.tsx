@@ -53,15 +53,15 @@ const graphCommitOptions: GraphCommitOptions = {
 }
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarsRef, repoInfo } = useMainContext();
+  const { scrollbarsRef, repoInfo, currentAppTab } = useMainContext();
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
   useLayoutEffect(() => {
     if (!repoInfo) return;
 
-    if (repoInfo.commit_history) {
-      const commitLogs = Object.values(repoInfo.commit_history);
+    if (repoInfo.commitHistory) {
+      const commitLogs = Object.values(repoInfo.commitHistory);
       setCommitLogs(commitLogs);
     }
   }, [repoInfo]);
@@ -72,6 +72,7 @@ const CommitGraph: React.FC = () => {
   //TODO: RECTS HAVE TO FIT ENTERILY AND SELECTED COMMTIS ARE BUGGER SOMEHOW
   return (
     <Scrollbars
+      className={currentAppTab === "commit-history" ? '' : 'inactive'}
       ref={scrollbarsRef}
       autoHide
       autoHideTimeout={500}

@@ -75,55 +75,15 @@ hr {
   background-color: var(--lighter-bg);
 }
 
-.changeItem {
-  display: flex;
-  padding: 10px;
-  margin-bottom: 10px;
-  background-color: var(--tertiary-bg);
-  border-radius: 4px;
-  gap: 10px;
-}
-
-.changeType {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.diffIcon,
-.plusIcon,
-.minusIcon {
-  padding: 1px;
-  border-radius: 3px;
-  color: white;
-}
-
-.diffIcon {
-  background-color: var(--file-changed);
-}
-
-.plusIcon {
-  background-color: var(--file-added);
-}
-
-.minusIcon {
-  background-color: var(--file-removed);
-}
-
-.changeField {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 5px;
-}
-
-.patch {
+/*TODO: CREO QUE ESTO NO HACE NADA
+* .patch {
   background-color: var(--lighter-bg);
   padding: 5px;
   border-radius: 4px;
   font-family: monospace;
   white-space: pre-wrap;
   margin-top: 5px;
-}
+}*/
 
 .copyWrapper {
   position: relative;

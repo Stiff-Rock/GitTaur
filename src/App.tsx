@@ -12,7 +12,7 @@ import { invoke } from "@tauri-apps/api/core";
 //BUG: Failed to open repository while restoring session with incorrect workspace/non existen paths
 
 function App() {
-  const { workspace, notification, setNotification, isWelcomePage, isInWelcomePage } = useAppContext();
+  const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
 
   useEffect(() => {
     if (!notification) return;

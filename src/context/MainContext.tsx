@@ -29,9 +29,12 @@ const MainContext = createContext<MainContextType | undefined>(undefined);
 
 export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
+
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
+
   const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
+
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
 
   const scrollbarsRef = useRef<Scrollbars>(null);
@@ -60,7 +63,7 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (repoInfo && selectedCommit) {
-      const commitLog = repoInfo.commit_history[selectedCommit];
+      const commitLog = repoInfo.commitHistory[selectedCommit];
       setCommitInfo(commitLog);
     }
   }, [selectedCommit]);

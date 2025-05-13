@@ -27,13 +27,13 @@ const InfoAccordions: React.FC = () => {
       <Accordion containerClassName={styles.accordion} title="Local" icon={<DeviceDesktopIcon />} >
         {repoInfo &&
           <ul>
-            {repoInfo.local_branches.map((item, index) => (
+            {repoInfo.localBranches.map((item, index) => (
               <li key={index}>
                 <div>
                   <GitBranchIcon />
                   {item}
                   <ActiveIndicator
-                    style={repoInfo.current_branch === item ? {} : { display: 'none' }}
+                    style={repoInfo.currentBranch === item ? {} : { display: 'none' }}
                     className={`${styles.activeIndicator}`}
                   />
                 </div>

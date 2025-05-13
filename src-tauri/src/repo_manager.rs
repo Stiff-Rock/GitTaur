@@ -1,6 +1,6 @@
 use crate::{
     git2json::{self, ChangeType, CommitLog, FileChanges},
-    repo_info::RepoInfo,
+    repo_info::{RepoInfo, RepoStatus},
 };
 use git2::{
     AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, Reference, Repository,
@@ -17,9 +17,9 @@ use tauri::command;
 static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
 
-const BUSY_MSG: &str =
-    "Repository is currently in use. Please try again when other operations complete.";
+const BUSY_MSG: &str = "Repository busy. Please try again when other operations complete.";
 
+//TODO: DELETE ON RELEASE
 #[command]
 pub async fn reset() -> Result<(), String> {
     match ACTIVE_REPOS.lock() {
@@ -39,6 +39,9 @@ fn is_repo_busy(repo_path: &String) -> bool {
 
             if !is_busy {
                 active_repos.insert(repo_path.to_string());
+                println!("OBTAINING {}:\n{:#?}", repo_path, active_repos);
+            } else {
+                println!("BUSY {}:\n{:#?}", repo_path, active_repos);
             }
 
             return is_busy;
@@ -54,6 +57,7 @@ pub fn release_repo(repo_path: &String) {
     match ACTIVE_REPOS.lock() {
         Ok(mut active_repos) => {
             active_repos.remove(repo_path);
+            println!("RELEASING {}:\n{:#?}", &repo_path, active_repos)
         }
         Err(err) => {
             eprintln!("Error releasing repo: mutex poisoned - {}", err);
@@ -62,7 +66,9 @@ pub fn release_repo(repo_path: &String) {
 }
 
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
+    println!("IS REPO - CHECKING");
     if !has_lock && is_repo_busy(repo_path) {
+        println!("IS REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -71,6 +77,7 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
         Err(_) => Ok(false),
     };
 
+    println!("IS REPO - RELEASING");
     release_repo(repo_path);
 
     result
@@ -78,7 +85,9 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 
 #[command]
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
+    println!("CREATING REPO - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("CREATING REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -90,15 +99,18 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
             .map_err(|e| format!("Error creating repository at '{}' - {}", repo_path, e))
     };
 
+    println!("CREATE REPO - RELEASING");
     release_repo(&repo_path);
 
     create_result
 }
 
-//TODO: AUTH
+//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
+    println!("CLONE - CHECKING");
     if is_repo_busy(&path) {
+        println!("CLONE REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -136,6 +148,7 @@ pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String
         }
     };
 
+    println!("CLONE REPO - RELEASING");
     release_repo(&path);
 
     result
@@ -150,7 +163,9 @@ fn get_current_branch(repo: &Repository) -> String {
 
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
+    println!("GET REPO INFO - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("GET REPO INFO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -219,6 +234,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         Ok(repo)
     })();
 
+    println!("GET REPO INFO - RELEASING");
     release_repo(&repo_path);
 
     result
@@ -263,62 +279,89 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
     Ok(remote_branches_map)
 }
 
-//TODO: THIS NEEDS AN ACTIVE LISTENER
 #[command]
-pub async fn get_unstaged_files(repo_path: &str) -> Result<Vec<FileChanges>, String> {
-    // Open the repository
-    let repo = Repository::open(repo_path).map_err(|e| e.to_string())?;
+pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
+    println!("GET REPO STATUS - CHECKING");
+    if is_repo_busy(&repo_path) {
+        println!("GET REPO STATUS - REPO BUSY");
+        return Err(BUSY_MSG.to_string());
+    }
 
-    // Configure status options
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
     let mut status_opts = StatusOptions::new();
     status_opts
-        .include_untracked(true) // Include untracked files
-        .show(git2::StatusShow::Workdir) // Only look at working directory changes
-        .include_unmodified(false); // Skip unmodified files
+        .include_untracked(true)
+        .show(git2::StatusShow::IndexAndWorkdir)
+        .include_unmodified(false);
 
-    // Get statuses
     let statuses = repo
         .statuses(Some(&mut status_opts))
         .map_err(|e| e.to_string())?;
 
-    let mut unstaged_files = Vec::new();
+    let mut unstaged_files: Vec<FileChanges> = Vec::new();
+    let mut staged_files: Vec<FileChanges> = Vec::new();
 
-    // Find all unstaged files
     for entry in statuses.iter() {
         if let Some(path) = entry.path() {
-            // Check if the file has changes in the working directory
             let status = entry.status();
+            let path_str = path.to_string();
+
             if status.intersects(
-                Status::WT_NEW |       // Untracked files
-                Status::WT_MODIFIED |  // Modified but not staged
-                Status::WT_DELETED |   // Deleted but not staged
-                Status::WT_RENAMED |   // Renamed but not staged
-                Status::WT_TYPECHANGE, // Type changed but not staged
+                Status::INDEX_NEW
+                    | Status::INDEX_MODIFIED
+                    | Status::INDEX_DELETED
+                    | Status::INDEX_RENAMED
+                    | Status::INDEX_TYPECHANGE,
             ) {
-                let change_type = if status.contains(Status::WT_DELETED) {
-                    ChangeType::Deleted
-                } else if status.contains(Status::WT_NEW) {
-                    ChangeType::Added
-                } else {
-                    ChangeType::Modified
-                };
-
-                let unstaged_file = FileChanges {
+                let change_type =
+                    determine_change_type(status, Status::INDEX_DELETED, Status::INDEX_NEW);
+                staged_files.push(FileChanges {
                     change_type,
-                    file: path.to_string(),
-                };
+                    file: path_str.clone(),
+                });
+            }
 
-                unstaged_files.push(unstaged_file);
+            if status.intersects(
+                Status::WT_NEW
+                    | Status::WT_MODIFIED
+                    | Status::WT_DELETED
+                    | Status::WT_RENAMED
+                    | Status::WT_TYPECHANGE,
+            ) {
+                let change_type = determine_change_type(status, Status::WT_DELETED, Status::WT_NEW);
+                unstaged_files.push(FileChanges {
+                    change_type,
+                    file: path_str,
+                });
             }
         }
     }
 
-    Ok(unstaged_files)
+    println!("GET REPO STATUS - RELEASING");
+    release_repo(&repo_path);
+
+    Ok(RepoStatus {
+        unstaged_files,
+        staged_files,
+    })
+}
+
+fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status) -> ChangeType {
+    if status.contains(deleted_flag) {
+        ChangeType::Deleted
+    } else if status.contains(new_flag) {
+        ChangeType::Added
+    } else {
+        ChangeType::Modified
+    }
 }
 
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<(), String> {
+    println!("ADD STAGING AREA - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("ADD STAGING AREA - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -342,6 +385,7 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<
 
     index.write().map_err(|e| e.to_string())?;
 
+    println!("ADD TO STAGING AREA - RELEASING");
     release_repo(&repo_path);
 
     Ok(())
@@ -350,7 +394,9 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<&str>) -> Result<
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
+    println!("FETCH REMOTE - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("FETCH REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -374,6 +420,7 @@ pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<Str
         }
     }
 
+    println!("FETCH REMOTE - RELEASING");
     release_repo(&repo_path);
 
     if any_updates {
@@ -431,7 +478,9 @@ pub async fn pull_remote(
     remote_name: String,
     branches: Vec<String>,
 ) -> Result<String, String> {
+    println!("PULL REMOTE - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("PULL REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -496,6 +545,7 @@ pub async fn pull_remote(
         }
     }
 
+    println!("PULL REMOTE - RELEASING");
     release_repo(&repo_path);
 
     let msg: String = if has_updated_content {
@@ -589,12 +639,15 @@ fn normal_merge(
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn push_remote(repo_path: String) -> Result<(), String> {
+    println!("PUSH REMOTE - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("PUSH REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
     let _repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
+    println!("PUSH REMOTE - RELEASING");
     release_repo(&repo_path);
 
     Ok(())
@@ -602,10 +655,13 @@ pub async fn push_remote(repo_path: String) -> Result<(), String> {
 
 #[command]
 pub async fn create_branch(repo_path: String) -> Result<(), String> {
+    println!("CREATE BRANCH - CHECKING");
     if is_repo_busy(&repo_path) {
+        println!("CREATE BRANCH - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
+    println!("CREATE BRANCH - RELEASING");
     release_repo(&repo_path);
 
     Ok(())

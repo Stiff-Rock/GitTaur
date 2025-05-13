@@ -68,8 +68,8 @@ const CommitHistory: React.FC = () => {
       )}
     >
       <div className={`${styles.container}`}>
-        {repoInfo && Object.values(repoInfo.commit_history).length > 0 ? (
-          Object.values(repoInfo.commit_history).map((commit, index) => (
+        {repoInfo && Object.values(repoInfo.commitHistory).length > 0 ? (
+          Object.values(repoInfo.commitHistory).map((commit, index) => (
             <span
               ref={commit.sha === selectedCommit ? selectedCommitRef : null}
               className={`${styles.commit} ${selectedCommit === commit.sha ? styles.selected : ''}`}

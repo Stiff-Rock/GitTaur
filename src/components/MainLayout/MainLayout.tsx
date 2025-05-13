@@ -107,9 +107,9 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
         <PanelResizeHandle className={styles.resizeHandle} disabled={!isActive} />
 
         <Panel id="center-panel" order={2}>
-          {currentAppTab === "commit-history" && <CommitGraph />}
-          {currentAppTab === "local-changes" && <LocalChanges />}
-          {currentAppTab === "todo-panel" && <TodoPanel />}
+          <CommitGraph />
+          <LocalChanges repoPath={repoPath} />
+          <TodoPanel />
         </Panel>
 
         {showInfoSidebar && (

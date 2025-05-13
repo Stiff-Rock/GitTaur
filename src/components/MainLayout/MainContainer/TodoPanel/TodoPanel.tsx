@@ -1,8 +1,13 @@
+import { useMainContext } from "../../../../context/MainContext";
+
 const TodoPanel: React.FC = () => {
+  const { currentAppTab } = useMainContext();
   return (
-    <span>
-      TodoPanel
-    </span>
+    <div className={currentAppTab === "todo-panel" ? '' : 'inactive'}>
+      <span>
+        TodoPanel
+      </span>
+    </div>
   );
 };
 

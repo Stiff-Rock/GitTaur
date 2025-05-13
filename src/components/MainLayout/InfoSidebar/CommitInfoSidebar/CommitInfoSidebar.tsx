@@ -3,8 +3,8 @@ import styles from './CommitInfoSidebar.module.css';
 import { useMainContext } from '../../../../context/MainContext';
 import CopyShaButton from './CopyShaButton';
 import { Scrollbars } from 'react-custom-scrollbars-2';
-import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
 import UserAvatar from './UserAvatar';
+import FileChangeItem from '../../../Common/FileChangeItem/FileChangeItem';
 
 const CommitInfoSidebar: React.FC = () => {
   const { currentAppTab, commitInfo, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
@@ -12,7 +12,7 @@ const CommitInfoSidebar: React.FC = () => {
   const goToParent = (sha: string) => {
     if (!repoInfo) return;
 
-    const commit = repoInfo.commit_history[sha];
+    const commit = repoInfo.commitHistory[sha];
     if (!commit) {
       console.error("Could not find commit by the following sha: ", sha);
       return;
@@ -117,23 +117,13 @@ const CommitInfoSidebar: React.FC = () => {
             <span className={styles.title}>Changes</span>
             <div className={styles.commitContainer}>
               {commitInfo.changes && commitInfo.changes.length > 0 ? (
-                commitInfo.changes.map((changes, index) => {
-                  const type = changes.changeType;
-                  return (
-                    <div key={index} className={styles.changeItem}>
-                      <span className={styles.changeType}>
-                        {type === "modified" ? (
-                          <DiffIcon className={styles.diffIcon} />
-                        ) : type === "added" ? (
-                          <PlusIcon className={styles.plusIcon} />
-                        ) : type === "deleted" ? (
-                          <DashIcon className={styles.minusIcon} />
-                        ) : (<span>Error</span>)}
-                      </span>
-                      <span className={styles.value}>{changes.file}</span>
-                    </div>
-                  );
-                })
+                commitInfo.changes.map((changes, index) => (
+                  <FileChangeItem
+                    changeType={changes.changeType}
+                    fileName={changes.file}
+                    key={index}
+                  />
+                ))
               ) : (
                 <span className={styles.value}>No changes</span>
               )}

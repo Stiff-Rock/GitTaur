@@ -4,6 +4,11 @@ interface UserInfo {
   timestamp: number;
 }
 
+interface RepoStatus {
+  unstagedFiles: FileChanges[];
+  stagedFiles: FileChanges[];
+}
+
 type ChangeType = "deleted" | "modified" | "added";
 
 interface FileChanges {
@@ -29,10 +34,10 @@ interface CommitLog {
 
 interface RepoInfo {
   name: string;
-  main_branch: string;
-  current_branch: string;
-  local_branches: string[];
+  mainBranch: string;
+  currentBranch: string;
+  localBranches: string[];
   remotes: Record<string, string[]>;
   tags: string[];
-  commit_history: Record<string, CommitLog>;
+  commitHistory: Record<string, CommitLog>;
 }
