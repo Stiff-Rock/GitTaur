@@ -10,12 +10,14 @@ use indexmap::IndexMap;
 use std::{
     collections::{HashMap, HashSet},
     path::Path,
-    sync::{LazyLock, Mutex},
+    sync::{Condvar, LazyLock, Mutex},
 };
 use tauri::command;
 
 static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
+
+static CONDVAR: LazyLock<Condvar> = LazyLock::new(|| Condvar::new());
 
 const BUSY_MSG: &str = "Repository busy. Please try again when other operations complete.";
 
@@ -32,31 +34,38 @@ pub async fn reset() -> Result<(), String> {
     }
 }
 
-fn is_repo_busy(repo_path: &String) -> bool {
-    match ACTIVE_REPOS.lock() {
-        Ok(mut active_repos) => {
-            let is_busy = active_repos.contains(repo_path);
-
-            if !is_busy {
-                active_repos.insert(repo_path.to_string());
-                println!("OBTAINING {}:\n{:#?}", repo_path, active_repos);
-            } else {
-                println!("BUSY {}:\n{:#?}", repo_path, active_repos);
-            }
-
-            return is_busy;
-        }
+fn is_repo_busy(repo_path: &String, wait: bool) -> bool {
+    let mut active_repos = match ACTIVE_REPOS.lock() {
+        Ok(guard) => guard,
         Err(err) => {
             eprintln!("Error checking if repo is busy: mutex poisoned - {}", err);
-            true
+            return true;
         }
+    };
+
+    let is_busy = active_repos.contains(repo_path);
+
+    if is_busy && wait {
+        while active_repos.contains(repo_path) {
+            active_repos = CONDVAR.wait(active_repos).unwrap();
+        }
+
+        active_repos.insert(repo_path.to_string());
+    } else if !is_busy {
+        active_repos.insert(repo_path.to_string());
+        println!("OBTAINING {}:\n{:#?}", repo_path, active_repos);
+    } else {
+        println!("BUSY {}:\n{:#?}", repo_path, active_repos);
     }
+
+    is_busy && !wait
 }
 
 pub fn release_repo(repo_path: &String) {
     match ACTIVE_REPOS.lock() {
         Ok(mut active_repos) => {
             active_repos.remove(repo_path);
+            CONDVAR.notify_all();
             println!("RELEASING {}:\n{:#?}", &repo_path, active_repos)
         }
         Err(err) => {
@@ -67,7 +76,7 @@ pub fn release_repo(repo_path: &String) {
 
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
     println!("IS REPO - CHECKING");
-    if !has_lock && is_repo_busy(repo_path) {
+    if !has_lock && is_repo_busy(repo_path, false) {
         println!("IS REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -86,7 +95,7 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 #[command]
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
     println!("CREATING REPO - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("CREATING REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -109,7 +118,7 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
     println!("CLONE - CHECKING");
-    if is_repo_busy(&path) {
+    if is_repo_busy(&path, false) {
         println!("CLONE REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -164,7 +173,7 @@ fn get_current_branch(repo: &Repository) -> String {
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     println!("GET REPO INFO - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("GET REPO INFO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -282,7 +291,7 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
     println!("GET REPO STATUS - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("GET REPO STATUS - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -357,10 +366,11 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
     }
 }
 
+//TODO: IT SHOULD ONLY WAIT IF NO WRITE OPERATIONS ARE BEING PERFORMED
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     println!("ADD STAGING AREA - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, true) {
         println!("ADD STAGING AREA - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -387,10 +397,11 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
     Ok(())
 }
 
+//TODO: IT SHOULD ONLY WAIT IF NO WRITE OPERATIONS ARE BEING PERFORMED
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     println!("REMOVE FROM STAGING AREA - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, true) {
         println!("REMOVE FROM STAGING AREA - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -427,7 +438,7 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 #[command]
 pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
     println!("FETCH REMOTE - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("FETCH REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -511,7 +522,7 @@ pub async fn pull_remote(
     branches: Vec<String>,
 ) -> Result<String, String> {
     println!("PULL REMOTE - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("PULL REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -672,7 +683,7 @@ fn normal_merge(
 #[command]
 pub async fn push_remote(repo_path: String) -> Result<(), String> {
     println!("PUSH REMOTE - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("PUSH REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
@@ -688,7 +699,7 @@ pub async fn push_remote(repo_path: String) -> Result<(), String> {
 #[command]
 pub async fn create_branch(repo_path: String) -> Result<(), String> {
     println!("CREATE BRANCH - CHECKING");
-    if is_repo_busy(&repo_path) {
+    if is_repo_busy(&repo_path, false) {
         println!("CREATE BRANCH - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }

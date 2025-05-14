@@ -5,7 +5,7 @@ import { useAppContext } from "../../../../context/AppContext";
 import { listen } from "@tauri-apps/api/event";
 import { useMainContext } from "../../../../context/MainContext";
 import FileChangeItem from "../../../Common/FileChangeItem/FileChangeItem";
-import { DiffModifiedIcon, CheckboxIcon, Icon } from '@primer/octicons-react'
+import { DiffModifiedIcon, CheckboxIcon } from '@primer/octicons-react'
 import StageAllButton from './StageAllButton';
 import UnstageAllButton from './UnstageAllButton';
 import Scrollbars from 'react-custom-scrollbars-2';
@@ -102,86 +102,22 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
     sectionBarStyle: styles.unstagedSectionBar,
     barIcon: <DiffModifiedIcon />,
     sectionTitle: `Unstaged Files (${repoStatus?.unstagedFiles.length || 0})`,
-    actionButtons: < StageAllButton repoPath={repoPath} />,
-    fileChangesArray: repoStatus?.unstagedFiles,
+    actionButtons: [< StageAllButton repoPath={repoPath} />],
+    fileChangesArray: repoStatus?.unstagedFiles ?? [],
   }
 
-  /*const stagedFileSectionProps: ChangesSectionProps = {
-    sectionBarStyle: ,
-    barIcon: ,
-    sectionTitle: ,
-    actionButtons: ,
-    fileChangesArray: ,
-  }*/
+  const stagedFileSectionProps: ChangesSectionProps = {
+    sectionBarStyle: styles.stagedSectionBar,
+    barIcon: <CheckboxIcon />,
+    sectionTitle: `Staged Files (${repoStatus?.stagedFiles.length || 0})`,
+    actionButtons: [<UnstageAllButton repoPath={repoPath} />],
+    fileChangesArray: repoStatus?.stagedFiles ?? [],
+  }
 
   return (
     <div className={`${styles.localChangesContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
-      <div className={`${styles.section}`}>
-        <div className={`${styles.sectionBar} ${styles.unstagedSectionBar}`}>
-          <div className={styles.sectionIcon}>
-          </div>
-
-          <div className={styles.sectionName}>
-            <span></span>
-          </div>
-
-          <div className={styles.actionsContainer}>
-          </div>
-        </div>
-
-        <Scrollbars
-          autoHide
-          autoHideTimeout={500}
-          autoHideDuration={300}
-          renderThumbVertical={({ style, ...props }) => (
-            <div
-              {...props}
-              className='scrollbar'
-            />
-          )}
-          renderTrackVertical={({ style, ...props }) => (
-            <div
-              {...props}
-              style={{
-                ...style,
-                width: '10px',
-                bottom: '2px',
-                right: '0',
-                top: '2px',
-                borderRadius: '4px',
-              }}
-            />
-          )}
-        >
-          {repoStatus && .map((changes, index) => (
-            <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} className={styles.fileChangeItem} />
-          ))}
-        </Scrollbars>
-      </div>
-
       <ChangesSection {...unstagedFileSectionProps} />
       <ChangesSection {...stagedFileSectionProps} />
-
-      <div className={`${styles.section}`}>
-        <div className={`${styles.sectionBar} ${styles.stagedSectionBar}`}>
-          <div className={styles.sectionIcon}>
-            <CheckboxIcon />
-          </div>
-
-          <div className={styles.sectionName}>
-            <span>Staged Files ({repoStatus?.stagedFiles.length || 0})</span>
-          </div>
-
-          <div className={styles.actionsContainer}>
-            <UnstageAllButton repoPath={repoPath} />
-          </div>
-        </div>
-
-
-        {repoStatus && repoStatus.stagedFiles.map((changes, index) => (
-          <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} className={styles.fileChangeItem} />
-        ))}
-      </div>
     </div >
   );
 };
