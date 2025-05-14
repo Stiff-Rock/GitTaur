@@ -14,7 +14,8 @@ html {
 input,
 button,
 select,
-option {
+option,
+textarea {
   font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
   color: var(--primary-text);
 }
@@ -48,7 +49,8 @@ body {
 
 input,
 select,
-.checkbox {
+.checkbox,
+textarea {
   border: 1px solid var(--lighter-bg);
   background-color: var(--secondary-bg);
   padding: 5px;

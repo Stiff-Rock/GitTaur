@@ -11,11 +11,9 @@ const StageAllButton: React.FC<ActionButtonProps> = (props) => {
     onActionStart();
 
     if (statusUpdatePromise.current) {
-      console.log("STAGE WATING PROMISE")
       await statusUpdatePromise.current.catch(() => { });
     }
 
-    console.log("STAGE EXECUTE")
     invoke("add_to_staging_area", { repoPath, files: [] }).catch((e) => {
       const msg = `Error staging files - ${e}`
       console.error(msg);

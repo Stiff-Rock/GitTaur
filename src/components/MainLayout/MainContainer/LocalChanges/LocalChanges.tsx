@@ -38,12 +38,10 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
 
     const unlistenPromise = listen<string>("git-status-changed", (event) => {
       if (event.payload === repoPath) {
-        console.log("CALLING")
         statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
           .then(setRepoStatus)
           .catch(e => setNotification(e))
           .finally(() => 0);
-        console.log("PROMISE:", statusUpdatePromiseRef.current)
       }
     });
 

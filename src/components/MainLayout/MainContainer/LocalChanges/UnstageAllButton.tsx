@@ -11,11 +11,9 @@ const UnstageAllButton: React.FC<ActionButtonProps> = (props) => {
     onActionStart();
 
     if (statusUpdatePromise.current) {
-      console.log("STAGE WATING PROMISE")
       await statusUpdatePromise.current.catch(() => { });
     }
 
-    console.log("STAGE EXECUTE")
     invoke("remove_from_staging_area", { repoPath, files: [] }).catch((e) => {
       const msg = `Error unstaging files - ${e}`
       console.error(msg);
