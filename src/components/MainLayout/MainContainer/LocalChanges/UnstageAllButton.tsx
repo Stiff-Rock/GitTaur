@@ -2,9 +2,11 @@ import { FoldUpIcon } from '@primer/octicons-react'
 import { invoke } from '@tauri-apps/api/core';
 import { useAppContext } from '../../../../context/AppContext';
 import { ActionButtonProps } from './LocalChanges';
+import { useMainContext } from '../../../../context/MainContext';
 
 const UnstageAllButton: React.FC<ActionButtonProps> = (props) => {
-  const { repoPath, onActionStart, onActionEnd, statusUpdatePromise } = props;
+  const { onActionStart, onActionEnd, statusUpdatePromise } = props;
+  const { repoPath } = useMainContext();
   const { setNotification } = useAppContext();
 
   const unstageAllFiles = async () => {

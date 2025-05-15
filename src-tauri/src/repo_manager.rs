@@ -4,7 +4,7 @@ use crate::{
 };
 use git2::{
     AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, Reference, Repository,
-    Status, StatusOptions,
+    Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use std::{
@@ -45,9 +45,6 @@ fn is_repo_busy(repo_path: &String) -> bool {
 
     if is_busy {
         active_repos.insert(repo_path.to_string());
-        println!("OBTAINING {}:\n{:#?}", repo_path, active_repos);
-    } else {
-        println!("BUSY {}:\n{:#?}", repo_path, active_repos);
     }
 
     is_busy
@@ -63,13 +60,10 @@ pub fn release_repo(repo_path: &String) {
     };
 
     active_repos.remove(repo_path);
-    println!("RELEASING {}:\n{:#?}", &repo_path, active_repos)
 }
 
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
-    println!("IS REPO - CHECKING");
     if !has_lock && is_repo_busy(repo_path) {
-        println!("IS REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -78,7 +72,6 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
         Err(_) => Ok(false),
     };
 
-    println!("IS REPO - RELEASING");
     release_repo(repo_path);
 
     result
@@ -86,9 +79,7 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 
 #[command]
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
-    println!("CREATING REPO - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("CREATING REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -100,7 +91,6 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
             .map_err(|e| format!("Error creating repository at '{}' - {}", repo_path, e))
     };
 
-    println!("CREATE REPO - RELEASING");
     release_repo(&repo_path);
 
     create_result
@@ -109,9 +99,7 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
-    println!("CLONE - CHECKING");
     if is_repo_busy(&path) {
-        println!("CLONE REPO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -149,7 +137,6 @@ pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String
         }
     };
 
-    println!("CLONE REPO - RELEASING");
     release_repo(&path);
 
     result
@@ -164,9 +151,7 @@ fn get_current_branch(repo: &Repository) -> String {
 
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
-    println!("GET REPO INFO - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("GET REPO INFO - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -181,7 +166,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         // Get the branch that is considered the principal in this repo
         let main_branch: String;
         if repo.head_detached().map_err(|e| e.to_string())? {
-            println!("HEAD is detached.");
             main_branch = "master".to_string();
         } else {
             let head = repo.head().map_err(|e| e.to_string())?;
@@ -235,7 +219,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         Ok(repo)
     })();
 
-    println!("GET REPO INFO - RELEASING");
     release_repo(&repo_path);
 
     result
@@ -282,9 +265,7 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
-    println!("GET REPO STATUS - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("GET REPO STATUS - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -339,7 +320,6 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
         }
     }
 
-    println!("GET REPO STATUS - RELEASING");
     release_repo(&repo_path);
 
     Ok(RepoStatus {
@@ -361,9 +341,7 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 //TODO: IT SHOULD ONLY WAIT IF NO WRITE OPERATIONS ARE BEING PERFORMED
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    println!("ADD STAGING AREA - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("ADD STAGING AREA - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -383,7 +361,6 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 
     index.write().map_err(|e| e.to_string())?;
 
-    println!("ADD TO STAGING AREA - RELEASING");
     release_repo(&repo_path);
 
     Ok(())
@@ -392,9 +369,7 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 //TODO: IT SHOULD ONLY WAIT IF NO WRITE OPERATIONS ARE BEING PERFORMED
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    println!("REMOVE FROM STAGING AREA - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("REMOVE FROM STAGING AREA - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -420,7 +395,6 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 
     index.write().map_err(|e| e.to_string())?;
 
-    println!("REMOVE FROM STAGING AREA - RELEASING");
     release_repo(&repo_path);
 
     Ok(())
@@ -429,9 +403,7 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
-    println!("FETCH REMOTE - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("FETCH REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -455,7 +427,6 @@ pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<Str
         }
     }
 
-    println!("FETCH REMOTE - RELEASING");
     release_repo(&repo_path);
 
     if any_updates {
@@ -513,9 +484,7 @@ pub async fn pull_remote(
     remote_name: String,
     branches: Vec<String>,
 ) -> Result<String, String> {
-    println!("PULL REMOTE - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("PULL REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
@@ -580,7 +549,6 @@ pub async fn pull_remote(
         }
     }
 
-    println!("PULL REMOTE - RELEASING");
     release_repo(&repo_path);
 
     let msg: String = if has_updated_content {
@@ -674,15 +642,12 @@ fn normal_merge(
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn push_remote(repo_path: String) -> Result<(), String> {
-    println!("PUSH REMOTE - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("PUSH REMOTE - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
     let _repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    println!("PUSH REMOTE - RELEASING");
     release_repo(&repo_path);
 
     Ok(())
@@ -690,13 +655,67 @@ pub async fn push_remote(repo_path: String) -> Result<(), String> {
 
 #[command]
 pub async fn create_branch(repo_path: String) -> Result<(), String> {
-    println!("CREATE BRANCH - CHECKING");
     if is_repo_busy(&repo_path) {
-        println!("CREATE BRANCH - REPO BUSY");
         return Err(BUSY_MSG.to_string());
     }
 
-    println!("CREATE BRANCH - RELEASING");
+    release_repo(&repo_path);
+
+    Ok(())
+}
+
+#[command]
+pub async fn commit(
+    repo_path: String,
+    commit_summary: String,
+    commit_body: String,
+) -> Result<(), String> {
+    if is_repo_busy(&repo_path) {
+        return Err(BUSY_MSG.to_string());
+    }
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut index = repo.index().map_err(|e| e.to_string())?;
+
+    //TODO: FOR NOW GET THE USER'S CONFIG DIRECTLY, BUT LATER DO CONFIG OPTIONS
+    let config = repo.config().map_err(|e| e.to_string())?;
+    let name = config.get_string("user.name").map_err(|e| e.to_string())?;
+    let email = config.get_string("user.email").map_err(|e| e.to_string())?;
+    let signature = Signature::now(&name, &email).map_err(|e| e.to_string())?;
+
+    let message = if commit_body.trim().is_empty() {
+        commit_summary.to_string()
+    } else {
+        format!("{}\n\n{}", commit_summary, commit_body)
+    };
+
+    let tree_id = index.write_tree().map_err(|e| e.to_string())?;
+    let tree = repo.find_tree(tree_id).map_err(|e| e.to_string())?;
+
+    let parents = match repo.head() {
+        Ok(head) => {
+            if let Some(oid) = head.target() {
+                vec![repo.find_commit(oid).map_err(|e| e.to_string())?]
+            } else {
+                vec![]
+            }
+        }
+        Err(_) => vec![],
+    };
+
+    let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+
+    repo.commit(
+        Some("HEAD"),
+        &signature,
+        &signature,
+        &message,
+        &tree,
+        &parent_refs,
+    )
+    .map_err(|e| e.to_string())?;
+
     release_repo(&repo_path);
 
     Ok(())

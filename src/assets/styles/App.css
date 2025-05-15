@@ -109,3 +109,30 @@ hr {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* Default html scrollbar config */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 2px 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--lighter-bg);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* For Firefox (Linux) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lighter-bg) transparent;
+}

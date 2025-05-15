@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import "react-widgets/styles.css";
 
 const PushRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification, activeRepoInfo, setRepoUpdateTrigger } = useAppContext();
+  const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
   const [remote, setRemote] = useState<string>("");
   const [fetchAll, setFetchAll] = useState<boolean>(false);
 
@@ -27,9 +27,6 @@ const PushRemoteModal: React.FC = () => {
       const remotes: Array<string> = fetchAll ? Object.keys(activeRepoInfo!.remotes) : new Array(remote);
 
       invoke<string>("push_remote", { repoPath, remotes }).then((msg) => {
-        if (msg.includes("Successfully"))
-          setRepoUpdateTrigger(prev => prev + 1);
-
         setActiveModal("");
         setNotification(msg as string);
         //TODO: MAYBE ADD release_repo call to all catch claues from here

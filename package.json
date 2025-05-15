@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "app": "tauri dev --no-watch"
+    "app": "tauri dev --no-watch",
+    "deploy": "tauri build"
   },
   "dependencies": {
     "@gitgraph/core": "^1.5.0",

@@ -9,7 +9,6 @@ interface AppContextType {
   activeModal: AppModals;
   notification: string;
   activeRepoInfo: RepoInfo | null;
-  repoUpdateTrigger: number;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
@@ -17,7 +16,6 @@ interface AppContextType {
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
   setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
-  setRepoUpdateTrigger: React.Dispatch<React.SetStateAction<number>>;
 
   // Global Functions
   isWelcomePage: (text: string) => boolean;
@@ -63,7 +61,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
-  const [repoUpdateTrigger, setRepoUpdateTrigger] = useState(0);
 
   // The backend information of the workspace gets loaded on startup
   const loadWorkspace = (workspace_dto: WorkspaceDTO | null) => {
@@ -257,7 +254,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       activeModal, setActiveModal,
       notification, setNotification,
       activeRepoInfo, setActiveRepoInfo,
-      repoUpdateTrigger, setRepoUpdateTrigger,
 
       // Global Functions
       isWelcomePage,

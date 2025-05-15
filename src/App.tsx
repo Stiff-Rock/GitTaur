@@ -52,10 +52,9 @@ function App() {
         <PanelSyncProvider>
           {workspace.tabs && [...workspace.tabs].map(([key, tab]) => (
             !isWelcomePage(tab.repoPath) && (
-              <MainProvider key={key}>
+              <MainProvider key={key} repoPath={tab.repoPath}>
                 <MainLayout
                   key={key}
-                  repoPath={tab.repoPath}
                   isActive={workspace.activeTab === key}
                 />
               </MainProvider>

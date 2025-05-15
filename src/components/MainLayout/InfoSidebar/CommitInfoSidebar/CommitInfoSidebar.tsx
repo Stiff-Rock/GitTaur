@@ -23,6 +23,16 @@ const CommitInfoSidebar: React.FC = () => {
     scrollToCommit();
   }
 
+  function formatTimestamp(timestamp: number): string {
+    const date = new Date(timestamp * 1000);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}/${month}/${day}`;
+  }
+
   return (
     <div className={`${styles.infoSidebar} ${currentAppTab === "commit-history" ? '' : 'inactive'}`}>
       {commitInfo ? (
@@ -74,7 +84,7 @@ const CommitInfoSidebar: React.FC = () => {
               {/* DATE */}
               <div className={styles.commitInfoField}>
                 <span className={styles.label}>DATE:</span>
-                <span className={styles.value}>{commitInfo.author.timestamp}</span>
+                <span className={styles.value}>{formatTimestamp(commitInfo.author.timestamp)}</span>
               </div>
 
               {/* PARENTS */}

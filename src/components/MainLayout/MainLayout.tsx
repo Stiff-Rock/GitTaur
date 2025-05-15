@@ -16,16 +16,29 @@ import { useAppContext } from '../../context/AppContext';
 import FetchRemoteModal from '../Common/Modals/FetchRemote/FetchRemoteModal';
 import PullRemoteModal from '../Common/Modals/PullRemote/PullRemoteModal';
 import PushRemoteModal from '../Common/Modals/PushRemote/PushRemoteModal';
+import { listen } from '@tauri-apps/api/event';
 
 interface MainLayoutProps {
-  repoPath: string;
   isActive: boolean;
 }
 
-const MainLayout: React.FC<MainLayoutProps> = (props) => {
-  const { repoPath, isActive } = props;
-  const { currentAppTab, showInfoSidebar, setShowInfoSidebar, setRepoInfo, repoInfo } = useMainContext();
-  const { setNotification, activeModal, setActiveRepoInfo, repoUpdateTrigger, isWelcomePage, workspace } = useAppContext();
+const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
+  const {
+    repoPath,
+    currentAppTab,
+    showInfoSidebar,
+    setShowInfoSidebar,
+    setRepoInfo, repoInfo,
+    headEvent, fetchEvent
+  } = useMainContext();
+
+  const {
+    setNotification,
+    activeModal,
+    setActiveRepoInfo,
+    isWelcomePage,
+    workspace
+  } = useAppContext();
 
   const {
     leftSize,
@@ -45,18 +58,27 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
   }
 
-  // Fetch repo data on load
+  // Fetch repo data on load and initilize repo watchers
   //TODO: DELETE REF ON RELEASE
   const isLoaded = useRef(false);
   useEffect(() => {
     if (isLoaded.current || repoInfo || !isActive) return;
-    getRepoInfo();
-    isLoaded.current = true;
-  }, [])
 
-  useEffect(() => {
-    if (repoUpdateTrigger > 0) getRepoInfo();
-  }, [repoUpdateTrigger])
+    invoke("watch_git_status", { repoPath })
+      .catch(e => console.error("Error starting git watcher:", e));
+
+    const headUnlistenPromise = listen<string>(headEvent, getRepoInfo);
+    const fetchUnlistenPromise = listen<string>(fetchEvent, getRepoInfo);
+
+    getRepoInfo();
+
+    isLoaded.current = true;
+
+    return () => {
+      headUnlistenPromise.then(unlisten => unlisten());
+      fetchUnlistenPromise.then(unlisten => unlisten());
+    };
+  }, [])
 
   useEffect(() => {
     if (isActive) setActiveRepoInfo(repoInfo);
@@ -108,7 +130,7 @@ const MainLayout: React.FC<MainLayoutProps> = (props) => {
 
         <Panel id="center-panel" order={2}>
           <CommitGraph />
-          <LocalChanges repoPath={repoPath} />
+          <LocalChanges />
           <TodoPanel />
         </Panel>
 

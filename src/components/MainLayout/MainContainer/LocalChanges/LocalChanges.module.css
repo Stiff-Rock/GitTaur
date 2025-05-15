@@ -26,6 +26,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
+  width: 100%;
 }
 
 .sectionIcon {
@@ -34,11 +35,15 @@
 }
 
 .sectionName {
-  width: 50%;
+  text-align: center;
+  width: 100%;
+}
+
+.sectionFileCount {
+  max-width: 75px;
 }
 
 .actionsContainer {
-  width: 25%;
   justify-content: flex-end !important;
   gap: 4px;
 }

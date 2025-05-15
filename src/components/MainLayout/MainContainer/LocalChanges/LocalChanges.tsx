@@ -12,14 +12,20 @@ import Scrollbars from 'react-custom-scrollbars-2';
 import Throbber from '../../../Common/Throbber/Throbber';
 
 export interface ActionButtonProps {
-  repoPath: string;
   onActionStart: () => void;
   onActionEnd: () => void;
   statusUpdatePromise: React.RefObject<Promise<any> | null>;
 }
 
-const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
-  const { currentAppTab, repoInfo, repoStatus, setRepoStatus } = useMainContext();
+const LocalChanges: React.FC = () => {
+  const {
+    repoPath,
+    currentAppTab,
+    repoInfo,
+    repoStatus, setRepoStatus,
+    statusEvent, headEvent
+  } = useMainContext();
+
   const { setNotification } = useAppContext();
 
   const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
@@ -27,30 +33,29 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
 
   const statusUpdatePromiseRef = useRef<Promise<any> | null>(null);
 
+  const getRepoStatus = () => {
+    statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
+      .then(setRepoStatus)
+      .catch(e => setNotification(e))
+      .finally(() => 0);
+  }
+
   //TODO: DELETE REF ON RELEASE
   const hasLoaded = useRef(false);
   useEffect(() => {
     if (!repoInfo || hasLoaded.current) return;
     hasLoaded.current = true;
 
-    invoke("watch_git_status", { repoPath })
-      .catch(e => console.error("Error starting git watcher:", e));
-
-    const unlistenPromise = listen<string>("git-status-changed", (event) => {
-      if (event.payload === repoPath) {
-        statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
-          .then(setRepoStatus)
-          .catch(e => setNotification(e))
-          .finally(() => 0);
-      }
-    });
+    const statusUnlistenPromise = listen<string>(statusEvent, getRepoStatus);
+    const headUnlistenPromise = listen<string>(headEvent, getRepoStatus);
 
     invoke<RepoStatus>("get_repo_status", { repoPath })
       .then(setRepoStatus)
       .catch((e) => { console.error(e); setNotification(e); })
 
     return () => {
-      unlistenPromise.then(unlisten => unlisten());
+      statusUnlistenPromise.then(unlisten => unlisten());
+      headUnlistenPromise.then(unlisten => unlisten());
     };
   }, [repoInfo]);
 
@@ -58,13 +63,14 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
     sectionBarStyle: string;
     barIcon: ReactNode;
     sectionTitle: string;
+    sectionFileCount: string;
     actionButtons: ReactNode[];
     fileChangesArray: FileChanges[];
     isLoading: boolean;
   }
 
   const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
-    const { sectionBarStyle, barIcon, sectionTitle, actionButtons, fileChangesArray, isLoading } = props;
+    const { sectionBarStyle, barIcon, sectionTitle, sectionFileCount, actionButtons, fileChangesArray, isLoading } = props;
 
     return (
       <div className={`${styles.section}`}>
@@ -73,11 +79,10 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
             {barIcon}
           </div>
 
-          <div className={styles.sectionName}>
-            <span>{sectionTitle}</span>
-          </div>
+          <span className={styles.sectionName}>{sectionTitle}</span>
 
           <div className={styles.actionsContainer}>
+            <span className={styles.sectionFileCount}>{sectionFileCount}</span>
             <Throbber size='small' isVisible={isLoading} />
             {actionButtons}
           </div>
@@ -116,7 +121,6 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
   }
 
   const unstagedActionButtonProps: ActionButtonProps = {
-    repoPath,
     onActionStart: () => setIsUnstageLoading(true),
     onActionEnd: () => setIsUnstageLoading(false),
     statusUpdatePromise: statusUpdatePromiseRef,
@@ -125,14 +129,14 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
   const unstagedFileSectionProps: ChangesSectionProps = {
     sectionBarStyle: styles.stagedSectionBar,
     barIcon: <CheckboxIcon />,
-    sectionTitle: `Staged Files (${repoStatus?.stagedFiles.length || 0})`,
+    sectionTitle: 'Staged Files',
+    sectionFileCount: `(${repoStatus?.stagedFiles.length || 0})`,
     actionButtons: [<UnstageAllButton key={'unstageAll'} {...unstagedActionButtonProps} />],
     fileChangesArray: repoStatus?.stagedFiles ?? [],
     isLoading: isUnstagedLoading,
   }
 
   const stagedActionButtonProps: ActionButtonProps = {
-    repoPath,
     onActionStart: () => setIsStageLoading(true),
     onActionEnd: () => setIsStageLoading(false),
     statusUpdatePromise: statusUpdatePromiseRef,
@@ -141,7 +145,8 @@ const LocalChanges: React.FC<{ repoPath: string }> = ({ repoPath }) => {
   const stagedFileSectionProps: ChangesSectionProps = {
     sectionBarStyle: styles.unstagedSectionBar,
     barIcon: <DiffModifiedIcon />,
-    sectionTitle: `Unstaged Files (${repoStatus?.unstagedFiles.length || 0})`,
+    sectionTitle: 'Unstaged Files',
+    sectionFileCount: `(${repoStatus?.unstagedFiles.length || 0})`,
     actionButtons: [<StageAllButton key={'stageAll'} {...stagedActionButtonProps} />],
     fileChangesArray: repoStatus?.unstagedFiles ?? [],
     isLoading: isStagedLoading,

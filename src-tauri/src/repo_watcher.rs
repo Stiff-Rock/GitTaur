@@ -1,14 +1,18 @@
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{
     collections::HashMap,
-    path::Path,
+    path::PathBuf,
     sync::{mpsc::channel, Arc, LazyLock, Mutex},
     thread::spawn,
     time::{Duration, Instant},
 };
 use tauri::{command, AppHandle, Emitter};
+use RecursiveMode::{NonRecursive, Recursive};
 
 static WATCHER_STORE: LazyLock<Arc<Mutex<HashMap<String, RecommendedWatcher>>>> =
+    LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
+
+static UNWATCHED_DIRS: LazyLock<Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, RecursiveMode)>>>>> =
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 //TODO: MAKE WATCHER FOR COMMITING ("{}/.git/HEAD") AND BRANCHING ("{}/.git/refs") AND MAYBE INIT
@@ -21,15 +25,37 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
         return Ok(());
     }
 
-    let git_index_path = format!("{}/.git/index", repo_path);
+    let base_path = PathBuf::from(&repo_path);
+    let git_path = base_path.join(".git");
+    let paths_to_watch: Vec<(PathBuf, bool, RecursiveMode)> = vec![
+        (base_path.clone(), false, Recursive),
+        (git_path.join("HEAD"), false, NonRecursive),
+        (git_path.join("FETCH_HEAD"), true, NonRecursive),
+        (git_path.join("refs").join("remotes"), true, Recursive),
+        // ALWAYS KEEP THE GIT_PATH AS THE LAST ONE
+        (git_path.clone(), false, Recursive),
+    ];
+
     let (tx, rx) = channel();
     let event_app_handle = app_handle.clone();
     let event_repo_path = repo_path.clone();
 
     let watcher = RecommendedWatcher::new(
-        move |result| {
-            if let Ok(_) = result {
-                tx.send(()).ok();
+        move |result: Result<notify::Event, notify::Error>| {
+            if let Ok(event) = result {
+                if let Some(path) = event.paths.first() {
+                    if path.ends_with(".git") {
+                        tx.send((".git", ())).ok();
+                    } else if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
+                        tx.send(("head", ())).ok();
+                    } else if path.ends_with("FETCH_HEAD")
+                        || path.to_string_lossy().contains("/refs/remotes/")
+                    {
+                        tx.send(("fetch", ())).ok();
+                    } else {
+                        tx.send(("status", ())).ok();
+                    }
+                }
             }
         },
         Config::default(),
@@ -38,32 +64,107 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
 
     watchers.insert(repo_path.clone(), watcher);
 
-    if let Some(watcher) = watchers.get_mut(&repo_path) {
-        watcher
-            .watch(Path::new(&git_index_path), RecursiveMode::NonRecursive)
-            .map_err(|e| e.to_string())?;
+    let watcher = watchers
+        .get_mut(&repo_path)
+        .ok_or_else(|| "Watcher disappeared unexpectedly".to_string())?;
 
-        watcher
-            .watch(Path::new(&repo_path), RecursiveMode::Recursive)
-            .map_err(|e| e.to_string())?;
-    } else {
-        return Err("Watcher disappeared unexpectedly".to_string());
+    for (path, is_dynamic, recursive_mode) in paths_to_watch {
+        let mut unwatched_dirs = UNWATCHED_DIRS.lock().unwrap();
+        if is_dynamic && !path.exists() {
+            unwatched_dirs
+                .entry(repo_path.clone())
+                .or_insert_with(Vec::new)
+                .push((path, is_dynamic, recursive_mode));
+        } else {
+            if path == git_path && unwatched_dirs.is_empty() {
+                continue;
+            }
+
+            watcher
+                .watch(&path, recursive_mode)
+                .map_err(|e| e.to_string())?;
+        }
     }
 
+    let repo_id = repo_path.replace('\\', "-").replace(' ', "_");
+
+    let head_event = format!("git-head-updated-{}", repo_id);
+    let fetch_event = format!("git-fetch-completed-{}", repo_id);
+    let status_event = format!("git-status-changed-{}", repo_id);
+
     spawn(move || {
-        let mut last_emit = Instant::now() - Duration::from_secs(3);
-        while let Ok(()) = rx.recv() {
+        let last_emit = Instant::now() - Duration::from_secs(3);
+        let mut last_general_emit = last_emit;
+        let mut last_head_emit = last_emit;
+        let mut last_fetch_emit = last_emit;
+        let mut last_status_emit = last_emit;
+
+        while let Ok((event_type, ())) = rx.recv() {
             let now = Instant::now();
-            if now.duration_since(last_emit) > Duration::from_millis(500) {
-                event_app_handle
-                    .emit("git-status-changed", &event_repo_path)
-                    .ok();
-                last_emit = now;
+
+            let debounce_interval = Duration::from_millis(500);
+            match event_type {
+                ".git" => {
+                    if now.duration_since(last_general_emit) > debounce_interval {
+                        setup_unwatched_dirs(&repo_path);
+                        last_general_emit = now;
+                    }
+                }
+                "head" => {
+                    if now.duration_since(last_head_emit) > debounce_interval {
+                        event_app_handle.emit(&head_event, &event_repo_path).ok();
+                        last_head_emit = now;
+                    }
+                }
+                "fetch" => {
+                    if now.duration_since(last_fetch_emit) > debounce_interval {
+                        event_app_handle.emit(&fetch_event, &event_repo_path).ok();
+                        last_fetch_emit = now;
+                    }
+                }
+                "status" => {
+                    if now.duration_since(last_status_emit) > debounce_interval {
+                        event_app_handle.emit(&status_event, &event_repo_path).ok();
+                        last_status_emit = now;
+                    }
+                }
+                _ => {}
             }
         }
     });
 
     Ok(())
+}
+
+fn setup_unwatched_dirs(repo_path: &String) {
+    let mut unwatched_dirs = UNWATCHED_DIRS.lock().unwrap();
+    let entries = unwatched_dirs.get_mut(repo_path).unwrap();
+
+    let mut watcher_store = WATCHER_STORE.lock().unwrap();
+    let watcher = watcher_store.get_mut(repo_path).unwrap();
+
+    let count = entries.len();
+    for i in (0..count).rev() {
+        let (path, _, recursive_mode) = &entries[i];
+
+        if let Err(e) = watcher.watch(path, *recursive_mode) {
+            eprintln!("Failed to watch path {}: {}", path.display(), e);
+            continue;
+        }
+
+        entries.remove(i);
+    }
+
+    if entries.is_empty() {
+        let git_path = PathBuf::from(repo_path).join(".git");
+
+        if let Err(e) = watcher.unwatch(&git_path) {
+            eprintln!("Failed to unwatch .git directory: {}", e);
+            return;
+        }
+
+        unwatched_dirs.remove(repo_path);
+    }
 }
 
 #[command]

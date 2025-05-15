@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import "react-widgets/styles.css";
 
 const PullRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification, activeRepoInfo, setRepoUpdateTrigger } = useAppContext();
+  const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
   const [remoteName, setRemote] = useState<string>("");
   const [branch, setBranch] = useState<string>("");
   const [pullAll, setPullAll] = useState<boolean>(true);
@@ -43,9 +43,6 @@ const PullRemoteModal: React.FC = () => {
       const branches: Array<string> = pullAll ? activeRepoInfo!.remotes[remoteName] : new Array(branch);
 
       invoke<string>("pull_remote", { repoPath, remoteName, branches }).then((msg) => {
-        if (msg.includes("Successfully"))
-          setRepoUpdateTrigger(prev => prev + 1);
-
         setActiveModal("");
         setNotification(msg);
       }).catch((e) => {

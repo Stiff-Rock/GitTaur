@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import "react-widgets/styles.css";
 
 const FetchRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification, activeRepoInfo, setRepoUpdateTrigger } = useAppContext();
+  const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
   const [remote, setRemote] = useState<string>("");
   const [fetchAll, setFetchAll] = useState<boolean>(false);
 
@@ -37,9 +37,6 @@ const FetchRemoteModal: React.FC = () => {
       const remotes: Array<string> = fetchAll ? Object.keys(activeRepoInfo!.remotes) : new Array(remote);
 
       invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
-        if (msg.includes("Successfully"))
-          setRepoUpdateTrigger(prev => prev + 1);
-
         setActiveModal("");
         setNotification(msg);
       }).catch((e) => {

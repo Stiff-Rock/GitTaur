@@ -4,6 +4,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 interface MainContextType {
   // State 
   currentAppTab: AppTabs;
+  repoPath: string;
   repoInfo: RepoInfo | null;
   repoStatus: RepoStatus | null;
   commitInfo: CommitLog | null;
@@ -20,6 +21,11 @@ interface MainContextType {
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
 
+  // Tauri events
+  headEvent: string;
+  fetchEvent: string;
+  statusEvent: string;
+
   // Refs
   scrollbarsRef: React.MutableRefObject<Scrollbars | null>;
 
@@ -29,7 +35,21 @@ interface MainContextType {
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
 
-export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface MainProviderProps {
+  children: React.ReactNode;
+  repoPath: string;
+}
+
+export const MainProvider: React.FC<MainProviderProps> = (props) => {
+  const { children, repoPath } = props;
+
+  const repoId = repoPath.replace(/\\/g, "-").replace(/ /g, "_");
+  const headEvent = `git-head-updated-${repoId}`;
+  const fetchEvent = `git-fetch-completed-${repoId}`;
+  const statusEvent = `git-status-changed-${repoId}`;
+
+  console.log(`${headEvent}\n${fetchEvent}\n${statusEvent}`)
+
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
@@ -120,6 +140,8 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <MainContext.Provider value={{
+      repoPath,
+
       currentAppTab, setCurrentAppTab,
       repoInfo, setRepoInfo,
       repoStatus, setRepoStatus,
@@ -127,8 +149,13 @@ export const MainProvider: React.FC<{ children: React.ReactNode }> = ({ children
       selectedCommit, setSelectedCommit,
       showInfoSidebar, setShowInfoSidebar,
       shouldScroll, setShouldScroll,
-      scrollToCommit,
+
+      headEvent,
+      fetchEvent,
+      statusEvent,
+
       scrollbarsRef,
+      scrollToCommit,
     }}>
       {children}
     </MainContext.Provider>
