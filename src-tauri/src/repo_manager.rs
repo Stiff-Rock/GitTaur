@@ -3,8 +3,8 @@ use crate::{
     repo_info::{RepoInfo, RepoStatus},
 };
 use git2::{
-    AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, Reference, Repository,
-    Signature, Status, StatusOptions,
+    AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, PushOptions,
+    Reference, Repository, Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use std::{
@@ -248,6 +248,11 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
         if info.len() == 2 {
             let remote = info.first().copied().unwrap_or("Unknown remote");
             let name = info.last().copied().unwrap_or("Unknown branch");
+
+            if name == "HEAD" {
+                continue;
+            }
+
             remote_branches_map
                 .entry(remote.to_string())
                 .or_default()
@@ -338,7 +343,6 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
     }
 }
 
-//TODO: IT SHOULD ONLY WAIT IF NO WRITE OPERATIONS ARE BEING PERFORMED
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     if is_repo_busy(&repo_path) {
@@ -366,7 +370,6 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
     Ok(())
 }
 
-//TODO: IT SHOULD ONLY WAIT IF NO WRITE OPERATIONS ARE BEING PERFORMED
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     if is_repo_busy(&repo_path) {
@@ -641,12 +644,25 @@ fn normal_merge(
 
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
-pub async fn push_remote(repo_path: String) -> Result<(), String> {
+pub async fn push_remote(
+    repo_path: String,
+    remote: String,
+    local_branch: String,
+    remote_branch: String,
+) -> Result<(), String> {
     if is_repo_busy(&repo_path) {
         return Err(BUSY_MSG.to_string());
     }
 
-    let _repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut remote = repo.find_remote(&remote).map_err(|e| e.to_string())?;
+    let mut push_options = PushOptions::new();
+    let refspec = format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch);
+
+    remote
+        .push(&[&refspec], Some(&mut push_options))
+        .map_err(|e| e.to_string())?;
 
     release_repo(&repo_path);
 

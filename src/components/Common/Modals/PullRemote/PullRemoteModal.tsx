@@ -58,26 +58,32 @@ const PullRemoteModal: React.FC = () => {
 
   return (
     <BaseModal title="Pull Remote Changes">
-      <select
-        className={baseStyle.modalInputSection}
-        onChange={(e) => setRemote(e.target.value)}
-        value={remoteName}
-      >
-        {activeRepoInfo && Object.keys(activeRepoInfo.remotes).map((remote) => (
-          <option value={remote} key={remote}>{remote}</option>
-        ))}
-      </select>
+      <div className={baseStyle.inputLabelContainer}>
+        <span>Remote</span>
+        <select
+          className={baseStyle.modalInputSection}
+          onChange={(e) => setRemote(e.target.value)}
+          value={remoteName}
+        >
+          {activeRepoInfo && Object.keys(activeRepoInfo.remotes).map((remote) => (
+            <option value={remote} key={remote}>{remote}</option>
+          ))}
+        </select>
+      </div>
 
-      <select
-        className={baseStyle.modalInputSection}
-        disabled={pullAll}
-        onChange={(e) => setBranch(e.target.value)}
-        value={branch}
-      >
-        {remoteName && activeRepoInfo && activeRepoInfo.remotes[remoteName].map((branch) => (
-          <option value={branch} key={branch}>{branch}</option>
-        ))}
-      </select>
+      <div className={baseStyle.inputLabelContainer}>
+        <span>Remote branch</span>
+        <select
+          className={baseStyle.modalInputSection}
+          disabled={pullAll}
+          onChange={(e) => setBranch(e.target.value)}
+          value={branch}
+        >
+          {remoteName && activeRepoInfo && activeRepoInfo.remotes[remoteName].map((branch) => (
+            <option value={branch} key={branch}>{branch}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="checkbox">
         <input

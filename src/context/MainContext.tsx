@@ -48,8 +48,6 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const fetchEvent = `git-fetch-completed-${repoId}`;
   const statusEvent = `git-status-changed-${repoId}`;
 
-  console.log(`${headEvent}\n${fetchEvent}\n${statusEvent}`)
-
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);

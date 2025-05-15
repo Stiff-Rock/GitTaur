@@ -76,7 +76,7 @@ pub fn run() {
             repo_manager::push_remote,
             repo_manager::create_branch,
             repo_manager::commit,
-            repo_watcher::watch_git_status,
+            repo_watcher::setup_watchers,
             repo_watcher::stop_git_watcher,
             open_terminal,
             //TODO: DELETE ON RELEASE

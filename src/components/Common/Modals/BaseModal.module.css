@@ -36,6 +36,17 @@
   width: 100%;
 }
 
+.inputLabelContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inputLabelContainer :nth-child(1) {
+  width: 25%;
+  font-size: var(--font-size-tab);
+}
+
 .modalInputSection input {
   flex: 1;
 }

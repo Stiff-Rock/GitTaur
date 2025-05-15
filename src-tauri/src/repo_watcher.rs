@@ -19,7 +19,7 @@ static UNWATCHED_DIRS: LazyLock<Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, Re
 //ALL OF THEM AT ONCE
 
 #[command]
-pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Result<(), String> {
+pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<(), String> {
     let mut watchers = WATCHER_STORE.lock().unwrap();
     if watchers.contains_key(&repo_path) {
         return Ok(());
@@ -28,7 +28,7 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
     let base_path = PathBuf::from(&repo_path);
     let git_path = base_path.join(".git");
     let paths_to_watch: Vec<(PathBuf, bool, RecursiveMode)> = vec![
-        (base_path.clone(), false, Recursive),
+        (base_path, false, Recursive),
         (git_path.join("HEAD"), false, NonRecursive),
         (git_path.join("FETCH_HEAD"), true, NonRecursive),
         (git_path.join("refs").join("remotes"), true, Recursive),
@@ -40,21 +40,25 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
     let event_app_handle = app_handle.clone();
     let event_repo_path = repo_path.clone();
 
-    let watcher = RecommendedWatcher::new(
+    let mut watcher = RecommendedWatcher::new(
         move |result: Result<notify::Event, notify::Error>| {
             if let Ok(event) = result {
                 if let Some(path) = event.paths.first() {
-                    if path.ends_with(".git") {
-                        tx.send((".git", ())).ok();
-                    } else if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
-                        tx.send(("head", ())).ok();
-                    } else if path.ends_with("FETCH_HEAD")
-                        || path.to_string_lossy().contains("/refs/remotes/")
-                    {
-                        tx.send(("fetch", ())).ok();
-                    } else {
-                        tx.send(("status", ())).ok();
+                    let path_str = path.to_string_lossy();
+
+                    // Only process .git events from our explicitly watched paths
+                    if path_str.contains("/.git/") || path_str.ends_with("/.git") {
+                        if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
+                            tx.send(("head", ())).ok();
+                        } else if path.ends_with("FETCH_HEAD")
+                            || path_str.contains("/refs/remotes/")
+                        {
+                            tx.send(("fetch", ())).ok();
+                        }
+                        return;
                     }
+
+                    tx.send(("status", ())).ok();
                 }
             }
         },
@@ -62,21 +66,16 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
     )
     .map_err(|e| e.to_string())?;
 
-    watchers.insert(repo_path.clone(), watcher);
-
-    let watcher = watchers
-        .get_mut(&repo_path)
-        .ok_or_else(|| "Watcher disappeared unexpectedly".to_string())?;
-
     for (path, is_dynamic, recursive_mode) in paths_to_watch {
         let mut unwatched_dirs = UNWATCHED_DIRS.lock().unwrap();
+
         if is_dynamic && !path.exists() {
             unwatched_dirs
                 .entry(repo_path.clone())
                 .or_insert_with(Vec::new)
                 .push((path, is_dynamic, recursive_mode));
         } else {
-            if path == git_path && unwatched_dirs.is_empty() {
+            if path == git_path && !unwatched_dirs.contains_key(&repo_path) {
                 continue;
             }
 
@@ -85,6 +84,8 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
                 .map_err(|e| e.to_string())?;
         }
     }
+
+    watchers.insert(repo_path.clone(), watcher);
 
     let repo_id = repo_path.replace('\\', "-").replace(' ', "_");
 
@@ -106,6 +107,7 @@ pub async fn watch_git_status(app_handle: AppHandle, repo_path: String) -> Resul
             match event_type {
                 ".git" => {
                     if now.duration_since(last_general_emit) > debounce_interval {
+                        println!("WHY??");
                         setup_unwatched_dirs(&repo_path);
                         last_general_emit = now;
                     }

@@ -53,16 +53,19 @@ const FetchRemoteModal: React.FC = () => {
   return (
     <BaseModal title="Fetch Remote Changes">
 
-      <select
-        className={baseStyle.modalInputSection}
-        disabled={fetchAll}
-        onChange={(e) => setRemote(e.target.value)}
-        value={remote}
-      >
-        {activeRepoInfo && Object.keys(activeRepoInfo.remotes).map((remote) => (
-          <option value={remote} key={remote}>{remote}</option>
-        ))}
-      </select>
+      <div className={baseStyle.inputLabelContainer}>
+        <span>Remote</span>
+        <select
+          className={baseStyle.modalInputSection}
+          disabled={fetchAll}
+          onChange={(e) => setRemote(e.target.value)}
+          value={remote}
+        >
+          {activeRepoInfo && Object.keys(activeRepoInfo.remotes).map((remote) => (
+            <option value={remote} key={remote}>{remote}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="checkbox">
         <input

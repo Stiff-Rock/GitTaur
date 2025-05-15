@@ -64,7 +64,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   useEffect(() => {
     if (isLoaded.current || repoInfo || !isActive) return;
 
-    invoke("watch_git_status", { repoPath })
+    invoke("setup_watchers", { repoPath })
       .catch(e => console.error("Error starting git watcher:", e));
 
     const headUnlistenPromise = listen<string>(headEvent, getRepoInfo);
