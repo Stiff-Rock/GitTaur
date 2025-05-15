@@ -10,6 +10,7 @@ import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 import { GitgraphOptions } from "@gitgraph/core";
 import { GraphCommitOptions } from "../../../Gitgraph/Commit.tsx";
 
+//TODO: MOVE THE GitGraph folder here
 //WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
 
 BranchLabel.paddingX = 6;

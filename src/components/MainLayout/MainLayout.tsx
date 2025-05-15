@@ -52,7 +52,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const isProgrammaticResize = useRef(false);
 
   const getRepoInfo = () => {
+    console.log("PRE")
     if (!workspace || isWelcomePage(workspace.activeTab)) return;
+    console.log("GETTING REPO INFO")
     invoke<RepoInfo>("get_repo_info", { repoPath })
       .then((data) => setRepoInfo(data))
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });

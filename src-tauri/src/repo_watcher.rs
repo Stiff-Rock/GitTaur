@@ -30,6 +30,7 @@ pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<
     let paths_to_watch: Vec<(PathBuf, bool, RecursiveMode)> = vec![
         (base_path, false, Recursive),
         (git_path.join("HEAD"), false, NonRecursive),
+        (git_path.join("index"), false, NonRecursive),
         (git_path.join("FETCH_HEAD"), true, NonRecursive),
         (git_path.join("refs").join("remotes"), true, Recursive),
         // ALWAYS KEEP THE GIT_PATH AS THE LAST ONE
@@ -38,27 +39,21 @@ pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<
 
     let (tx, rx) = channel();
     let event_app_handle = app_handle.clone();
-    let event_repo_path = repo_path.clone();
 
+    //TODO: FILTER THE .git from the repo_path
     let mut watcher = RecommendedWatcher::new(
         move |result: Result<notify::Event, notify::Error>| {
             if let Ok(event) = result {
                 if let Some(path) = event.paths.first() {
-                    let path_str = path.to_string_lossy();
+                    let path_str = path.to_string_lossy().replace('\\', "/");
 
-                    // Only process .git events from our explicitly watched paths
-                    if path_str.contains("/.git/") || path_str.ends_with("/.git") {
-                        if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
-                            tx.send(("head", ())).ok();
-                        } else if path.ends_with("FETCH_HEAD")
-                            || path_str.contains("/refs/remotes/")
-                        {
-                            tx.send(("fetch", ())).ok();
-                        }
-                        return;
+                    if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
+                        tx.send(("head", ())).ok();
+                    } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
+                        tx.send(("fetch", ())).ok();
+                    } else if path.ends_with("index") {
+                        tx.send(("status", ())).ok();
                     }
-
-                    tx.send(("status", ())).ok();
                 }
             }
         },
@@ -105,28 +100,28 @@ pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<
 
             let debounce_interval = Duration::from_millis(500);
             match event_type {
+                //TODO: CHECK IF THIS MECHANISM REALLY WORKS
                 ".git" => {
                     if now.duration_since(last_general_emit) > debounce_interval {
-                        println!("WHY??");
                         setup_unwatched_dirs(&repo_path);
                         last_general_emit = now;
                     }
                 }
                 "head" => {
                     if now.duration_since(last_head_emit) > debounce_interval {
-                        event_app_handle.emit(&head_event, &event_repo_path).ok();
+                        event_app_handle.emit(&head_event, ()).ok();
                         last_head_emit = now;
                     }
                 }
                 "fetch" => {
                     if now.duration_since(last_fetch_emit) > debounce_interval {
-                        event_app_handle.emit(&fetch_event, &event_repo_path).ok();
+                        event_app_handle.emit(&fetch_event, ()).ok();
                         last_fetch_emit = now;
                     }
                 }
                 "status" => {
                     if now.duration_since(last_status_emit) > debounce_interval {
-                        event_app_handle.emit(&status_event, &event_repo_path).ok();
+                        event_app_handle.emit(&status_event, ()).ok();
                         last_status_emit = now;
                     }
                 }
