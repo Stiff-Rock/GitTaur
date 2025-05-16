@@ -72,6 +72,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   useEffect(() => {
     if (isLoaded.current || repoInfo || !isActive) return;
 
+    console.log("SETTING UP");
     const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
     invoke("setup_watchers", { repoPath, repoEvents })
       .catch(e => console.error("Error starting git watcher:", e));

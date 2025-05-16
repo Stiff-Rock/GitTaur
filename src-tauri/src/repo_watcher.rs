@@ -53,6 +53,8 @@ pub async fn setup_watchers(
     let (tx, rx) = channel();
     let event_app_handle = app_handle.clone();
 
+    let repo_path_str = repo_path.clone().replace('\\', "/");
+
     //TODO: FILTER THE .git from the repo_path
     let mut watcher = RecommendedWatcher::new(
         move |result: Result<notify::Event, notify::Error>| {
@@ -66,9 +68,16 @@ pub async fn setup_watchers(
                     } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
                         println!("FETCH");
                         tx.send(("fetch", ())).ok();
-                    } else if path.ends_with("index") {
+                    } else if path.ends_with("index")
+                        || (path_str.contains(&repo_path_str) && !path_str.contains("/.git/"))
+                    {
                         println!("STATUS");
                         tx.send(("status", ())).ok();
+                    } else if path_str.contains("/.git/") {
+                        //TODO: THE PROBLEM IS STILL THE LACK OF FILTERING FROM THE BASE_PATH
+                        //WATCHER
+                        println!("GIT");
+                        tx.send((".git", ())).ok();
                     }
                 }
             }
@@ -87,6 +96,7 @@ pub async fn setup_watchers(
                 .push((path, is_dynamic, recursive_mode));
         } else {
             if path == git_path && !unwatched_dirs.contains_key(&repo_path) {
+                println!("SKIPPED");
                 continue;
             }
 
