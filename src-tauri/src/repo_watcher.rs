@@ -78,11 +78,6 @@ pub async fn setup_watchers(
                 if let Some(path) = event.paths.first() {
                     let path_str = path.to_string_lossy().replace('\\', "/");
 
-                    if !has_unwatched_dirs && path_str.contains("/.git/") {
-                        return;
-                    };
-
-                    println!("path: {}\nstr:{}", path_str, repo_path_str);
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
                         println!("HEAD");
                         tx.send(("head", ())).ok();
@@ -95,7 +90,7 @@ pub async fn setup_watchers(
                     {
                         println!("STATUS");
                         tx.send(("status", ())).ok();
-                    } else if path_str.contains("/.git/") {
+                    } else if has_unwatched_dirs && path_str.contains("/.git/") {
                         println!("GIT");
                         tx.send((".git", ())).ok();
                     }

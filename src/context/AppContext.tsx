@@ -1,17 +1,17 @@
-import React, { createContext, useState, useContext, useRef, useLayoutEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 
 interface AppContextType {
   // State 
-  workspace: Workspace;
+  workspace: Workspace | null;
   isInWelcomePage: boolean
   activeModal: AppModals;
   notification: string;
   activeRepoInfo: RepoInfo | null;
 
   // Setters 
-  setWorkspace: React.Dispatch<React.SetStateAction<Workspace>>;
+  setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
@@ -45,13 +45,7 @@ const isWelcomePage = (text: string): boolean => {
   return /^Welcome Page:\d+$/.test(text)
 }
 
-
-let defaultWorkspace = {
-  tabs: new Map(),
-  activeTab: "",
-};
-
-let initWorkspace = defaultWorkspace;
+let initWorkspace: Workspace | null = null;
 (() => {
   const workspace_dto = window.__WORKSPACE_DTO__;
   if (!workspace_dto) return;
@@ -59,59 +53,42 @@ let initWorkspace = defaultWorkspace;
 })();
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { openDirectoryDialog } = useDialog();
-  const [workspace, setWorkspace] = useState<Workspace>(initWorkspace);
+  const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
 
-  // Load the worspace info from the backend only if unable to obtain it through global window variable (window.__WORKSPACE_DTO__)
-  const loadWorkspace = (workspace_dto: WorkspaceDTO | null) => {
-    if (!workspace_dto) return;
+  const { openDirectoryDialog } = useDialog();
 
-    let newWorkspace: Workspace = DtoToWorkspace(workspace_dto);
-
-    //TODO: DALE UNA PENSADA A ESTAS DOS FUNCIONES
-    if (newWorkspace.tabs.size === 0) {
-      const pageLabel = "Welcome Page";
-      const defaultPage: string = pageLabel + ":" + Date.now();
-      const newTab: Tab = { label: pageLabel, repoPath: defaultPage };
-
-      const newTabs = new Map<string, Tab>(newWorkspace.tabs);
-      newTabs.set(defaultPage, newTab);
-
-      newWorkspace = {
-        tabs: newTabs,
-        activeTab: defaultPage
-      };
-
-      setWorkspace(newWorkspace);
-    } else {
-      setWorkspace(newWorkspace);
-    }
-  }
-
-  const fetchWorkspace = () => {
-    // Loading the workspace data and updating the state is unnecessary 
-    // as it has already been initialized during the pre-mount evaluation.
-    if (initWorkspace != defaultWorkspace) return;
-
+  //TODO: REVISE IF THIS REALLY NEEDS TO BE useLayoutEffect
+  useEffect(() => {
+    // If theres already a workspace loaded, do not make api call
+    if (initWorkspace) return;
     invoke<WorkspaceDTO>("get_workspace")
-      .then((dto) => {
-        if (dto) loadWorkspace(dto)
-        else throw "Unable to load workspace"
-      }).catch((e) => {
-        console.error('Failed to load workspace:', e);
-      });
-  }
+      .then((dto) => setWorkspace(DtoToWorkspace(dto)))
+      .catch((e) => console.error("Could not get workspace - {}", e));
+  }, []);
 
-  //TODO: DELETE FOR RELEASE, IT PREVENTS DOUBLE LOADING OF STRICT MODE
-  const isLoaded = useRef(false);
-  if (!isLoaded.current) {
-    fetchWorkspace();
-    isLoaded.current = true;
-  }
+  useEffect(() => {
+    if (!workspace) return;
+    console.log("WORKSPACE UPDATED")
+
+    if (workspace.tabs.size <= 0) {
+      openWelcomePage();
+    } else if (workspace.activeTab == "" || !workspace.tabs.has(workspace.activeTab)) {
+      console.warn(`Found not valid active tab ${workspace.activeTab}. Attempting fallback...`)
+      const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
+      setActiveTab(fallbackTab);
+    }
+
+    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
+
+    const workspaceDto = WorkspaceToDto(workspace);
+
+    invoke<Workspace>("save_workspace", { workspaceDto })
+      .catch(error => console.error('Error while saving workspace:', error));
+  }, [workspace]);
 
   const setActiveTab = (tabKey: string) => {
     setIsInWelcomePage(isWelcomePage(tabKey));
@@ -234,25 +211,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     openWorkspaceTab(key, newTab);
   }
-
-  useLayoutEffect(() => {
-    if (!workspace) return;
-
-    if (workspace.tabs.size <= 0) {
-      openWelcomePage();
-    } else if (workspace.activeTab == "" || !workspace.tabs.has(workspace.activeTab)) {
-      console.warn(`Found not valid active tab ${workspace.activeTab}. Attempting fallback...`)
-      const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
-      setActiveTab(fallbackTab);
-    }
-
-    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
-
-    const workspaceDto = WorkspaceToDto(workspace);
-
-    invoke<Workspace>("save_workspace", { workspaceDto })
-      .catch(error => console.error('Error while saving workspace:', error));
-  }, [workspace]);
 
   return (
     <AppContext.Provider value={{

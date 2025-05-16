@@ -31,10 +31,6 @@ function App() {
     else invoke("reset").catch((e) => console.error(e))
   }, []);
 
-  useEffect(() => {
-    console.log("WORKSPACE UPDATED:", workspace);
-  }, [workspace]);
-
   return (
     <main className="container">
       <TitleBar />
@@ -51,7 +47,7 @@ function App() {
       />
 
       <WelcomePage />
-
+      {/*TODO: THE MOUNT UNMOUNT HAPPENS ONLY WHEN ACTUALLY OPENING A REPO TAB, NOT NECCESARILY ON STARTUP*/}
       {workspace &&
         <PanelSyncProvider>
           {[...workspace.tabs].map(([key, tab]) => (
