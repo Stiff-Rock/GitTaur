@@ -31,6 +31,10 @@ function App() {
     else invoke("reset").catch((e) => console.error(e))
   }, []);
 
+  useEffect(() => {
+    console.log("WORKSPACE UPDATED:", workspace);
+  }, [workspace]);
+
   return (
     <main className="container">
       <TitleBar />

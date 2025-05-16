@@ -4,14 +4,14 @@ import { useDialog } from '../hooks/useDialog';
 
 interface AppContextType {
   // State 
-  workspace: Workspace | null;
+  workspace: Workspace;
   isInWelcomePage: boolean
   activeModal: AppModals;
   notification: string;
   activeRepoInfo: RepoInfo | null;
 
   // Setters 
-  setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
+  setWorkspace: React.Dispatch<React.SetStateAction<Workspace>>;
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
@@ -45,59 +45,67 @@ const isWelcomePage = (text: string): boolean => {
   return /^Welcome Page:\d+$/.test(text)
 }
 
-let initWorkspace: Workspace | null = null;
+
+let defaultWorkspace = {
+  tabs: new Map(),
+  activeTab: "",
+};
+
+let initWorkspace = defaultWorkspace;
 (() => {
   const workspace_dto = window.__WORKSPACE_DTO__;
   if (!workspace_dto) return;
   initWorkspace = DtoToWorkspace(workspace_dto);
 })();
 
-
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { openDirectoryDialog } = useDialog();
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [workspace, setWorkspace] = useState<Workspace>(initWorkspace);
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
 
-  // The backend information of the workspace gets loaded on startup
+  // Load the worspace info from the backend only if unable to obtain it through global window variable (window.__WORKSPACE_DTO__)
   const loadWorkspace = (workspace_dto: WorkspaceDTO | null) => {
-    const workspace = workspace_dto ? DtoToWorkspace(workspace_dto) : initWorkspace!;
+    if (!workspace_dto) return;
 
-    if (workspace.tabs.size === 0) {
+    let newWorkspace: Workspace = DtoToWorkspace(workspace_dto);
+
+    //TODO: DALE UNA PENSADA A ESTAS DOS FUNCIONES
+    if (newWorkspace.tabs.size === 0) {
       const pageLabel = "Welcome Page";
       const defaultPage: string = pageLabel + ":" + Date.now();
       const newTab: Tab = { label: pageLabel, repoPath: defaultPage };
 
-      const newTabs = new Map<string, Tab>(workspace.tabs);
+      const newTabs = new Map<string, Tab>(newWorkspace.tabs);
       newTabs.set(defaultPage, newTab);
 
-      const newWorkspace: Workspace = {
+      newWorkspace = {
         tabs: newTabs,
         activeTab: defaultPage
       };
 
       setWorkspace(newWorkspace);
     } else {
-      setWorkspace(workspace);
+      setWorkspace(newWorkspace);
     }
   }
 
   const fetchWorkspace = () => {
-    if (!initWorkspace) {
-      invoke<WorkspaceDTO>("get_workspace")
-        .then((dto) => {
-          if (dto) loadWorkspace(dto)
-          else throw "Unable to load workspace"
-        }).catch((e) => {
-          console.error('Failed to load workspace:', e);
-        });
-    } else {
-      loadWorkspace(null)
-    }
+    // Loading the workspace data and updating the state is unnecessary 
+    // as it has already been initialized during the pre-mount evaluation.
+    if (initWorkspace != defaultWorkspace) return;
+
+    invoke<WorkspaceDTO>("get_workspace")
+      .then((dto) => {
+        if (dto) loadWorkspace(dto)
+        else throw "Unable to load workspace"
+      }).catch((e) => {
+        console.error('Failed to load workspace:', e);
+      });
   }
+
   //TODO: DELETE FOR RELEASE, IT PREVENTS DOUBLE LOADING OF STRICT MODE
   const isLoaded = useRef(false);
   if (!isLoaded.current) {
