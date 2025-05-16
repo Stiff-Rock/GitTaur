@@ -58,9 +58,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const isProgrammaticResize = useRef(false);
 
   const getRepoInfo = () => {
-    console.log("PRE")
     if (!workspace || isWelcomePage(workspace.activeTab)) return;
-    console.log("GETTING REPO INFO")
     invoke<RepoInfo>("get_repo_info", { repoPath })
       .then((data) => setRepoInfo(data))
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
@@ -70,9 +68,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   //TODO: DELETE REF ON RELEASE
   const isLoaded = useRef(false);
   useEffect(() => {
+    console.log("MOUNT!")
     if (isLoaded.current || repoInfo || !isActive) return;
+    isLoaded.current = true;
+    console.log("SETUP")
 
-    console.log("SETTING UP");
     const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
     invoke("setup_watchers", { repoPath, repoEvents })
       .catch(e => console.error("Error starting git watcher:", e));
@@ -82,9 +82,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
 
     getRepoInfo();
 
-    isLoaded.current = true;
-
     return () => {
+      console.log("UNMOUNT!");
       headUnlistenPromise.then(unlisten => unlisten());
       fetchUnlistenPromise.then(unlisten => unlisten());
     };

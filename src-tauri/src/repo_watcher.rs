@@ -13,11 +13,9 @@ use RecursiveMode::{NonRecursive, Recursive};
 static WATCHER_STORE: LazyLock<Arc<Mutex<HashMap<String, RecommendedWatcher>>>> =
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
-static UNWATCHED_DIRS: LazyLock<Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, RecursiveMode)>>>>> =
-    LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
-
-//TODO: MAKE WATCHER FOR COMMITING ("{}/.git/HEAD") AND BRANCHING ("{}/.git/refs") AND MAYBE INIT
-//ALL OF THEM AT ONCE
+static UNWATCHED_DIRS_MAP: LazyLock<
+    Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, RecursiveMode)>>>>,
+> = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -40,21 +38,39 @@ pub async fn setup_watchers(
 
     let base_path = PathBuf::from(&repo_path);
     let git_path = base_path.join(".git");
-    let paths_to_watch: Vec<(PathBuf, bool, RecursiveMode)> = vec![
+    let mut paths_to_watch: Vec<(PathBuf, bool, RecursiveMode)> = vec![
         (base_path, false, Recursive),
         (git_path.join("HEAD"), false, NonRecursive),
         (git_path.join("index"), false, NonRecursive),
+    ];
+
+    let mut unwatched_dirs_map = UNWATCHED_DIRS_MAP.lock().unwrap();
+    let unwatched_dirs = unwatched_dirs_map
+        .entry(repo_path.clone())
+        .or_insert_with(Vec::new);
+
+    let mut has_unwatched_dirs = false;
+
+    let dynamic_paths: Vec<(PathBuf, bool, RecursiveMode)> = vec![
         (git_path.join("FETCH_HEAD"), true, NonRecursive),
         (git_path.join("refs").join("remotes"), true, Recursive),
-        // ALWAYS KEEP THE GIT_PATH AS THE LAST ONE
-        (git_path.clone(), false, Recursive),
     ];
+
+    for entry in &dynamic_paths {
+        let (path, is_dynamic, _) = entry;
+
+        if *is_dynamic && !path.exists() {
+            unwatched_dirs.push(entry.clone());
+            has_unwatched_dirs = true;
+        } else {
+            paths_to_watch.push(entry.clone());
+        }
+    }
 
     let (tx, rx) = channel();
     let event_app_handle = app_handle.clone();
 
     let repo_path_str = repo_path.clone().replace('\\', "/");
-
     //TODO: FILTER THE .git from the repo_path
     let mut watcher = RecommendedWatcher::new(
         move |result: Result<notify::Event, notify::Error>| {
@@ -62,6 +78,11 @@ pub async fn setup_watchers(
                 if let Some(path) = event.paths.first() {
                     let path_str = path.to_string_lossy().replace('\\', "/");
 
+                    if !has_unwatched_dirs && path_str.contains("/.git/") {
+                        return;
+                    };
+
+                    println!("path: {}\nstr:{}", path_str, repo_path_str);
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
                         println!("HEAD");
                         tx.send(("head", ())).ok();
@@ -69,13 +90,12 @@ pub async fn setup_watchers(
                         println!("FETCH");
                         tx.send(("fetch", ())).ok();
                     } else if path.ends_with("index")
+                        || path.ends_with("index.lock")
                         || (path_str.contains(&repo_path_str) && !path_str.contains("/.git/"))
                     {
                         println!("STATUS");
                         tx.send(("status", ())).ok();
                     } else if path_str.contains("/.git/") {
-                        //TODO: THE PROBLEM IS STILL THE LACK OF FILTERING FROM THE BASE_PATH
-                        //WATCHER
                         println!("GIT");
                         tx.send((".git", ())).ok();
                     }
@@ -86,24 +106,10 @@ pub async fn setup_watchers(
     )
     .map_err(|e| e.to_string())?;
 
-    for (path, is_dynamic, recursive_mode) in paths_to_watch {
-        let mut unwatched_dirs = UNWATCHED_DIRS.lock().unwrap();
-
-        if is_dynamic && !path.exists() {
-            unwatched_dirs
-                .entry(repo_path.clone())
-                .or_insert_with(Vec::new)
-                .push((path, is_dynamic, recursive_mode));
-        } else {
-            if path == git_path && !unwatched_dirs.contains_key(&repo_path) {
-                println!("SKIPPED");
-                continue;
-            }
-
-            watcher
-                .watch(&path, recursive_mode)
-                .map_err(|e| e.to_string())?;
-        }
+    for (path, _, recursive_mode) in paths_to_watch {
+        watcher
+            .watch(&path, recursive_mode)
+            .map_err(|e| e.to_string())?;
     }
 
     watchers.insert(repo_path.clone(), watcher);
@@ -160,8 +166,8 @@ pub async fn setup_watchers(
 }
 
 fn setup_unwatched_dirs(repo_path: &String) {
-    let mut unwatched_dirs = UNWATCHED_DIRS.lock().unwrap();
-    let entries = unwatched_dirs.get_mut(repo_path).unwrap();
+    let mut unwatched_dirs_map = UNWATCHED_DIRS_MAP.lock().unwrap();
+    let entries = unwatched_dirs_map.get_mut(repo_path).unwrap();
 
     let mut watcher_store = WATCHER_STORE.lock().unwrap();
     let watcher = watcher_store.get_mut(repo_path).unwrap();
@@ -186,7 +192,7 @@ fn setup_unwatched_dirs(repo_path: &String) {
             return;
         }
 
-        unwatched_dirs.remove(repo_path);
+        unwatched_dirs_map.remove(repo_path);
     }
 }
 

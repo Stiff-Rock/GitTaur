@@ -12,7 +12,7 @@ import { invoke } from "@tauri-apps/api/core";
 //BUG: Failed to open repository while restoring session with incorrect workspace/non existen paths
 
 function App() {
-  const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
+  const { workspace, notification, setNotification, isWelcomePage, } = useAppContext();
 
   useEffect(() => {
     if (!notification) return;
@@ -50,7 +50,7 @@ function App() {
 
       {workspace &&
         <PanelSyncProvider>
-          {workspace.tabs && [...workspace.tabs].map(([key, tab]) => (
+          {[...workspace.tabs].map(([key, tab]) => (
             !isWelcomePage(tab.repoPath) && (
               <MainProvider key={key} repoPath={tab.repoPath}>
                 <MainLayout
@@ -58,8 +58,8 @@ function App() {
                   isActive={workspace.activeTab === key}
                 />
               </MainProvider>
-            )
-          ))}
+            ))
+          )}
         </PanelSyncProvider>
       }
     </main>
