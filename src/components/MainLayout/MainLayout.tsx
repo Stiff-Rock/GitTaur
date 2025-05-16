@@ -22,6 +22,12 @@ interface MainLayoutProps {
   isActive: boolean;
 }
 
+interface RepoEvents {
+  headEvent: string,
+  fetchEvent: string,
+  statusEvent: string,
+}
+
 const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const {
     repoPath,
@@ -29,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
     showInfoSidebar,
     setShowInfoSidebar,
     setRepoInfo, repoInfo,
-    headEvent, fetchEvent
+    headEvent, fetchEvent, statusEvent
   } = useMainContext();
 
   const {
@@ -66,7 +72,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   useEffect(() => {
     if (isLoaded.current || repoInfo || !isActive) return;
 
-    invoke("setup_watchers", { repoPath })
+    const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
+    invoke("setup_watchers", { repoPath, repoEvents })
       .catch(e => console.error("Error starting git watcher:", e));
 
     const headUnlistenPromise = listen<string>(headEvent, getRepoInfo);

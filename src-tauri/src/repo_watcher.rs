@@ -1,4 +1,5 @@
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     path::PathBuf,
@@ -18,8 +19,20 @@ static UNWATCHED_DIRS: LazyLock<Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, Re
 //TODO: MAKE WATCHER FOR COMMITING ("{}/.git/HEAD") AND BRANCHING ("{}/.git/refs") AND MAYBE INIT
 //ALL OF THEM AT ONCE
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct RepoEvents {
+    head_event: String,
+    fetch_event: String,
+    status_event: String,
+}
+
 #[command]
-pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<(), String> {
+pub async fn setup_watchers(
+    app_handle: AppHandle,
+    repo_path: String,
+    repo_events: RepoEvents,
+) -> Result<(), String> {
     let mut watchers = WATCHER_STORE.lock().unwrap();
     if watchers.contains_key(&repo_path) {
         return Ok(());
@@ -48,10 +61,13 @@ pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<
                     let path_str = path.to_string_lossy().replace('\\', "/");
 
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
+                        println!("HEAD");
                         tx.send(("head", ())).ok();
                     } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
+                        println!("FETCH");
                         tx.send(("fetch", ())).ok();
                     } else if path.ends_with("index") {
+                        println!("STATUS");
                         tx.send(("status", ())).ok();
                     }
                 }
@@ -82,11 +98,11 @@ pub async fn setup_watchers(app_handle: AppHandle, repo_path: String) -> Result<
 
     watchers.insert(repo_path.clone(), watcher);
 
-    let repo_id = repo_path.replace('\\', "-").replace(' ', "_");
-
-    let head_event = format!("git-head-updated-{}", repo_id);
-    let fetch_event = format!("git-fetch-completed-{}", repo_id);
-    let status_event = format!("git-status-changed-{}", repo_id);
+    let RepoEvents {
+        head_event,
+        fetch_event,
+        status_event,
+    } = repo_events;
 
     spawn(move || {
         let last_emit = Instant::now() - Duration::from_secs(3);

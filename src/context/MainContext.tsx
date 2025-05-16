@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useRef, useLayoutEffect } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
+import { Base64 } from 'js-base64';
 
 interface MainContextType {
   // State 
@@ -43,10 +44,14 @@ interface MainProviderProps {
 export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const { children, repoPath } = props;
 
-  const repoId = repoPath.replace(/\\/g, "-").replace(/ /g, "_");
+  const repoId = Base64.encodeURI(repoPath);
+  console.log("id: ", repoId);
   const headEvent = `git-head-updated-${repoId}`;
   const fetchEvent = `git-fetch-completed-${repoId}`;
   const statusEvent = `git-status-changed-${repoId}`;
+  console.log("headEvent: ", headEvent);
+  console.log("fetchEvent: ", fetchEvent);
+  console.log("statusEvent: ", statusEvent);
 
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
 
