@@ -67,15 +67,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   // Fetch repo data on load and initilize repo watchers
   //TODO: DELETE REF ON RELEASE
   const isLoaded = useRef(false);
-  useEffect(() => {
-    console.log("MOUNT!")
-    if (isLoaded.current || repoInfo || !isActive) return;
-    isLoaded.current = true;
-    console.log("SETUP")
 
-    const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
-    invoke("setup_watchers", { repoPath, repoEvents })
-      .catch(e => console.error("Error starting git watcher:", e));
+  useEffect(() => {
+    if (repoInfo || !isActive) return;
+
+    if (!isLoaded.current) {
+      isLoaded.current = true;
+      const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
+      invoke("setup_watchers", { repoPath, repoEvents })
+        .catch(e => console.error("Error starting git watcher:", e));
+    }
 
     const headUnlistenPromise = listen<string>(headEvent, getRepoInfo);
     const fetchUnlistenPromise = listen<string>(fetchEvent, getRepoInfo);
@@ -83,7 +84,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
     getRepoInfo();
 
     return () => {
-      console.log("UNMOUNT!");
       headUnlistenPromise.then(unlisten => unlisten());
       fetchUnlistenPromise.then(unlisten => unlisten());
     };
