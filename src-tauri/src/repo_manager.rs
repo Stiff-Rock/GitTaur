@@ -2,9 +2,10 @@ use crate::{
     git2json::{self, ChangeType, CommitLog, FileChanges},
     repo_info::{RepoInfo, RepoStatus},
 };
+use auth_git2::GitAuthenticator;
 use git2::{
-    AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, PushOptions,
-    Reference, Repository, Signature, Status, StatusOptions,
+    AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, Reference, Repository,
+    Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use std::{
@@ -654,14 +655,13 @@ pub async fn push_remote(
         return Err(BUSY_MSG.to_string());
     }
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let auth = GitAuthenticator::default();
 
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
     let mut remote = repo.find_remote(&remote).map_err(|e| e.to_string())?;
-    let mut push_options = PushOptions::new();
     let refspec = format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch);
 
-    remote
-        .push(&[&refspec], Some(&mut push_options))
+    auth.push(&repo, &mut remote, &[&refspec])
         .map_err(|e| e.to_string())?;
 
     release_repo(&repo_path);

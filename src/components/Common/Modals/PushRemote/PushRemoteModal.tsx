@@ -9,16 +9,26 @@ import { AlertIcon } from '@primer/octicons-react'
 const PushRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
 
+  //TODO: FILL THE DEFAULT VALUES WTH THE LOCAL BRANCH, ORIGIN REMOTE AND THE REQUIVALENT BRANCH IN REMOTE OR THE FIRST AS FALLBACK
   const [remote, setRemote] = useState<string>("");
   const [localBranch, setLocalBranch] = useState<string>("");
   const [remoteBranch, setRemoteBranch] = useState<string>("");
   const [forcePush, setForcePush] = useState<boolean>(false);
 
-  const placeHolder = "Choose a remote";
-
   useLayoutEffect(() => {
     if (!activeRepoInfo) return;
-    setRemote(Object.keys(activeRepoInfo.remotes).includes("origin") ? "origin" : placeHolder)
+
+    const remotesArray = Object.keys(activeRepoInfo.remotes);
+
+    const defaultRemote = remotesArray.includes("origin") ? "origin" : remotesArray[0];
+    setRemote(defaultRemote);
+
+    const currentBranch = activeRepoInfo.currentBranch;
+    setLocalBranch(currentBranch);
+
+    const remoteBranches = activeRepoInfo.remotes[defaultRemote];
+    const remoteBranch = remoteBranches.includes(currentBranch) ? currentBranch : activeRepoInfo.remotes[remote][0];
+    setRemoteBranch(remoteBranch);
   }, [activeRepoInfo]);
 
   //TODO: LOADING INDICATOR
@@ -43,6 +53,7 @@ const PushRemoteModal: React.FC = () => {
       });
     } else {
       setNotification("You must select a valid options")
+      console.error(`Invalid push args | Remote: ${remote} | lB: ${localBranch} | rB: ${remoteBranch}`);
     }
   }
 
