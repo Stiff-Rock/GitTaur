@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from "./WindowTabs.module.css";
-import { DatabaseIcon, RepoIcon, XIcon } from "@primer/octicons-react";
+import { DatabaseIcon, GearIcon, RepoIcon, XIcon } from "@primer/octicons-react";
 
 interface TabProps {
   label: string;
@@ -27,16 +27,10 @@ const Tab: React.FC<TabProps> = ({ label, isActive, onClick, onClose }) => {
   return (
     <div onClick={onClick} onAuxClick={handleCloseClick} className={`${styles.tab} ${isActive ? styles.active : ''}`}>
       {label === "Welcome Page" ?
-        <button
-          className='actionButton'
-        >
-          <DatabaseIcon className={`${styles.tabIcon}`} />
-        </button> :
-        <button
-          className='actionButton'
-        >
+        <DatabaseIcon className={`${styles.tabIcon}`} />
+        :
+        label === "Configuration" ? <GearIcon className={`${styles.tabIcon}`} /> :
           <RepoIcon className={`${styles.tabIcon}`} />
-        </button>
       }
       <span>{label}</span>
       <button

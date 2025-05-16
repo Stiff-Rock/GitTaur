@@ -5,12 +5,12 @@ import { useAppContext } from '../../../../context/AppContext';
 import { invoke } from '@tauri-apps/api/core';
 
 const OpenTerminalDirButton: React.FC = () => {
-  const { setNotification, workspace, isInWelcomePage } = useAppContext();
+  const { setNotification, workspace, isInWelcomePage, isInConfigPage } = useAppContext();
 
   const openTerminal = () => {
     if (!workspace) return;
 
-    const path = isInWelcomePage ? "" : workspace.activeTab;
+    const path = isInWelcomePage || isInConfigPage ? "" : workspace.activeTab;
 
     invoke('open_terminal', { path }).catch((e) => {
       console.error(e);

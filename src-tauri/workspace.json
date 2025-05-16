@@ -6,6 +6,13 @@
         "label": "gitHubTest",
         "repoPath": "C:\\Users\\Yago\\Desktop\\gitHubTest"
       }
+    ],
+    [
+      "ConfigPage",
+      {
+        "label": "Configuration",
+        "repoPath": "ConfigPage"
+      }
     ]
   ],
   "activeTab": "C:\\Users\\Yago\\Desktop\\gitHubTest"

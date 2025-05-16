@@ -13,7 +13,7 @@ import PushRepositoryButton from './Actions/GitActions/PushRepositoryButton';
 import GitBranchButton from './Actions/GitActions/CreateBranchButton';
 
 const ActionBar: React.FC = () => {
-  const { isInWelcomePage } = useAppContext();
+  const { isInWelcomePage, isInConfigPage } = useAppContext();
 
   return (
     <div className={`${styles.actionBar}`}>
@@ -25,13 +25,13 @@ const ActionBar: React.FC = () => {
               <CloneRepositoryButton />
               <CreateRepositoryButton />
             </>
-          ) : (
+          ) : isInConfigPage ? (<></>) : (
             <OpenRepoDirButton />
           )}
         <OpenTerminalDirButton />
       </div>
 
-      {!isInWelcomePage && (
+      {!isInWelcomePage && !isInConfigPage && (
         <div className={`${styles.actions} ${styles.centerActions}`}>
           <FetchRepositoryButton />
 
@@ -43,7 +43,7 @@ const ActionBar: React.FC = () => {
         </div>
       )}
 
-      {!isInWelcomePage && (
+      {!isInWelcomePage && !isInConfigPage && (
         <div className={`${styles.actions} ${styles.rightActions}`}>
           <button className={`actionButton ${styles.actionButton}`}>
             <svg

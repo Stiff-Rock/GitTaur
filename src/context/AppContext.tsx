@@ -5,14 +5,22 @@ import { useDialog } from '../hooks/useDialog';
 interface AppContextType {
   // State 
   workspace: Workspace | null;
+
   isInWelcomePage: boolean
+  isInConfigPage: boolean
+  isInRepoPage: boolean
+
   activeModal: AppModals;
   notification: string;
   activeRepoInfo: RepoInfo | null;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
+
   setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsInConfigPage: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsInRepoPage: React.Dispatch<React.SetStateAction<boolean>>;
+
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
   setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
@@ -23,6 +31,7 @@ interface AppContextType {
   setActiveTab: (tabId: string) => void;
   closeWorkspaceTab: (tabKey: string) => void;
   openWelcomePage: () => void;
+  openConfigPage: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -54,7 +63,11 @@ let initWorkspace: Workspace | null = null;
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
+
   const [isInWelcomePage, setIsInWelcomePage] = useState(true);
+  const [isInConfigPage, setIsInConfigPage] = useState(true);
+  const [isInRepoPage, setIsInRepoPage] = useState(true);
+
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
@@ -70,18 +83,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .catch((e) => console.error("Could not get workspace - {}", e));
   }, []);
 
+  const updatePageStates = (tabKey: string) => {
+    let inConfigPage = false;
+    let inWelcomePage = false;
+    let inRepoPage = false;
+
+    if (tabKey === "ConfigPage") {
+      inConfigPage = true;
+    } else if (isWelcomePage(tabKey)) {
+      inWelcomePage = true;
+    } else {
+      inRepoPage = true;
+    }
+
+    setIsInConfigPage(inConfigPage);
+    setIsInWelcomePage(inWelcomePage);
+    setIsInRepoPage(inRepoPage);
+  }
+
   useEffect(() => {
     if (!workspace) return;
+    console.log("WOKRPACE:", workspace);
+
+    updatePageStates(workspace.activeTab);
+
+    if (workspace.activeTab === "ConfigPage") return;
 
     if (workspace.tabs.size <= 0) {
       openWelcomePage();
-    } else if (workspace.activeTab == "" || !workspace.tabs.has(workspace.activeTab)) {
+    } else if (workspace.activeTab === "" || !workspace.tabs.has(workspace.activeTab)) {
       console.warn(`Found not valid active tab ${workspace.activeTab}. Attempting fallback...`)
       const fallbackTab = [...workspace.tabs][workspace.tabs.size - 1][0]
       setActiveTab(fallbackTab);
     }
-
-    setIsInWelcomePage(isWelcomePage(workspace.activeTab));
 
     const workspaceDto = WorkspaceToDto(workspace);
 
@@ -90,7 +124,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [workspace]);
 
   const setActiveTab = (tabKey: string) => {
-    setIsInWelcomePage(isWelcomePage(tabKey));
+    updatePageStates(tabKey);
     setWorkspace(prev => {
       if (!prev) return prev;
       return { ...prev, activeTab: tabKey };
@@ -184,7 +218,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Adds the new tab. If it is a welcome page, just push it, otherwise replace the welcome tab with the new one
     const entries = [...workspace.tabs.entries()];
-    if (isWelcomePage(newTabKey)) {
+    if (isWelcomePage(newTabKey) || newTabKey === "ConfigPage") {
       entries.push([newTabKey, newTab]);
     } else {
       const index = [...workspace.tabs.keys()].indexOf(workspace.activeTab);
@@ -211,11 +245,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     openWorkspaceTab(key, newTab);
   }
 
+  const openConfigPage = () => {
+    if (!workspace) return;
+    const key = "ConfigPage";
+    openWorkspaceTab(key, {
+      label: "Configuration",
+      repoPath: key,
+    });
+  }
+
   return (
     <AppContext.Provider value={{
       // States and Setters
       workspace, setWorkspace,
+
       isInWelcomePage, setIsInWelcomePage,
+      isInConfigPage, setIsInConfigPage,
+      isInRepoPage, setIsInRepoPage,
+
       activeModal, setActiveModal,
       notification, setNotification,
       activeRepoInfo, setActiveRepoInfo,
@@ -226,6 +273,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       closeWorkspaceTab,
       setActiveTab,
       openWelcomePage,
+      openConfigPage
     }}>
       {children}
     </AppContext.Provider>

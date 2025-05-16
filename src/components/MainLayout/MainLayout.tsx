@@ -42,8 +42,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
     setNotification,
     activeModal,
     setActiveRepoInfo,
-    isWelcomePage,
-    workspace
+    workspace,
+    isInRepoPage
   } = useAppContext();
 
   const {
@@ -57,8 +57,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const panelRightRef = useRef<any>(null);
   const isProgrammaticResize = useRef(false);
 
-  const getRepoInfo = () => {
-    if (!workspace || isWelcomePage(workspace.activeTab)) return;
+  const getRepoInfo = async () => {
+    if (!workspace || !isInRepoPage) return;
     invoke<RepoInfo>("get_repo_info", { repoPath })
       .then((data) => setRepoInfo(data))
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });

@@ -3,16 +3,17 @@ import ActionBar from "./components/ActionBar/ActionBar";
 import TitleBar from "./components/TitleBar/TitleBar";
 import { useAppContext } from "./context/AppContext";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
-import { useEffect, useRef } from "react";
+import { isValidElement, useEffect, useRef } from "react";
 import { MainProvider } from './context/MainContext';
 import { PanelSyncProvider } from "./context/PanelSyncContext";
 import { ToastContainer, toast, Zoom } from "react-toastify";
 import { invoke } from "@tauri-apps/api/core";
+import ConfigPage from "./components/ConfigurationPage/ConfigPage";
 
 //BUG: Failed to open repository while restoring session with incorrect workspace/non existen paths
 
 function App() {
-  const { workspace, notification, setNotification, isWelcomePage, } = useAppContext();
+  const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
 
   useEffect(() => {
     if (!notification) return;
@@ -31,6 +32,10 @@ function App() {
     else invoke("reset").catch((e) => console.error(e))
   }, []);
 
+  const isValidPage = (path: string): boolean => {
+    return path !== "ConfigPage" && !isWelcomePage(path);
+  }
+
   return (
     <main className="container">
       <TitleBar />
@@ -47,12 +52,14 @@ function App() {
       />
 
       <WelcomePage />
+      <ConfigPage />
+
       {/*TODO: THE MOUNT UNMOUNT HAPPENS ONLY WHEN ACTUALLY OPENING A REPO TAB, NOT NECCESARILY ON STARTUP*/}
       {workspace &&
         <PanelSyncProvider>
-          {[...workspace.tabs].map(([key, tab]) => (
-            !isWelcomePage(tab.repoPath) && (
-              <MainProvider key={key} repoPath={tab.repoPath}>
+          {[...workspace.tabs].map(([key, _]) => (
+            isValidPage(key) && (
+              <MainProvider key={key} repoPath={key}>
                 <MainLayout
                   key={key}
                   isActive={workspace.activeTab === key}

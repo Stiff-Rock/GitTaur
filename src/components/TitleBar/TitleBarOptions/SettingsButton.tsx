@@ -1,16 +1,15 @@
 import { GearIcon } from '@primer/octicons-react';
 import styles from '../TitleBar.module.css';
 import React from 'react';
+import { useAppContext } from '../../../context/AppContext';
 
 const SettingsButton: React.FC = () => {
-  const openConfigWindow = async () => {
-
-  }
+  const { openConfigPage } = useAppContext();
 
   return (
     <button
       className={`${styles.titleBarIcon} actionButton`}
-      onClick={openConfigWindow}
+      onClick={openConfigPage}
       style={{ marginRight: "5px" }}
       title="Settings"
     >
