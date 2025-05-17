@@ -13,25 +13,25 @@ import PushRepositoryButton from './Actions/GitActions/PushRepositoryButton';
 import GitBranchButton from './Actions/GitActions/CreateBranchButton';
 
 const ActionBar: React.FC = () => {
-  const { isInWelcomePage, isInConfigPage } = useAppContext();
+  const { checkPageType } = useAppContext();
 
   return (
     <div className={`${styles.actionBar}`}>
       <div className={`${styles.actions} ${styles.leftActions}`}>
-        {isInWelcomePage ?
+        {checkPageType("Welcome") ?
           (
             <>
               <OpenRepositoryButton />
               <CloneRepositoryButton />
               <CreateRepositoryButton />
             </>
-          ) : isInConfigPage ? (<></>) : (
+          ) : checkPageType("Config") ? (<></>) : (
             <OpenRepoDirButton />
           )}
         <OpenTerminalDirButton />
       </div>
 
-      {!isInWelcomePage && !isInConfigPage && (
+      {!checkPageType("Welcome") && !checkPageType("Config") && (
         <div className={`${styles.actions} ${styles.centerActions}`}>
           <FetchRepositoryButton />
 
@@ -43,23 +43,21 @@ const ActionBar: React.FC = () => {
         </div>
       )}
 
-      {!isInWelcomePage && !isInConfigPage && (
-        <div className={`${styles.actions} ${styles.rightActions}`}>
-          <button className={`actionButton ${styles.actionButton}`}>
-            <svg
-              className={styles.userAccountBg}
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-            >
-              <circle cx="12" cy="12" r="12" fill="var(--secondary-bg)" />
-              <foreignObject x="0" y="0" width="24" height="24">
-                <PersonIcon className={styles.userAccountIcon} />
-              </foreignObject>
-            </svg>
-          </button>
-        </div>
-      )}
+      <div className={`${styles.actions} ${styles.rightActions}`}>
+        <button className={`actionButton ${styles.actionButton}`}>
+          <svg
+            className={styles.userAccountBg}
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <circle cx="12" cy="12" r="12" fill="var(--secondary-bg)" />
+            <foreignObject x="0" y="0" width="24" height="24">
+              <PersonIcon className={styles.userAccountIcon} />
+            </foreignObject>
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };

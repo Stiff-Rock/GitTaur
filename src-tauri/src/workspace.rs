@@ -4,14 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
-    path::Path,
-    sync::{LazyLock, Mutex, MutexGuard},
+    path::{Path, PathBuf},
+    sync::{LazyLock, Mutex, MutexGuard, OnceLock},
 };
 use tauri::command;
-
-static WORKSPACE: LazyLock<Mutex<Workspace>> = LazyLock::new(|| Mutex::new(Workspace::new()));
-
-const WORKSPACE_PATH: &str = "./workspace.json";
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -53,13 +49,18 @@ impl WorkspaceDTO {
     }
 }
 
+static WORKSPACE: LazyLock<Mutex<Workspace>> = LazyLock::new(|| Mutex::new(Workspace::new()));
+
+pub static WORKSPACE_PATH: OnceLock<PathBuf> = OnceLock::new();
+
 #[command]
 pub fn save_workspace(workspace_dto: WorkspaceDTO) -> Result<(), String> {
-    let mut workspace = WORKSPACE.lock().map_err(|e| e.to_string())?;
+    let mut workspace = workspace();
     *workspace = workspace_dto.into_workspace();
 
     let json_data = serde_json::to_string_pretty(&*workspace).map_err(|e| e.to_string())?;
-    fs::write(WORKSPACE_PATH, json_data).map_err(|e| format!("Failed to save: {}", e))?;
+    fs::write(WORKSPACE_PATH.get().unwrap(), json_data)
+        .map_err(|e| format!("Failed to save: {}", e))?;
 
     Ok(())
 }
@@ -87,9 +88,8 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
     Ok("".to_string())
 }
 
-//TODO: FOR RELEASE Use Tauri's App Data Directory
 pub fn restore_workspace() -> String {
-    let path = Path::new(WORKSPACE_PATH);
+    let path = Path::new(WORKSPACE_PATH.get().unwrap());
 
     // If the workspace file is empty, craete a new empty one, if not, load it
     let mut workspace = workspace();
@@ -98,9 +98,10 @@ pub fn restore_workspace() -> String {
             .map_err(|e| e.to_string())
             .expect("Failed to serialize workspace");
 
-        let mut file = File::create(WORKSPACE_PATH).expect("Failed to create workspace.json");
+        let mut file =
+            File::create(WORKSPACE_PATH.get().unwrap()).expect("Failed to create workspace.json");
         file.write_all(workspace_json.as_bytes())
-            .expect("Failed to write default JSON content");
+            .expect("Failed to write default workspace JSON content");
 
         *workspace = Workspace::new();
     } else {

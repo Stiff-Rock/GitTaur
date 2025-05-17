@@ -1,12 +1,17 @@
+mod config;
 mod git2json;
 mod repo_info;
 mod repo_manager;
 mod repo_watcher;
 mod tab;
 mod workspace;
+use std::error::Error;
+use std::fs::create_dir_all;
+
 use tab::Tab;
-use tauri::command;
+use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::{command, App};
 
 #[command]
 fn open_terminal(mut path: String) -> Result<(), String> {
@@ -55,6 +60,56 @@ fn open_terminal(mut path: String) -> Result<(), String> {
     Ok(())
 }
 
+// Init project local data and config paths
+fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
+    let app_handle = app.app_handle();
+
+    for dir in [
+        app_handle.path().app_config_dir()?,
+        app_handle.path().app_local_data_dir()?,
+    ] {
+        if !dir.exists() {
+            create_dir_all(&dir)?;
+        }
+    }
+
+    workspace::WORKSPACE_PATH
+        .set(
+            app_handle
+                .path()
+                .resolve("workspace.json", BaseDirectory::AppLocalData)
+                .map_err(|e| format!("Error resolving Workspace path - {}", e.to_string()))?,
+        )
+        .map_err(|e| format!("Workspace path already initilized at {}", e.display()))?;
+
+    config::CONFIG_PATH
+        .set(
+            app_handle
+                .path()
+                .resolve("config.json", BaseDirectory::AppConfig)
+                .map_err(|e| format!("Error resolving Config path - {}", e.to_string()))?,
+        )
+        .map_err(|e| format!("Config path already initilized at {}", e.display()))?;
+
+    Ok(())
+}
+
+// Set workspace global variable
+fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
+    let window = app.get_webview_window("main").unwrap();
+
+    let workspace_json: String = workspace::restore_workspace();
+    let config_json: String = config::load_config();
+
+    let eval_command = &format!(
+        "window.__WORKSPACE_DTO__ = {}; window.__APP_CONFIG__ = {};",
+        workspace_json, config_json
+    );
+    window.eval(eval_command)?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -62,9 +117,16 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            // General app commands
+            open_terminal,
+            // Workspace commands
             workspace::open_repo,
             workspace::get_workspace,
             workspace::save_workspace,
+            // Configuration commands
+            config::get_config,
+            config::save_config,
+            // Repository commands
             repo_manager::create_repo,
             repo_manager::clone_repo,
             repo_manager::get_repo_info,
@@ -76,19 +138,15 @@ pub fn run() {
             repo_manager::push_remote,
             repo_manager::create_branch,
             repo_manager::commit,
+            // Repository Watcher commands
             repo_watcher::setup_watchers,
             repo_watcher::stop_git_watcher,
-            open_terminal,
             //TODO: DELETE ON RELEASE
             repo_manager::reset,
         ])
         .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
-            let workspace_json: String = workspace::restore_workspace();
-
-            let eval_command = &format!("window.__WORKSPACE_DTO__ = {}", workspace_json);
-            window.eval(eval_command)?;
-
+            init_app_paths(app)?;
+            set_app_globals(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

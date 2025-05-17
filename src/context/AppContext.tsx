@@ -6,20 +6,12 @@ interface AppContextType {
   // State 
   workspace: Workspace | null;
 
-  isInWelcomePage: boolean
-  isInConfigPage: boolean
-  isInRepoPage: boolean
-
   activeModal: AppModals;
   notification: string;
   activeRepoInfo: RepoInfo | null;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
-
-  setIsInWelcomePage: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsInConfigPage: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsInRepoPage: React.Dispatch<React.SetStateAction<boolean>>;
 
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
@@ -32,6 +24,7 @@ interface AppContextType {
   closeWorkspaceTab: (tabKey: string) => void;
   openWelcomePage: () => void;
   openConfigPage: () => void;
+  checkPageType: (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -64,10 +57,6 @@ let initWorkspace: Workspace | null = null;
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
 
-  const [isInWelcomePage, setIsInWelcomePage] = useState(true);
-  const [isInConfigPage, setIsInConfigPage] = useState(true);
-  const [isInRepoPage, setIsInRepoPage] = useState(true);
-
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
@@ -83,31 +72,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .catch((e) => console.error("Could not get workspace - {}", e));
   }, []);
 
-  const updatePageStates = (tabKey: string) => {
-    let inConfigPage = false;
-    let inWelcomePage = false;
-    let inRepoPage = false;
+  const checkPageType = (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => {
+    if (!workspace) return false;
+
+    if (!tabKey) tabKey = workspace.activeTab;
 
     if (tabKey === "ConfigPage") {
-      inConfigPage = true;
+      return desiredType === "Config";
     } else if (isWelcomePage(tabKey)) {
-      inWelcomePage = true;
+      return desiredType === "Welcome";
     } else {
-      inRepoPage = true;
+      return desiredType === "Repo";
     }
-
-    setIsInConfigPage(inConfigPage);
-    setIsInWelcomePage(inWelcomePage);
-    setIsInRepoPage(inRepoPage);
   }
 
   useEffect(() => {
     if (!workspace) return;
-    console.log("WOKRPACE:", workspace);
 
-    updatePageStates(workspace.activeTab);
-
-    if (workspace.activeTab === "ConfigPage") return;
+    if (checkPageType("Config")) return;
 
     if (workspace.tabs.size <= 0) {
       openWelcomePage();
@@ -124,7 +106,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [workspace]);
 
   const setActiveTab = (tabKey: string) => {
-    updatePageStates(tabKey);
+    checkPageType("Config", tabKey);
     setWorkspace(prev => {
       if (!prev) return prev;
       return { ...prev, activeTab: tabKey };
@@ -168,15 +150,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const tabs = new Map<string, Tab>(workspace.tabs);
 
     // If it is the only tab and it's a welcome page, don't close it
-    const tabIsWelcomePage = isWelcomePage(tabKey);
-    if (tabs.size === 1 && tabIsWelcomePage) return;
+    if (tabs.size === 1 && !checkPageType("Welcome", tabKey)) return;
 
-    if (!tabIsWelcomePage)
+    if (checkPageType("Repo", tabKey)) {
       invoke("stop_git_watcher", { repoPath: tabKey }).catch((e) => {
         const msg = `Error stopping status watcher - ${e}`;
         console.error(msg);
         setNotification(msg);
       });
+    }
 
     // Gets the position that tab was in before removing it
     const removedTabIndex = [...tabs.keys()].indexOf(tabKey);
@@ -200,8 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           activeTab = [...tabs.keys()][removedTabIndex - 1];
         }
       } else {
-        console.warn("No active tab could be assined while closing " + tabKey + ":", tabs)
-        activeTab = "";
+        activeTab = "None";
       }
     }
 
@@ -259,10 +240,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // States and Setters
       workspace, setWorkspace,
 
-      isInWelcomePage, setIsInWelcomePage,
-      isInConfigPage, setIsInConfigPage,
-      isInRepoPage, setIsInRepoPage,
-
       activeModal, setActiveModal,
       notification, setNotification,
       activeRepoInfo, setActiveRepoInfo,
@@ -273,7 +250,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       closeWorkspaceTab,
       setActiveTab,
       openWelcomePage,
-      openConfigPage
+      openConfigPage,
+      checkPageType
     }}>
       {children}
     </AppContext.Provider>

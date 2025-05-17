@@ -43,14 +43,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
     activeModal,
     setActiveRepoInfo,
     workspace,
-    isInRepoPage
+    checkPageType
   } = useAppContext();
 
   const {
     leftSize,
     rightSize,
     setLeftSize,
-    setRightSize
+    setRightSize,
   } = usePanelSync();
 
   const panelLeftRef = useRef<any>(null);
@@ -58,7 +58,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const isProgrammaticResize = useRef(false);
 
   const getRepoInfo = async () => {
-    if (!workspace || !isInRepoPage) return;
+    if (!workspace) return;
     invoke<RepoInfo>("get_repo_info", { repoPath })
       .then((data) => setRepoInfo(data))
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
@@ -69,7 +69,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const isLoaded = useRef(false);
 
   useEffect(() => {
-    if (repoInfo || !isActive) return;
+    if (repoInfo) return;
 
     if (!isLoaded.current) {
       isLoaded.current = true;
@@ -87,7 +87,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       headUnlistenPromise.then(unlisten => unlisten());
       fetchUnlistenPromise.then(unlisten => unlisten());
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (isActive) setActiveRepoInfo(repoInfo);

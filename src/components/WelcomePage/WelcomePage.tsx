@@ -6,16 +6,16 @@ import styles from './WelcomePage.module.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 function WelcomePage() {
-  const { activeModal, isInWelcomePage, workspace, setActiveRepoInfo } = useAppContext();
+  const { activeModal, workspace, setActiveRepoInfo, checkPageType } = useAppContext();
 
   useEffect(() => {
-    if (isInWelcomePage) {
+    if (!checkPageType("Repo")) {
       setActiveRepoInfo(null);
     }
   }, []);
 
   return (
-    <div className={`${styles.main} ${isInWelcomePage || !workspace ? '' : 'inactive'}`}>
+    <div className={`${styles.main} ${checkPageType("Welcome") || !workspace ? '' : 'inactive'}`}>
       <div className={styles.subContainer}>
         <span className={styles.title}>Let's start working</span>
         <Scrollbars
