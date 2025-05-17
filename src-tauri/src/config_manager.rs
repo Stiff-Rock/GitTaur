@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use crate::types::config::*;
 use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
@@ -6,39 +6,6 @@ use std::{
     sync::{LazyLock, Mutex, MutexGuard, OnceLock},
 };
 use tauri::command;
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Configuration {
-    // General configs
-    lang: String,
-    date_format: String,
-    max_commits: u32,
-    terminal_app: String,
-
-    // Git configs
-    username: String,
-    email: String,
-
-    // UI Customization
-    theme: String,
-    accent_color: String,
-}
-
-impl Configuration {
-    pub fn default() -> Self {
-        Self {
-            lang: String::new(),
-            date_format: String::new(),
-            max_commits: u32::MAX,
-            terminal_app: String::new(),
-            username: String::new(),
-            email: String::new(),
-            theme: String::new(),
-            accent_color: String::new(),
-        }
-    }
-}
 
 pub static CONFIGUTARION: LazyLock<Mutex<Configuration>> =
     LazyLock::new(|| Mutex::new(Configuration::default()));
@@ -69,7 +36,7 @@ pub fn config() -> MutexGuard<'static, Configuration> {
 pub fn load_config() -> String {
     let path = Path::new(CONFIG_PATH.get().unwrap());
 
-    // If the workspace file is empty, craete a new empty one, if not, load it
+    // If the configuration file is empty, craete a new empty one, if not, load it
     let mut config = config();
     if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
         let config_json: String = serde_json::to_string_pretty(&*config)
@@ -87,9 +54,9 @@ pub fn load_config() -> String {
 
         let mut config_json: String = String::new();
         file.read_to_string(&mut config_json)
-            .expect("Error reading workspace file contents");
+            .expect("Error reading configuration file contents");
 
-        *config = serde_json::from_str(&config_json).expect("Failed to load workspace info");
+        *config = serde_json::from_str(&config_json).expect("Failed to load configuration info");
     }
 
     serde_json::to_string(&*config).unwrap_or_else(|e| {

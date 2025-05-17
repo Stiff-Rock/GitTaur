@@ -1,9 +1,7 @@
-use std::collections::HashMap;
-
+use crate::git2json::{CommitLog, FileChanges};
 use indexmap::IndexMap;
 use serde::Serialize;
-
-use crate::git2json::{CommitLog, FileChanges};
+use std::collections::HashMap;
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]

@@ -1,5 +1,75 @@
+.mainContainer,
+.configTabSidebar,
+.configsContainer,
+.configSection,
+.configTitle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.mainContainer {
+  flex-direction: row;
+}
+
+.configTabSidebar,
+.configsContainer,
+.configSection {
+  flex-direction: column;
+}
+
 .mainContainer {
   width: 100%;
-  height: 100%;
   background-color: var(--secondary-bg);
+}
+
+.configTabSidebar {
+  flex: 1;
+  border-right: solid 1px var(--border-color);
+  justify-content: flex-start;
+  gap: 10px;
+  padding-top: 10px;
+  box-sizing: border-box;
+}
+
+.configsContainer {
+  width: 85%;
+  background-color: var(--primary-bg);
+}
+
+.configTitle {
+  flex: 1;
+}
+
+.configTitle span {
+  user-select: none;
+  font-size: var(--font-size-title);
+}
+
+.configSection {
+  height: 90%;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+.configTabButton {
+  width: 80%;
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: ease-in-out 0.1s;
+}
+
+.configTabButton:hover {
+  background-color: var(--lighter-bg);
+}
+
+.selected {
+  background-color: var(--active-color);
+  color: var(--tertiary-text);
+}
+
+.configTabButton.selected:hover {
+  background-color: var(--active-color);
 }

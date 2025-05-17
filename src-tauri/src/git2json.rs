@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
 use git2::{Delta, Repository};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -1,6 +1,6 @@
 use crate::{
     git2json::{self, ChangeType, CommitLog, FileChanges},
-    repo_info::{RepoInfo, RepoStatus},
+    types::repo_info::{RepoInfo, RepoStatus},
 };
 use auth_git2::GitAuthenticator;
 use git2::{

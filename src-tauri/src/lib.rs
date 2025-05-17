@@ -1,14 +1,11 @@
-mod config;
+mod config_manager;
 mod git2json;
-mod repo_info;
 mod repo_manager;
 mod repo_watcher;
-mod tab;
-mod workspace;
+mod types;
+mod workspace_manager;
 use std::error::Error;
 use std::fs::create_dir_all;
-
-use tab::Tab;
 use tauri::path::BaseDirectory;
 use tauri::Manager;
 use tauri::{command, App};
@@ -73,7 +70,7 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    workspace::WORKSPACE_PATH
+    workspace_manager::WORKSPACE_PATH
         .set(
             app_handle
                 .path()
@@ -82,7 +79,7 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
         )
         .map_err(|e| format!("Workspace path already initilized at {}", e.display()))?;
 
-    config::CONFIG_PATH
+    config_manager::CONFIG_PATH
         .set(
             app_handle
                 .path()
@@ -98,8 +95,8 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
 fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
     let window = app.get_webview_window("main").unwrap();
 
-    let workspace_json: String = workspace::restore_workspace();
-    let config_json: String = config::load_config();
+    let workspace_json: String = workspace_manager::restore_workspace();
+    let config_json: String = config_manager::load_config();
 
     let eval_command = &format!(
         "window.__WORKSPACE_DTO__ = {}; window.__APP_CONFIG__ = {};",
@@ -120,12 +117,12 @@ pub fn run() {
             // General app commands
             open_terminal,
             // Workspace commands
-            workspace::open_repo,
-            workspace::get_workspace,
-            workspace::save_workspace,
+            workspace_manager::open_repo,
+            workspace_manager::get_workspace,
+            workspace_manager::save_workspace,
             // Configuration commands
-            config::get_config,
-            config::save_config,
+            config_manager::get_config,
+            config_manager::save_config,
             // Repository commands
             repo_manager::create_repo,
             repo_manager::clone_repo,
