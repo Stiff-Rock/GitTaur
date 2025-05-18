@@ -3,8 +3,9 @@ import baseStyle from "../BaseModal.module.css";
 import { useAppContext } from "../../../../context/AppContext";
 import { invoke } from "@tauri-apps/api/core";
 import BaseModal from "../BaseModal";
-import "react-widgets/styles.css";
 import { AlertIcon } from '@primer/octicons-react'
+import ComboBox from "../../ComboBox/ComboBox";
+import Checkbox from "../../CheckBox/Checkbox";
 
 const PushRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
@@ -62,62 +63,40 @@ const PushRemoteModal: React.FC = () => {
       {/*TODO: LABEL INPUTS ON ALL MODALS*/}
       {activeRepoInfo &&
         <>
-          <div className={baseStyle.inputLabelContainer}>
-            <span>Remote</span>
-            <select
-              className={baseStyle.modalInputSection}
-              onChange={(e) => setRemote(e.target.value)}
-              value={remote}
-            >
-              {Object.keys(activeRepoInfo.remotes).map((remote) => (
-                <option value={remote} key={remote}>{remote}</option>
-              ))}
-            </select>
-          </div>
+          <ComboBox
+            title="Remote"
+            onItemSelected={setRemote}
+            value={remote}
+            optionsArray={Object.keys(activeRepoInfo.remotes ?? {})}
+          />
 
-          <div className={baseStyle.inputLabelContainer}>
-            <span>Local branch</span>
-            <select
-              className={baseStyle.modalInputSection}
-              onChange={(e) => setLocalBranch(e.target.value)}
-              value={remote}
-            >
-              {activeRepoInfo.localBranches.map((branch) => (
-                <option value={localBranch} key={branch}>{branch}</option>
-              ))}
-            </select>
-          </div>
+          <ComboBox
+            title="Local branch"
+            onItemSelected={setLocalBranch}
+            value={localBranch}
+            optionsArray={activeRepoInfo.localBranches ?? []}
+          />
 
-          <div className={baseStyle.inputLabelContainer}>
-            <span>Remote branch</span>
-            <select
-              className={baseStyle.modalInputSection}
-              onChange={(e) => setRemoteBranch(e.target.value)}
-              value={remote}
-            >
-              {remote && activeRepoInfo.remotes[remote].map((branch) => (
-                <option value={remoteBranch} key={branch}>{branch}</option>
-              ))}
-            </select>
-          </div>
+          <ComboBox
+            title="Remote branch"
+            onItemSelected={setRemoteBranch}
+            value={remoteBranch}
+            optionsArray={activeRepoInfo.remotes[remote] ?? []}
+          />
         </>
       }
 
-      <div className="checkbox">
-        <input
-          type="checkbox"
-          id="forcePush"
-          checked={forcePush}
-          onChange={(e) => setForcePush(e.target.checked)}
-        />
-        <label htmlFor="forcePush">Force push</label> <AlertIcon size={14} />
-      </div>
+      <Checkbox
+        checkedValue={forcePush}
+        onChecked={setForcePush}
+        label="Force push"
+        checkboxIcon={<AlertIcon size={14} />}
+      />
 
       <div className={baseStyle.buttonsContainer}>
         <button className='appButton' onClick={handlePushRemote}>Push</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
-
     </BaseModal >
   );
 };

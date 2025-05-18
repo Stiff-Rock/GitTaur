@@ -1,0 +1,22 @@
+.comboBoxContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comboBoxContainer span {
+  width: 25%;
+  font-size: var(--font-size-tab);
+}
+
+.comboBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.comboBox input {
+  flex: 1;
+}

@@ -1,10 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
+import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
 
 interface AppContextType {
   // State 
   workspace: Workspace | null;
+  config: Configuration | null;
 
   activeModal: AppModals;
   notification: string;
@@ -12,6 +14,7 @@ interface AppContextType {
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
+  setConfig: React.Dispatch<React.SetStateAction<Configuration | null>>;
 
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
@@ -29,33 +32,23 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const DtoToWorkspace = (dto: WorkspaceDTO): Workspace => {
-  return {
-    tabs: new Map<string, Tab>(dto.tabs),
-    activeTab: dto.activeTab
-  };
-}
-
-const WorkspaceToDto = (workspace: Workspace): WorkspaceDTO => {
-  return {
-    tabs: [...workspace.tabs],
-    activeTab: workspace.activeTab
-  };
-}
-
 const isWelcomePage = (text: string): boolean => {
   return /^Welcome Page:\d+$/.test(text)
 }
 
 let initWorkspace: Workspace | null = null;
+let initConfig: Configuration | null = null;
 (() => {
-  const workspace_dto = window.__WORKSPACE_DTO__;
-  if (!workspace_dto) return;
-  initWorkspace = DtoToWorkspace(workspace_dto);
+  if (window.__WORKSPACE_DTO__)
+    initWorkspace = dtoToWorkspace(window.__WORKSPACE_DTO__);
+
+  if (window.__APP_CONFIG__)
+    initConfig = window.__APP_CONFIG__;
 })();
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
+  const [config, setConfig] = useState<Configuration | null>(initConfig);
 
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
@@ -66,10 +59,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   //TODO: REVISE IF THIS REALLY NEEDS TO BE useLayoutEffect
   useEffect(() => {
     // If theres already a workspace loaded, do not make api call
-    if (initWorkspace) return;
-    invoke<WorkspaceDTO>("get_workspace")
-      .then((dto) => setWorkspace(DtoToWorkspace(dto)))
-      .catch((e) => console.error("Could not get workspace - {}", e));
+    if (!initWorkspace) {
+      invoke<WorkspaceDTO>("get_workspace")
+        .then((dto) => setWorkspace(dtoToWorkspace(dto)))
+        .catch((e) => console.error("Could not get workspace - {}", e));
+    }
+
+    if (!initConfig) {
+      invoke<Configuration>("get_config")
+        .then(setConfig)
+        .catch((e) => console.error("Could not get config - {}", e));
+    }
   }, []);
 
   const checkPageType = (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => {
@@ -99,7 +99,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActiveTab(fallbackTab);
     }
 
-    const workspaceDto = WorkspaceToDto(workspace);
+    const workspaceDto = workspaceToDto(workspace);
 
     invoke<Workspace>("save_workspace", { workspaceDto })
       .catch(error => console.error('Error while saving workspace:', error));
@@ -239,6 +239,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{
       // States and Setters
       workspace, setWorkspace,
+      config, setConfig,
 
       activeModal, setActiveModal,
       notification, setNotification,

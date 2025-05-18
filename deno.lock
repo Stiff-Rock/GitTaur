@@ -19,7 +19,6 @@
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
     "npm:react-resizable-panels@^2.1.7": "2.1.7_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-toastify@^11.0.5": "11.0.5_react@18.3.1_react-dom@18.3.1__react@18.3.1",
-    "npm:react-widgets@^5.8.6": "5.8.6_react@18.3.1_react-dom@18.3.1__react@18.3.1_@types+react@18.3.18",
     "npm:react@^18.3.1": "18.3.1",
     "npm:typescript@~5.6.2": "5.6.3",
     "npm:vite@^6.0.3": "6.0.7"
@@ -138,9 +137,6 @@
         "@babel/core",
         "@babel/helper-plugin-utils"
       ]
-    },
-    "@babel/runtime@7.27.1": {
-      "integrity": "sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog=="
     },
     "@babel/template@7.25.9": {
       "integrity": "sha512-9DGttpmPvIxBb/2uwpVo3dqJ+O6RooAFOS+lB+xDqoE2PVCE8nfoHMdZLpfCQRLwvohzXISPZcgxt80xLfsuwg==",
@@ -324,13 +320,6 @@
     "@primer/octicons-react@19.15.1_react@18.3.1": {
       "integrity": "sha512-U9g8sj2ON2cKF1jvs3cEfhW51BNkOXjbdi5qPMSY5e4T7KVKR1gK9BZ/gpB4oTqkjoL2dikaWXdnH8vhwyR6lg==",
       "dependencies": [
-        "react"
-      ]
-    },
-    "@restart/hooks@0.4.16_react@18.3.1": {
-      "integrity": "sha512-f7aCv7c+nU/3mF7NWLtVVr0Ra80RqsO89hO72r+Y/nvQr5+q0UFGkocElTH6MJApvReVh6JHUFYn2cw1WdHF3w==",
-      "dependencies": [
-        "dequal",
         "react"
       ]
     },
@@ -545,13 +534,6 @@
         "@babel/types"
       ]
     },
-    "@types/classnames@2.3.4": {
-      "integrity": "sha512-dwmfrMMQb9ujX1uYGvB5ERDlOzBNywnZAZBtOe107/hORWP05ESgU4QyaanZMWYYfd2BzrG78y13/Bju8IQcMQ==",
-      "dependencies": [
-        "classnames"
-      ],
-      "deprecated": true
-    },
     "@types/estree@1.0.6": {
       "integrity": "sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw=="
     },
@@ -563,12 +545,6 @@
     },
     "@types/react-dom@18.3.5_@types+react@18.3.18": {
       "integrity": "sha512-P4t6saawp+b/dFrUr2cvkVsfvPguwsxtH6dNIYRllMsefqFzkZk5UIjzyDOv5g1dXIPdG4Sp1yCR4Z6RCUsG/Q==",
-      "dependencies": [
-        "@types/react"
-      ]
-    },
-    "@types/react-transition-group@4.4.12_@types+react@18.3.18": {
-      "integrity": "sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==",
       "dependencies": [
         "@types/react"
       ]
@@ -610,9 +586,6 @@
     "charenc@0.0.2": {
       "integrity": "sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA=="
     },
-    "classnames@2.5.1": {
-      "integrity": "sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow=="
-    },
     "clsx@2.1.1": {
       "integrity": "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="
     },
@@ -625,17 +598,11 @@
     "csstype@3.1.3": {
       "integrity": "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="
     },
-    "date-arithmetic@4.1.0": {
-      "integrity": "sha512-QWxYLR5P/6GStZcdem+V1xoto6DMadYWpMXU82ES3/RfR3Wdwr3D0+be7mgOJ+Ov0G9D5Dmb9T17sNLQYj9XOg=="
-    },
     "debug@4.4.0": {
       "integrity": "sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==",
       "dependencies": [
         "ms"
       ]
-    },
-    "dequal@2.0.3": {
-      "integrity": "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="
     },
     "dom-css@2.1.0": {
       "integrity": "sha512-w9kU7FAbaSh3QKijL6n59ofAhkkmMJ31GclJIz/vyQdjogfyxcB6Zf8CZyibOERI5o0Hxz30VmJS7+7r5fEj2Q==",
@@ -643,13 +610,6 @@
         "add-px-to-style",
         "prefix-style",
         "to-camel-case"
-      ]
-    },
-    "dom-helpers@5.2.1": {
-      "integrity": "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==",
-      "dependencies": [
-        "@babel/runtime",
-        "csstype"
       ]
     },
     "electron-to-chromium@1.5.82": {
@@ -700,12 +660,6 @@
     },
     "globals@11.12.0": {
       "integrity": "sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA=="
-    },
-    "invariant@2.2.4": {
-      "integrity": "sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==",
-      "dependencies": [
-        "loose-envify"
-      ]
     },
     "is-buffer@1.1.6": {
       "integrity": "sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w=="
@@ -775,14 +729,6 @@
     "prefix-style@2.0.1": {
       "integrity": "sha512-gdr1MBNVT0drzTq95CbSNdsrBDoHGlb2aDJP/FoY+1e+jSDPOb1Cv554gH2MGiSr2WTcXi/zu+NaFzfcHQkfBQ=="
     },
-    "prop-types-extra@1.1.1_react@18.3.1": {
-      "integrity": "sha512-59+AHNnHYCdiC+vMwY52WmvP5dM3QLeoumYuEyceQDi9aEhtwN9zIQ2ZNo25sMyXnbh32h+P1ezDsUpUH3JAew==",
-      "dependencies": [
-        "react",
-        "react-is",
-        "warning"
-      ]
-    },
     "prop-types@15.8.1": {
       "integrity": "sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==",
       "dependencies": [
@@ -825,9 +771,6 @@
     "react-is@16.13.1": {
       "integrity": "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="
     },
-    "react-lifecycles-compat@3.0.4": {
-      "integrity": "sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA=="
-    },
     "react-refresh@0.14.2": {
       "integrity": "sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA=="
     },
@@ -844,34 +787,6 @@
         "clsx",
         "react",
         "react-dom"
-      ]
-    },
-    "react-transition-group@4.4.5_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
-      "integrity": "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==",
-      "dependencies": [
-        "@babel/runtime",
-        "dom-helpers",
-        "loose-envify",
-        "prop-types",
-        "react",
-        "react-dom"
-      ]
-    },
-    "react-widgets@5.8.6_react@18.3.1_react-dom@18.3.1__react@18.3.1_@types+react@18.3.18": {
-      "integrity": "sha512-ttRjtPTR1s4TdiJ9K/S4wHv4mrEj8qrRHn+pUh4Y2rVYOeIP4IQZKU/gyEfxKXRQKmRPWSPsPjwHdNGjsYIO4A==",
-      "dependencies": [
-        "@restart/hooks",
-        "@types/classnames",
-        "@types/react-transition-group",
-        "classnames",
-        "date-arithmetic",
-        "dom-helpers",
-        "prop-types-extra",
-        "react",
-        "react-dom",
-        "react-transition-group",
-        "tiny-warning",
-        "uncontrollable"
       ]
     },
     "react@18.3.1": {
@@ -922,9 +837,6 @@
     "source-map-js@1.2.1": {
       "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA=="
     },
-    "tiny-warning@1.0.3": {
-      "integrity": "sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA=="
-    },
     "to-camel-case@1.0.0": {
       "integrity": "sha512-nD8pQi5H34kyu1QDMFjzEIYqk0xa9Alt6ZfrdEMuHCFOfTLhDG5pgTu/aAM9Wt9lXILwlXmWP43b8sav0GNE8Q==",
       "dependencies": [
@@ -943,16 +855,6 @@
     "typescript@5.6.3": {
       "integrity": "sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==",
       "bin": true
-    },
-    "uncontrollable@7.2.1_react@18.3.1": {
-      "integrity": "sha512-svtcfoTADIB0nT9nltgjujTi7BzVmwjZClOmskKu/E8FW9BXzg9os8OLr4f8Dlnk0rYWJIWr4wv9eKUXiQvQwQ==",
-      "dependencies": [
-        "@babel/runtime",
-        "@types/react",
-        "invariant",
-        "react",
-        "react-lifecycles-compat"
-      ]
     },
     "update-browserslist-db@1.1.2_browserslist@4.24.4": {
       "integrity": "sha512-PPypAm5qvlD7XMZC3BujecnaOxwhrtoFR+Dqkk5Aa/6DssiH0ibKoketaj9w8LP7Bont1rYeoV5plxD7RTEPRg==",
@@ -974,12 +876,6 @@
         "fsevents"
       ],
       "bin": true
-    },
-    "warning@4.0.3": {
-      "integrity": "sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==",
-      "dependencies": [
-        "loose-envify"
-      ]
     },
     "yallist@3.1.1": {
       "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="
@@ -1006,7 +902,6 @@
         "npm:react-dom@^18.3.1",
         "npm:react-resizable-panels@^2.1.7",
         "npm:react-toastify@^11.0.5",
-        "npm:react-widgets@^5.8.6",
         "npm:react@^18.3.1",
         "npm:typescript@~5.6.2",
         "npm:vite@^6.0.3"

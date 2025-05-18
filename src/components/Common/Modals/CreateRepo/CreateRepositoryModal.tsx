@@ -5,6 +5,7 @@ import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { useDialog } from "../../../../hooks/useDialog";
 import { invoke } from "@tauri-apps/api/core";
+import InputField from "../../InputField/InputField";
 
 const CreateRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo } = useAppContext();
@@ -35,24 +36,19 @@ const CreateRepositoryModal: React.FC = () => {
 
   return (
     <BaseModal title="Create Repository">
-
-      <div className={baseStyle.modalInputSection}>
-        <input
-          type="text"
-          placeholder="Parent directory"
-          value={path}
-          onChange={(e) => setParentFolder(e.target.value)}
-        />
-        <button onClick={chooseParentFolder} className={`actionButton ${baseStyle.actionButton}`}>
-          <FileDirectoryIcon />
-        </button>
-      </div>
+      <InputField
+        type="text"
+        placeholder="Parent directory"
+        value={path}
+        onChange={setParentFolder}
+        buttonIcon={<FileDirectoryIcon />}
+        onButtonClick={chooseParentFolder}
+      />
 
       <div className={baseStyle.buttonsContainer}>
         <button className='appButton' onClick={handleCreateRepo}>Create repository</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
-
     </BaseModal>
   );
 };

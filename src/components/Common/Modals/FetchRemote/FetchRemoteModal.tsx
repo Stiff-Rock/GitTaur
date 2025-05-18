@@ -3,7 +3,8 @@ import baseStyle from "../BaseModal.module.css";
 import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
-import "react-widgets/styles.css";
+import ComboBox from "../../ComboBox/ComboBox";
+import Checkbox from "../../CheckBox/Checkbox";
 
 const FetchRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
@@ -52,36 +53,24 @@ const FetchRemoteModal: React.FC = () => {
 
   return (
     <BaseModal title="Fetch Remote Changes">
+      <ComboBox
+        title="Remote"
+        disableCondition={fetchAll}
+        onItemSelected={setRemote}
+        value={remote}
+        optionsArray={Object.keys(activeRepoInfo?.remotes ?? {})}
+      />
 
-      <div className={baseStyle.inputLabelContainer}>
-        <span>Remote</span>
-        <select
-          className={baseStyle.modalInputSection}
-          disabled={fetchAll}
-          onChange={(e) => setRemote(e.target.value)}
-          value={remote}
-        >
-          {activeRepoInfo && Object.keys(activeRepoInfo.remotes).map((remote) => (
-            <option value={remote} key={remote}>{remote}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="checkbox">
-        <input
-          type="checkbox"
-          id="fetchAllRemotes"
-          checked={fetchAll}
-          onChange={(e) => setFetchAll(e.target.checked)}
-        />
-        <label htmlFor="fetchAllRemotes">Fetch all remotes</label>
-      </div>
+      <Checkbox
+        checkedValue={fetchAll}
+        onChecked={setFetchAll}
+        label="Fetch all remotes"
+      />
 
       <div className={baseStyle.buttonsContainer}>
         <button className='appButton' onClick={handleFetchRemote}>Fetch</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
-
     </BaseModal >
   );
 };

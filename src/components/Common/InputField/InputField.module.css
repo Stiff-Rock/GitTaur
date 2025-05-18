@@ -1,0 +1,31 @@
+.inputFieldContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.inputFieldContainer input {
+  flex: 1;
+}
+
+.actionButton {
+  height: fit-content;
+  width: auto;
+  padding: 2px;
+  border-radius: 5px;
+  transition: 0.1s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--lighter-bg);
+}
+
+.actionButton svg {
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+  padding: 1px;
+  cursor: pointer;
+  box-sizing: border-box;
+}

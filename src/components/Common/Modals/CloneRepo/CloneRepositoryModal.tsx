@@ -5,6 +5,7 @@ import { useDialog } from "../../../../hooks/useDialog";
 import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
+import InputField from "../../InputField/InputField";
 
 const CloneRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo } = useAppContext();
@@ -49,31 +50,27 @@ const CloneRepositoryModal: React.FC = () => {
 
   return (
     <BaseModal title="Clone Repository">
+      <InputField
+        type="text"
+        placeholder="Parent directory"
+        value={path}
+        onChange={setParentFolder}
+        buttonIcon={<FileDirectoryIcon />}
+        onButtonClick={chooseParentFolder}
+      />
 
-      <div className={baseStyle.modalInputSection}>
-        <input
-          type="text"
-          placeholder="Parent directory"
-          value={path}
-          onChange={(e) => setParentFolder(e.target.value)}
-        />
-        <button onClick={chooseParentFolder} className={`actionButton ${baseStyle.actionButton}`}>
-          <FileDirectoryIcon />
-        </button>
-      </div>
-
-      <input
+      {/*TODO: ADD BUTTON THAT GETS YOU YOUR GITHUB REPOS TO CLONE*/}
+      <InputField
         type="url"
         placeholder="Repository URL"
         value={repoUrl}
-        onChange={(e) => setRepoUrl(e.target.value)}
+        onChange={setRepoUrl}
       />
 
       <div className={baseStyle.buttonsContainer}>
         <button className='appButton' onClick={handleClone}>Clone repository</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
-
     </BaseModal>
   );
 };

@@ -2,7 +2,8 @@
 .configTabSidebar,
 .configsContainer,
 .configSection,
-.configTitle {
+.configTitle,
+.buttonsContainer {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -39,6 +40,7 @@
 }
 
 .configTitle {
+  padding-top: 20px;
   flex: 1;
 }
 
@@ -50,8 +52,10 @@
 .configSection {
   height: 90%;
   width: 100%;
+  margin-top: 50px;
   box-sizing: border-box;
   justify-content: flex-start;
+  gap: 10px;
 }
 
 .configTabButton {
@@ -72,4 +76,30 @@
 
 .configTabButton.selected:hover {
   background-color: var(--active-color);
+}
+
+.buttonsContainer {
+  height: 10%;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.buttonsContainer button {
+  flex: 1;
+  margin: 0 20px;
+}
+
+.configInput {
+  width: 60%;
+  height: 30px;
+}
+
+.configInput span {
+  width: 20%;
+  font-size: var(--font-size-tab);
+}
+
+.configInput :nth-child(2) {
+  width: 80%;
 }
