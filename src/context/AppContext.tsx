@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useLayoutEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
@@ -54,7 +54,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notification, setNotification] = useState("");
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
 
-  const { openDirectoryDialog } = useDialog();
+  const { selectDirectoryDialog } = useDialog();
 
   //TODO: REVISE IF THIS REALLY NEEDS TO BE useLayoutEffect
   useEffect(() => {
@@ -89,8 +89,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!workspace) return;
 
-    if (checkPageType("Config")) return;
-
     if (workspace.tabs.size <= 0) {
       openWelcomePage();
     } else if (workspace.activeTab === "" || !workspace.tabs.has(workspace.activeTab)) {
@@ -102,8 +100,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const workspaceDto = workspaceToDto(workspace);
 
     invoke<Workspace>("save_workspace", { workspaceDto })
-      .catch(error => console.error('Error while saving workspace:', error));
+      .catch((e) => console.error('Error while saving workspace:', e));
   }, [workspace]);
+
+  useLayoutEffect(() => {
+    if (!config) return;
+
+    invoke("save_config", { newConfig: config })
+      .catch((e) => console.error('Error while saving config:', e));
+  }, [config]);
 
   const setActiveTab = (tabKey: string) => {
     checkPageType("Config", tabKey);
@@ -117,7 +122,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openNewRepo = async (path: string = "") => {
     if (!workspace) return;
 
-    const repoPath = path || await openDirectoryDialog();
+    const repoPath = path || await selectDirectoryDialog();
     if (!repoPath) return;
 
     // If already present in worksapce, just show that tab (early return)

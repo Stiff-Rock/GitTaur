@@ -9,12 +9,12 @@ import InputField from "../../InputField/InputField";
 
 const CreateRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo } = useAppContext();
-  const { openDirectoryDialog } = useDialog();
+  const { selectDirectoryDialog } = useDialog();
 
   const [path, setParentFolder] = useState("");
 
   const chooseParentFolder = async () => {
-    const path = await openDirectoryDialog();
+    const path = await selectDirectoryDialog();
     if (path) setParentFolder(path);
   };
 

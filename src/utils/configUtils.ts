@@ -1,14 +1,25 @@
-export const Languages: Record<Language, string> = {
+export const nameToCode: Record<string, Language> = {
+  'English': 'en',
+  'Spanish': 'es',
+};
+
+export const codeToName: Record<Language, string> = {
   'en': 'English',
   'es': 'Spanish',
 };
 
-export const languageCodes: Language[] = Object.keys(Languages) as Language[];
+export const languageNames: string[] = Object.keys(nameToCode);
 
-export const languageNames: string[] = Object.values(Languages);
+export const languageCodes: Language[] = Object.values(nameToCode);
 
-export function languageCodeFromStr(name: string): Language {
-  const entries = Object.entries(Languages);
-  const found = entries.find(([_, displayName]) => displayName === name);
-  return found ? found[0] as Language : 'en';
+export function languageCodeFromName(name: string): Language {
+  let code: Language = nameToCode[name];
+  if (!code) code = 'en';
+  return code;
+}
+
+export function languageNameFromCode(code: Language): string {
+  let name: string = codeToName[code];
+  if (!name) name = 'English';
+  return name;
 }

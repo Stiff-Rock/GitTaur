@@ -39,6 +39,8 @@ pub fn load_config() -> String {
     // If the configuration file is empty, craete a new empty one, if not, load it
     let mut config = config();
     if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
+        // Config file doesn't exists
+
         let config_json: String = serde_json::to_string_pretty(&*config)
             .map_err(|e| e.to_string())
             .expect("Failed to serialize configuration");
@@ -50,6 +52,8 @@ pub fn load_config() -> String {
 
         *config = Configuration::default();
     } else {
+        // Config file exists
+
         let mut file = File::open(path).expect("Error while reading configuration file");
 
         let mut config_json: String = String::new();
@@ -57,6 +61,8 @@ pub fn load_config() -> String {
             .expect("Error reading configuration file contents");
 
         *config = serde_json::from_str(&config_json).expect("Failed to load configuration info");
+
+        config.verify_config();
     }
 
     serde_json::to_string(&*config).unwrap_or_else(|e| {

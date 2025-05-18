@@ -9,13 +9,13 @@ import InputField from "../../InputField/InputField";
 
 const CloneRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo } = useAppContext();
-  const { openDirectoryDialog } = useDialog();
+  const { selectDirectoryDialog } = useDialog();
 
   const [path, setParentFolder] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
 
   const chooseParentFolder = async () => {
-    const path = await openDirectoryDialog();
+    const path = await selectDirectoryDialog();
     if (path) setParentFolder(path);
   };
 

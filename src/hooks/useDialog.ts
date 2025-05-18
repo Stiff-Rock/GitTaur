@@ -1,13 +1,21 @@
 import { open } from '@tauri-apps/plugin-dialog';
 
 export const useDialog = () => {
-  const openDirectoryDialog = async () => {
+  const selectDirectoryDialog = async () => {
     return await open({
       directory: true,
       multiple: false,
-      title: 'Selecciona un directorio',
+      title: 'Select a directory',
     });
   };
 
-  return { openDirectoryDialog };
+  const selectFileDialog = async () => {
+    return await open({
+      directory: false,
+      multiple: false,
+      title: 'Select a file',
+    });
+  };
+
+  return { selectDirectoryDialog, selectFileDialog };
 };
