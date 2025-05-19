@@ -1,10 +1,35 @@
+use std::sync::OnceLock;
+
+use git2::Config;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Manager, Theme};
+use tauri_plugin_os::locale;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum Language {
     En,
     Es,
+}
+
+impl Language {
+    pub fn from_code(lang_code: &str) -> Self {
+        match lang_code.to_lowercase().as_str() {
+            "es" => Language::Es,
+            _ => Language::En,
+        }
+    }
+
+    pub fn from_system_locale() -> Self {
+        let locale = locale().unwrap_or_else(|| String::from("en"));
+        let lang_code = locale
+            .split(&['-', '_', '.'])
+            .next()
+            .unwrap_or("en")
+            .to_lowercase();
+
+        Self::from_code(&lang_code)
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -25,16 +50,53 @@ pub struct Configuration {
     pub accent_color: String,
 }
 
+pub static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
+
 impl Configuration {
+    pub fn get_git_user_info() -> (String, String) {
+        match Config::open_default() {
+            Ok(config) => {
+                let username = config
+                    .get_string("user.name")
+                    .unwrap_or_else(|_| String::new());
+
+                let email = config
+                    .get_string("user.email")
+                    .unwrap_or_else(|_| String::new());
+
+                (username, email)
+            }
+            Err(_) => (String::new(), String::new()),
+        }
+    }
+
+    //TODO: THIS SHOULD NOT CHANGE THE VALUE OF THE THEME FIELD ITSELF, BUT RATHER BE USED WHEN
+    //SETTING THE WINDOW THEME
+    pub fn get_default_theme() -> String {
+        match APP_HANDLE
+            .get()
+            .unwrap()
+            .get_webview_window("main")
+            .unwrap()
+            .theme()
+        {
+            Ok(Theme::Dark) => "dark".to_string(),
+            Ok(Theme::Light) => "light".to_string(),
+            _ => "dark".to_string(),
+        }
+    }
+
     pub fn default() -> Self {
+        let (git_username, git_email) = Self::get_git_user_info();
+
         Self {
-            lang: Language::En,
+            lang: Language::from_system_locale(),
             date_format: "YYYY-MM-DD".to_string(),
             max_commits: 20000,
             terminal_app: "".to_string(),
-            username: "".to_string(),
-            email: "".to_string(),
-            theme: "System Default".to_string(),
+            username: git_username,
+            email: git_email,
+            theme: Self::get_default_theme(),
             accent_color: "#50FA7B".to_string(),
         }
     }
@@ -54,11 +116,13 @@ impl Configuration {
             self.terminal_app = default.terminal_app;
         }
 
-        if self.username.is_empty() {
+        let (git_username, git_email) = Self::get_git_user_info();
+
+        if self.username != git_username {
             self.username = default.username;
         }
 
-        if self.email.is_empty() {
+        if self.email != git_email {
             self.email = default.email;
         }
 
