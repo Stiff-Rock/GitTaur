@@ -7,8 +7,8 @@ mod workspace_manager;
 use std::error::Error;
 use std::fs::create_dir_all;
 use tauri::path::BaseDirectory;
-use tauri::Manager;
 use tauri::{command, App};
+use tauri::{Manager, Theme};
 
 #[command]
 fn open_terminal(mut path: String) -> Result<(), String> {
@@ -145,6 +145,17 @@ pub fn run() {
         .setup(|app| {
             init_app_paths(app)?;
             set_app_globals(app)?;
+            //TODO: SETUP THE WINDOW THEME HERE IS ITS DIFFERENT FROM DEFAULT
+            let config_theme = config_manager::get_config().theme;
+            if config_theme != "System Default" {
+                //TODO: MAKE THEME ENUMS OR USE DEFAULT
+                let theme: Theme = if config_theme == "dark" {
+                    Theme::Dark
+                } else {
+                    Theme::Light
+                };
+                app.set_theme(Some(theme));
+            }
             Ok(())
         })
         .run(tauri::generate_context!())
