@@ -107,7 +107,7 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
               />
 
-              {/*TODO: BENCHMARK HOW MANY CAN I REASONABLY RENDER*/}
+              {/*TODO: BENCHMARK HOW MANY CAN I REASONABLY RENDER || ALSO APPLY LIMIT TO GRAPH*/}
               <InputField
                 title="Max commits"
                 type="number"

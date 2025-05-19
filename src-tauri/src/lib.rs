@@ -9,6 +9,7 @@ use std::fs::create_dir_all;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
 use types::config::Theme;
 
+//TODO: THIS IMPLEMENTATION IS TRASH. use https://v2.tauri.app/es/plugin/shell/
 #[command]
 fn open_terminal(mut path: String) -> Result<(), String> {
     if path.is_empty() {
