@@ -17,6 +17,7 @@ import FetchRemoteModal from '../Common/Modals/FetchRemote/FetchRemoteModal';
 import PullRemoteModal from '../Common/Modals/PullRemote/PullRemoteModal';
 import PushRemoteModal from '../Common/Modals/PushRemote/PushRemoteModal';
 import { listen } from '@tauri-apps/api/event';
+import CreateBranchModal from '../Common/Modals/CreateBranch/CreateBranchModal';
 
 interface MainLayoutProps {
   isActive: boolean;
@@ -181,6 +182,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       {activeModal === "fetch" && <FetchRemoteModal />}
       {activeModal === "pull" && <PullRemoteModal />}
       {activeModal === "push" && <PushRemoteModal />}
+      {activeModal === "branch" && <CreateBranchModal />}
     </div>
   );
 };

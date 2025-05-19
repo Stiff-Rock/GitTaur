@@ -4,8 +4,8 @@ use crate::{
 };
 use auth_git2::GitAuthenticator;
 use git2::{
-    AnnotatedCommit, BranchType, FetchOptions, IndexAddOption, MergeOptions, Reference, Repository,
-    Signature, Status, StatusOptions,
+    build::CheckoutBuilder, AnnotatedCommit, BranchType, FetchOptions, IndexAddOption,
+    MergeOptions, Reference, Repository, Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use std::{
@@ -17,8 +17,6 @@ use tauri::command;
 
 static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
-
-const BUSY_MSG: &str = "Repository busy. Please try again when other operations complete.";
 
 //TODO: DELETE ON RELEASE
 #[command]
@@ -33,29 +31,39 @@ pub async fn reset() -> Result<(), String> {
     }
 }
 
-fn is_repo_busy(repo_path: &String) -> bool {
+fn is_repo_busy(repo_path: &String) -> Result<(), String> {
+    // Waits until it acquires the HasSet mutext
     let mut active_repos = match ACTIVE_REPOS.lock() {
         Ok(guard) => guard,
         Err(err) => {
-            eprintln!("Error checking if repo is busy: mutex poisoned - {}", err);
-            return true;
-        }
+            eprintln!(
+                "Error checking if repo is busy: HasSet mutex poisoned - {}",
+                err
+            );
+            Err("Error checking availability of the repository")
+        }?,
     };
 
-    let is_busy = active_repos.contains(repo_path);
+    println!("-------------------------");
+    println!("{:#?}", active_repos);
 
-    if is_busy {
+    // If the repoPath is present in the set, it means that the repository is busy at the moment,
+    // if not, we add it to the HashSet to flag it as busy until released
+    if active_repos.contains(repo_path) {
+        println!("BUSY");
+        Err("Repository busy. Please try again when other operations complete".to_string())
+    } else {
+        println!("AVAILABLE");
         active_repos.insert(repo_path.to_string());
+        Ok(())
     }
-
-    is_busy
 }
 
 pub fn release_repo(repo_path: &String) {
     let mut active_repos = match ACTIVE_REPOS.lock() {
         Ok(guard) => guard,
         Err(err) => {
-            eprintln!("Error releasing repo: mutex poisoned - {}", err);
+            eprintln!("Error releasing repo: HashSet mutex poisoned - {}", err);
             return;
         }
     };
@@ -64,8 +72,8 @@ pub fn release_repo(repo_path: &String) {
 }
 
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
-    if !has_lock && is_repo_busy(repo_path) {
-        return Err(BUSY_MSG.to_string());
+    if !has_lock {
+        is_repo_busy(repo_path)?;
     }
 
     let result = match Repository::open(repo_path) {
@@ -80,9 +88,7 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 
 #[command]
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let create_result = if is_repo(&repo_path, true)? {
         Err("This directory already contains a repository".to_string())
@@ -100,9 +106,7 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
-    if is_repo_busy(&path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&path)?;
 
     let clone_path = Path::new(&path);
     let result = match Repository::clone(&repo_url, &clone_path) {
@@ -152,9 +156,7 @@ fn get_current_branch(repo: &Repository) -> String {
 
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     if !is_repo(&repo_path, true)? {
         return Err(format!("{} is not a repository", &repo_path));
@@ -271,9 +273,7 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -346,9 +346,7 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -373,9 +371,7 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -407,9 +403,7 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
     let mut any_updates = false;
@@ -488,9 +482,7 @@ pub async fn pull_remote(
     remote_name: String,
     branches: Vec<String>,
 ) -> Result<String, String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -651,9 +643,7 @@ pub async fn push_remote(
     local_branch: String,
     remote_branch: String,
 ) -> Result<(), String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let auth = GitAuthenticator::default();
 
@@ -670,14 +660,39 @@ pub async fn push_remote(
 }
 
 #[command]
-pub async fn create_branch(repo_path: String) -> Result<(), String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
+pub async fn create_branch(
+    repo_path: String,
+    branch_name: String,
+    checkout: bool,
+) -> Result<String, String> {
+    is_repo_busy(&repo_path)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let head = repo.head().map_err(|e| e.to_string())?;
+    let commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+
+    let branch_ref = repo
+        .branch(&branch_name, &commit, false)
+        .map_err(|e| e.to_string())?;
+
+    if checkout {
+        let branch_ref = branch_ref
+            .get()
+            .name()
+            .ok_or("Invalid branch name")?
+            .to_string();
+
+        let mut checkout_builder = CheckoutBuilder::new();
+
+        repo.set_head(&branch_ref).map_err(|e| e.to_string())?;
+        repo.checkout_head(Some(&mut checkout_builder))
+            .map_err(|e| e.to_string())?;
     }
 
     release_repo(&repo_path);
 
-    Ok(())
+    Ok(format!("Successfully created {} branch", branch_name))
 }
 
 #[command]
@@ -686,9 +701,7 @@ pub async fn commit(
     commit_summary: String,
     commit_body: String,
 ) -> Result<(), String> {
-    if is_repo_busy(&repo_path) {
-        return Err(BUSY_MSG.to_string());
-    }
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 

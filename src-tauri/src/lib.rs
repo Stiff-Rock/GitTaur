@@ -4,6 +4,9 @@ mod repo_manager;
 mod repo_watcher;
 mod types;
 mod workspace_manager;
+use fern::colors::{Color, ColoredLevelConfig};
+use fern::Dispatch;
+use log::{debug, error, info, warn, LevelFilter};
 use std::error::Error;
 use std::fs::create_dir_all;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
@@ -149,6 +152,57 @@ fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
+    let colors = ColoredLevelConfig::new()
+        .error(Color::Red)
+        .warn(Color::Yellow)
+        .info(Color::Green)
+        .debug(Color::Blue);
+
+    let is_dev = cfg!(debug_assertions);
+
+    let base_config = fern::Dispatch::new().level(LevelFilter::Info);
+    if is_dev {
+        Dispatch::new()
+            .chain(base_config)
+            .format(move |out, message, record| {
+                out.finish(format_args!(
+                    "[{}][{}] {}",
+                    chrono::Local::now().format("%H:%M:%S"),
+                    colors.color(record.level()),
+                    message
+                ))
+            })
+            .chain(std::io::stdout())
+            .apply()?;
+    } else {
+        let app_handle = app.app_handle();
+        let app_log_dir = app_handle.path().app_log_dir()?;
+
+        if !app_log_dir.exists() {
+            create_dir_all(&app_log_dir)?;
+        }
+
+        let log_file = app_log_dir.join("app.log");
+
+        Dispatch::new()
+            .chain(base_config)
+            .format(move |out, message, record| {
+                out.finish(format_args!(
+                    "[{}][{}] {}",
+                    record.level(),
+                    chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                    message
+                ))
+            })
+            .chain(fern::log_file(log_file)?)
+            .apply()?;
+    }
+
+    info!("Logger initialized");
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -186,6 +240,7 @@ pub fn run() {
             repo_manager::reset,
         ])
         .setup(|app| {
+            setup_logging(app)?;
             init_app_paths(app)?;
             set_app_globals(app)?;
             setup_app_theme(app)?;
