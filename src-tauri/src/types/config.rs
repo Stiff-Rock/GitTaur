@@ -95,7 +95,7 @@ impl Configuration {
         Self {
             lang: Language::from_system_locale(),
             date_format: "YYYY-MM-DD".to_string(),
-            max_commits: 20000,
+            max_commits: 1000,
             terminal_app: "".to_string(),
             username: git_username,
             email: git_email,

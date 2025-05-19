@@ -7,6 +7,7 @@ import InputField from "../Common/InputField/InputField";
 import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useDialog } from "../../hooks/useDialog";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
 
 type ConfigTabs = "general" | "git" | "ui";
 
@@ -24,6 +25,17 @@ const ConfigPage: React.FC = () => {
 
   const applyChanges = () => {
     if (!config || !newConfig || config === newConfig) return;
+
+    if (newConfig.username != config.username || newConfig.email != config.email) {
+      const username = newConfig.username != config.username ? newConfig.username : "";
+      const email = newConfig.email != config.email ? newConfig.email : "";
+
+      invoke("set_global_git_user_id", { username, email }).catch((e) => {
+        const msg = `Error updating git global identification - ${e}`;
+        console.error(msg)
+        setNotification(msg);
+      });
+    }
 
     if (newConfig.themeValue != config.themeValue) {
       document.documentElement.setAttribute('data-theme', newConfig.themeValue);
@@ -95,15 +107,16 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
               />
 
-              {/*TODO: ADD STLYES TO SPINNER BUTTONS*/}
-              {/*TODO: ADD MAXIMUN AND MINIMUM*/}
+              {/*TODO: BENCHMARK HOW MANY CAN I REASONABLY RENDER*/}
               <InputField
                 title="Max commits"
                 type="number"
                 placeholder=""
                 value={newConfig.maxCommits.toString()}
-                onChange={(value) => setNewConfig({ ...newConfig, maxCommits: Number(value) })}
+                onChange={(value) => setNewConfig({ ...newConfig, maxCommits: Math.min(Math.max(Number(value), 0), 100000) })}
                 className={styles.configInput}
+                min={0}
+                max={100000}
               />
 
               {/*TODO: Maybe provide the path of the system default*/}
@@ -144,7 +157,6 @@ const ConfigPage: React.FC = () => {
 
           {configTab === "ui" &&
             <div className={styles.configSection}>
-              {/*TODO: THIS IS SPECIAL, INVOKE FUNCTION TO LIVE CHANGE THE THEME OR SOMETHING*/}
               <ComboBox
                 title="Theme"
                 value={newConfig.themeConfig.charAt(0).toUpperCase() + newConfig.themeConfig.slice(1)}

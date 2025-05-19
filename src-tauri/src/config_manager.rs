@@ -1,4 +1,5 @@
 use crate::types::config::*;
+use git2::Config;
 use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
@@ -69,4 +70,26 @@ pub fn load_config() -> String {
         eprintln!("Error during setup config serialization - {}", e);
         String::from("{}")
     })
+}
+
+#[command]
+pub async fn set_global_git_user_id(username: String, email: String) -> Result<(), String> {
+    let mut global_config = Config::open_default()
+        .expect("Error while opening git config")
+        .open_global()
+        .expect("Error while opening global git config");
+
+    if !username.is_empty() {
+        global_config
+            .set_str("user.name", &username)
+            .map_err(|e| e.to_string())?;
+    }
+
+    if !email.is_empty() {
+        global_config
+            .set_str("user.email", &email)
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }

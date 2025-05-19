@@ -9,11 +9,13 @@ interface InputField {
   onChange: (value: string) => void,
   buttonIcon?: ReactNode,
   onButtonClick?: () => void;
+  min?: number,
+  max?: number,
   className?: string;
 }
 
 const InputField: React.FC<InputField> = (props) => {
-  const { title, type, placeholder, value, onChange, buttonIcon, onButtonClick, className } = props;
+  const { title, type, placeholder, value, onChange, buttonIcon, onButtonClick, min, max, className } = props;
 
   return (
     <div className={`${styles.inputFieldContainer} ${className}`}>
@@ -23,6 +25,8 @@ const InputField: React.FC<InputField> = (props) => {
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        min={min}
+        max={max}
         className={`${type == "color" && styles.colorInput}`}
       />
 

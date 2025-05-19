@@ -165,6 +165,7 @@ pub fn run() {
             // Configuration commands
             config_manager::get_config,
             config_manager::save_config,
+            config_manager::set_global_git_user_id,
             // Repository commands
             repo_manager::create_repo,
             repo_manager::clone_repo,
