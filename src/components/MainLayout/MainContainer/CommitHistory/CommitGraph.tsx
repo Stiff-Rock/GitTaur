@@ -4,14 +4,15 @@ import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
 import { GraphProvider } from "../../../../context/GraphContext.tsx";
-import { BranchLabel } from "../../../Gitgraph/BranchLabel.tsx";
-import { Gitgraph, templateExtend, TemplateName } from "./../../../Gitgraph";
+import { BranchLabel } from "./Gitgraph/BranchLabel.tsx";
+import { Gitgraph, templateExtend, TemplateName } from "./Gitgraph";
 import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 import { GitgraphOptions } from "@gitgraph/core";
-import { GraphCommitOptions } from "../../../Gitgraph/Commit.tsx";
+import { GraphCommitOptions } from "./Gitgraph/Commit.tsx";
 
-//TODO: MOVE THE GitGraph folder here
+//TODO: apply config to graphs
 //WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
+//NOTE: cant handle render of big repos
 
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;

@@ -4,8 +4,8 @@ import {
 } from "@gitgraph/core";
 import { ReactSvgElement } from "./types";
 import graphStyles from './GraphStyles.module.css';
-import { RectDims, useGraphContext } from "../../context/GraphContext";
-import { useMainContext } from "../../context/MainContext";
+import { RectDims, useGraphContext } from "../../../../../context/GraphContext";
+import { useMainContext } from "../../../../../context/MainContext";
 
 interface CommitRectProps {
   commit: CommitCore<ReactSvgElement>;

@@ -23,6 +23,7 @@ const InputField: React.FC<InputField> = (props) => {
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        className={`${type == "color" && styles.colorInput}`}
       />
 
       {buttonIcon &&

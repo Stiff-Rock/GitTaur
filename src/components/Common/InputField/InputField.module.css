@@ -29,3 +29,7 @@
   cursor: pointer;
   box-sizing: border-box;
 }
+
+.colorInput {
+  padding: 0;
+}

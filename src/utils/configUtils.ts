@@ -23,3 +23,17 @@ export function languageNameFromCode(code: Language): string {
   if (!name) name = 'English';
   return name;
 }
+
+function isValidTheme(value: string): value is Theme {
+  return ['light', 'dark', 'system'].includes(value as any);
+}
+
+export function parseTheme(value: string): Theme {
+  value = value.toLowerCase();
+  if (isValidTheme(value)) {
+    return value;
+  }
+
+  return 'system';
+}
+

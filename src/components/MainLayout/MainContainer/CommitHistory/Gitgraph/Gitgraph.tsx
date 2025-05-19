@@ -26,7 +26,7 @@ import {
 import { Commit, GraphCommitOptions } from "./Commit";
 import { BranchPath } from "./BranchPath";
 import CommitRect from "./CommitRect";
-import { GraphProvider } from "../../context/GraphContext";
+import { GraphProvider } from "../../../../../context/GraphContext";
 
 export {
   Gitgraph,

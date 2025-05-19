@@ -2,10 +2,11 @@ import styles from "./ConfigPage.module.css";
 import { useAppContext } from "../../context/AppContext";
 import { useLayoutEffect, useState } from "react";
 import ComboBox from "../Common/ComboBox/ComboBox";
-import { languageCodeFromName, languageNameFromCode, languageNames } from "../../utils/configUtils";
+import { languageCodeFromName, languageNameFromCode, languageNames, parseTheme } from "../../utils/configUtils";
 import InputField from "../Common/InputField/InputField";
 import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useDialog } from "../../hooks/useDialog";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 type ConfigTabs = "general" | "git" | "ui";
 
@@ -22,7 +23,16 @@ const ConfigPage: React.FC = () => {
   }, [config]);
 
   const applyChanges = () => {
-    if (!newConfig || config === newConfig) return;
+    if (!config || !newConfig || config === newConfig) return;
+
+    if (newConfig.themeValue != config.themeValue) {
+      document.documentElement.setAttribute('data-theme', newConfig.themeValue);
+    }
+
+    if (newConfig.accentColor != config.accentColor) {
+      document.documentElement.style.setProperty('--active-color', newConfig.accentColor);
+    }
+
     setConfig(newConfig);
     setNotification("Succesfully applied new configuration!");
   }
@@ -31,7 +41,11 @@ const ConfigPage: React.FC = () => {
     setNewConfig(config);
   }
 
-  //TODO: MAKE CONFIG FILE
+  //TODO: ARE YOU SURE? dialog when trying to close the tab
+
+  //TODO: ADD GRAPH COLOR THEMING
+
+  //TODO: ADD ENTIRE APP CONFIG
   return (
     <div className={`${styles.mainContainer} ${checkPageType("Config") || !workspace ? '' : 'inactive'}`}>
       <aside className={styles.configTabSidebar}>
@@ -130,16 +144,25 @@ const ConfigPage: React.FC = () => {
 
           {configTab === "ui" &&
             <div className={styles.configSection}>
+              {/*TODO: THIS IS SPECIAL, INVOKE FUNCTION TO LIVE CHANGE THE THEME OR SOMETHING*/}
               <ComboBox
                 title="Theme"
-                value={newConfig.theme}
+                value={newConfig.themeConfig.charAt(0).toUpperCase() + newConfig.themeConfig.slice(1)}
                 className={styles.configInput}
-                onItemSelected={(value) => setNewConfig({ ...newConfig, theme: value })}
-                //TODO: MAYBE MAKE ENUM
-                optionsArray={["System Default", "Light", "Dark"]}
+                onItemSelected={(value) => {
+                  const selectedTheme = parseTheme(value);
+                  if (selectedTheme != "system") {
+                    setNewConfig({ ...newConfig, themeConfig: selectedTheme, themeValue: selectedTheme });
+                  } else {
+                    getCurrentWindow().theme().then((theme) => {
+                      const sysTheme = theme ? parseTheme(theme) : "dark";
+                      setNewConfig({ ...newConfig, themeConfig: selectedTheme, themeValue: sysTheme });
+                    })
+                  }
+                }}
+                optionsArray={["Light", "Dark", "System"]}
               />
 
-              {/*TODO: TWEAK THIS A COLOR INPUT LTTLE BIT*/}
               <InputField
                 title="Accent Color"
                 type="color"
@@ -151,6 +174,7 @@ const ConfigPage: React.FC = () => {
             </div>
           }
 
+          {/*TODO: ADD RESET DEFAULTS BUTTON*/}
           <div className={styles.buttonsContainer}>
             <button className='appButton' onClick={cancel}>Cancel</button>
             <button className='appButton' onClick={applyChanges}>Apply</button>

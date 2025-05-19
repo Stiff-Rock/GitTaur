@@ -3,7 +3,7 @@ import ActionBar from "./components/ActionBar/ActionBar";
 import TitleBar from "./components/TitleBar/TitleBar";
 import { useAppContext } from "./context/AppContext";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
-import { isValidElement, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { MainProvider } from './context/MainContext';
 import { PanelSyncProvider } from "./context/PanelSyncContext";
 import { ToastContainer, toast, Zoom } from "react-toastify";
@@ -15,6 +15,13 @@ import ConfigPage from "./components/ConfigurationPage/ConfigPage";
 function App() {
   const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
 
+  //TODO: DELETE THIS SYSTEM IN RELEASE
+  const appLoaded = useRef<boolean>(false);
+  useEffect(() => {
+    if (!appLoaded.current) appLoaded.current = true;
+    else invoke("reset").catch((e) => console.error(e))
+  }, []);
+
   useEffect(() => {
     if (!notification) return;
 
@@ -24,13 +31,6 @@ function App() {
     setNotification("");
 
   }, [notification]);
-
-  //TODO: DELETE THIS SYSTEM IN RELEASE
-  const appLoaded = useRef<boolean>(false);
-  useEffect(() => {
-    if (!appLoaded.current) appLoaded.current = true;
-    else invoke("reset").catch((e) => console.error(e))
-  }, []);
 
   const isValidPage = (path: string): boolean => {
     return path !== "ConfigPage" && !isWelcomePage(path);

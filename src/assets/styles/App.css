@@ -103,6 +103,10 @@ hr {
   box-sizing: border-box;
 }
 
+svg {
+  color: var(--primary-text);
+}
+
 .inactive {
   position: absolute !important;
   visibility: hidden !important;

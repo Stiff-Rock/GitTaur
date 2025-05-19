@@ -6,9 +6,8 @@ mod types;
 mod workspace_manager;
 use std::error::Error;
 use std::fs::create_dir_all;
-use tauri::path::BaseDirectory;
-use tauri::{command, App};
-use tauri::{Manager, Theme};
+use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
+use types::config::Theme;
 
 #[command]
 fn open_terminal(mut path: String) -> Result<(), String> {
@@ -93,8 +92,6 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
 
 // Set workspace global variable
 fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
-    let window = app.get_webview_window("main").unwrap();
-
     let workspace_json: String = workspace_manager::restore_workspace();
     let config_json: String = config_manager::load_config();
 
@@ -102,7 +99,51 @@ fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
         "window.__WORKSPACE_DTO__ = {}; window.__APP_CONFIG__ = {};",
         workspace_json, config_json
     );
-    window.eval(eval_command)?;
+    app.get_webview_window("main").unwrap().eval(eval_command)?;
+
+    Ok(())
+}
+
+fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
+    let mut config = config_manager::get_config();
+
+    let theme_config: Theme = config.theme_config;
+    match theme_config {
+        Theme::System => {
+            let window = app.get_webview_window("main").unwrap();
+            let system_theme = match window.theme() {
+                Ok(TauriTheme::Dark) => Theme::Dark,
+                Ok(TauriTheme::Light) => Theme::Light,
+                _ => Theme::Dark,
+            };
+            config.theme_value = system_theme;
+        }
+        Theme::Dark => app.set_theme(Some(TauriTheme::Dark)),
+        Theme::Light => app.set_theme(Some(TauriTheme::Light)),
+    }
+
+    let theme_str = match config.theme_value {
+        Theme::Light => "light",
+        Theme::Dark => "dark",
+        _ => "dark",
+    };
+
+    let eval_command = &format!(
+        "
+    function applyTheme() {{
+        document.documentElement.setAttribute('data-theme', '{}');
+        document.documentElement.style.setProperty('--active-color', '{}');
+    }}
+
+    if (document.readyState === 'loading') {{
+        document.addEventListener('DOMContentLoaded', applyTheme);
+    }} else {{
+        applyTheme();
+    }}
+    ",
+        theme_str, config.accent_color
+    );
+    app.get_webview_window("main").unwrap().eval(eval_command)?;
 
     Ok(())
 }
@@ -145,17 +186,7 @@ pub fn run() {
         .setup(|app| {
             init_app_paths(app)?;
             set_app_globals(app)?;
-            //TODO: SETUP THE WINDOW THEME HERE IS ITS DIFFERENT FROM DEFAULT
-            let config_theme = config_manager::get_config().theme;
-            if config_theme != "System Default" {
-                //TODO: MAKE THEME ENUMS OR USE DEFAULT
-                let theme: Theme = if config_theme == "dark" {
-                    Theme::Dark
-                } else {
-                    Theme::Light
-                };
-                app.set_theme(Some(theme));
-            }
+            setup_app_theme(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

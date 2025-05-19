@@ -43,7 +43,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
     activeModal,
     setActiveRepoInfo,
     workspace,
-    checkPageType
   } = useAppContext();
 
   const {
@@ -115,7 +114,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   }, [rightSize, showInfoSidebar]);
 
   const panelMaxSize = 40;
-
+  //TODO: WHEN OPENING AND CLOSING RIGHT the tab icons move a bit
   return (
     <div className={`${styles.appMain} ${isActive ? '' : 'inactive'}`}>
       <PanelGroup direction="horizontal">

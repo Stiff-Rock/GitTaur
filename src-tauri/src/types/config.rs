@@ -1,8 +1,5 @@
-use std::sync::OnceLock;
-
 use git2::Config;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager, Theme};
 use tauri_plugin_os::locale;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -10,6 +7,26 @@ use tauri_plugin_os::locale;
 pub enum Language {
     En,
     Es,
+}
+
+impl Default for Language {
+    fn default() -> Self {
+        Language::En
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum Theme {
+    Light,
+    Dark,
+    System,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Theme::System
+    }
 }
 
 impl Language {
@@ -36,6 +53,7 @@ impl Language {
 #[serde(rename_all = "camelCase")]
 pub struct Configuration {
     // General configs
+    #[serde(default)]
     pub lang: Language,
     pub date_format: String,
     pub max_commits: u32,
@@ -46,11 +64,12 @@ pub struct Configuration {
     pub email: String,
 
     // UI Customization
-    pub theme: String,
+    #[serde(default)]
+    pub theme_config: Theme,
+    #[serde(default)]
+    pub theme_value: Theme,
     pub accent_color: String,
 }
-
-pub static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 
 impl Configuration {
     pub fn get_git_user_info() -> (String, String) {
@@ -70,22 +89,6 @@ impl Configuration {
         }
     }
 
-    //TODO: THIS SHOULD NOT CHANGE THE VALUE OF THE THEME FIELD ITSELF, BUT RATHER BE USED WHEN
-    //SETTING THE WINDOW THEME
-    pub fn get_default_theme() -> String {
-        match APP_HANDLE
-            .get()
-            .unwrap()
-            .get_webview_window("main")
-            .unwrap()
-            .theme()
-        {
-            Ok(Theme::Dark) => "dark".to_string(),
-            Ok(Theme::Light) => "light".to_string(),
-            _ => "dark".to_string(),
-        }
-    }
-
     pub fn default() -> Self {
         let (git_username, git_email) = Self::get_git_user_info();
 
@@ -96,7 +99,8 @@ impl Configuration {
             terminal_app: "".to_string(),
             username: git_username,
             email: git_email,
-            theme: Self::get_default_theme(),
+            theme_config: Theme::System,
+            theme_value: Theme::System,
             accent_color: "#50FA7B".to_string(),
         }
     }
@@ -124,10 +128,6 @@ impl Configuration {
 
         if self.email != git_email {
             self.email = default.email;
-        }
-
-        if self.theme.is_empty() {
-            self.theme = default.theme;
         }
 
         if self.accent_color.is_empty() {

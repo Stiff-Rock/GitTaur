@@ -6,7 +6,7 @@ import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import InputField from "../../InputField/InputField";
-
+//TODO: THIS MODAL AN OTHERS, PROPERS LOADING INDICATORS AND BLOCKING
 const CloneRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo } = useAppContext();
   const { selectDirectoryDialog } = useDialog();

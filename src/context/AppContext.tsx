@@ -46,6 +46,8 @@ let initConfig: Configuration | null = null;
     initConfig = window.__APP_CONFIG__;
 })();
 
+//TODO: MAYBE DO AN INVISILBE OVERLAY THAT APPEARS WHEN OPERATIONS THAT SHOULD BLOCK THE UI 
+//APPEAR AND MAYBE THE LOADING INDICATOR ON THE CURSOR OR SOMETHING
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
   const [config, setConfig] = useState<Configuration | null>(initConfig);
@@ -105,7 +107,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useLayoutEffect(() => {
     if (!config) return;
-
     invoke("save_config", { newConfig: config })
       .catch((e) => console.error('Error while saving config:', e));
   }, [config]);

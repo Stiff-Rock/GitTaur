@@ -13,7 +13,7 @@ import { Message } from "./Message";
 import { Tag, TAG_PADDING_X } from "./Tag";
 import { BranchLabel } from "./BranchLabel";
 import { MutableRefObject } from "react";
-import { RectDims, useGraphContext } from "../../context/GraphContext";
+import { RectDims, useGraphContext } from "../../../../../context/GraphContext";
 
 export interface GraphCommitOptions {
   showMessageBody?: boolean;
