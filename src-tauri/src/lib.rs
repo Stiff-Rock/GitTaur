@@ -162,10 +162,9 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 
     let is_dev = cfg!(debug_assertions);
 
-    let base_config = fern::Dispatch::new().level(LevelFilter::Info);
     if is_dev {
         Dispatch::new()
-            .chain(base_config)
+            .chain(Dispatch::new().level(LevelFilter::Trace))
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}][{}] {}",
@@ -187,7 +186,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         let log_file = app_log_dir.join("app.log");
 
         Dispatch::new()
-            .chain(base_config)
+            .chain(Dispatch::new().level(LevelFilter::Info))
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}][{}] {}",
