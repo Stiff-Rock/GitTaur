@@ -1,5 +1,6 @@
 use crate::types::config::*;
 use git2::Config;
+use log::error;
 use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
@@ -67,7 +68,7 @@ pub fn load_config() -> String {
     }
 
     serde_json::to_string(&*config).unwrap_or_else(|e| {
-        eprintln!("Error during setup config serialization - {}", e);
+        error!("Error during setup config serialization - {}", e);
         String::from("{}")
     })
 }

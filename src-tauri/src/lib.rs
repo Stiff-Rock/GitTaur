@@ -4,9 +4,10 @@ mod repo_manager;
 mod repo_watcher;
 mod types;
 mod workspace_manager;
+use chrono::Local;
 use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
-use log::{debug, error, info, warn, LevelFilter};
+use log::{error, info, LevelFilter};
 use std::error::Error;
 use std::fs::create_dir_all;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
@@ -28,7 +29,7 @@ fn open_terminal(mut path: String) -> Result<(), String> {
             .args(&["/C", "start", "cmd.exe", "/K", "cd", "/d", &path])
             .spawn()
         {
-            println!("Error opening terminal on Windows: {}", e);
+            error!("Error opening terminal on Windows: {}", e);
             return Err(e.to_string());
         }
     }
@@ -40,7 +41,7 @@ fn open_terminal(mut path: String) -> Result<(), String> {
             .args(&["-e", &script])
             .spawn()
         {
-            println!("Error opening terminal on macOS: {}", e);
+            error!("Error opening terminal on macOS: {}", e);
             return Err(e.to_string());
         }
     }
@@ -53,7 +54,7 @@ fn open_terminal(mut path: String) -> Result<(), String> {
             .current_dir(&path)
             .spawn()
         {
-            println!("Error opening terminal on Linux: {}", e);
+            error!("Error opening terminal on Linux: {}", e);
             return Err(e.to_string());
         }
     }
@@ -168,7 +169,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}][{}] {}",
-                    chrono::Local::now().format("%H:%M:%S"),
+                    Local::now().format("%H:%M:%S"),
                     colors.color(record.level()),
                     message
                 ))
@@ -191,7 +192,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
                 out.finish(format_args!(
                     "[{}][{}] {}",
                     record.level(),
-                    chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                    Local::now().format("%Y-%m-%d %H:%M:%S"),
                     message
                 ))
             })
@@ -236,7 +237,8 @@ pub fn run() {
             // Repository Watcher commands
             repo_watcher::setup_watchers,
             repo_watcher::stop_git_watcher,
-            //TODO: DELETE ON RELEASE
+            // Debug functions
+            #[cfg(debug_assertions)]
             repo_manager::reset,
         ])
         .setup(|app| {

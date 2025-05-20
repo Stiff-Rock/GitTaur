@@ -1,4 +1,5 @@
 use crate::{
+    config_manager::config,
     git2json::{self, ChangeType, CommitLog, FileChanges},
     types::repo_info::{RepoInfo, RepoStatus},
 };
@@ -8,6 +9,7 @@ use git2::{
     MergeOptions, Reference, Repository, Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
+use log::{debug, error, info};
 use std::{
     collections::{HashMap, HashSet},
     path::Path,
@@ -18,15 +20,16 @@ use tauri::command;
 static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
 
-//TODO: DELETE ON RELEASE
+#[cfg(debug_assertions)]
 #[command]
 pub async fn reset() -> Result<(), String> {
+    info!("---Resetting ACTIVE_REPOS state---");
+
     match ACTIVE_REPOS.lock() {
         Ok(mut active_repos) => {
             active_repos.clear();
             Ok(())
         }
-
         Err(e) => Err(e.to_string()),
     }
 }
@@ -36,7 +39,7 @@ fn is_repo_busy(repo_path: &String) -> Result<(), String> {
     let mut active_repos = match ACTIVE_REPOS.lock() {
         Ok(guard) => guard,
         Err(err) => {
-            eprintln!(
+            error!(
                 "Error checking if repo is busy: HasSet mutex poisoned - {}",
                 err
             );
@@ -44,16 +47,13 @@ fn is_repo_busy(repo_path: &String) -> Result<(), String> {
         }?,
     };
 
-    println!("-------------------------");
-    println!("{:#?}", active_repos);
-
     // If the repoPath is present in the set, it means that the repository is busy at the moment,
     // if not, we add it to the HashSet to flag it as busy until released
     if active_repos.contains(repo_path) {
-        println!("BUSY");
+        debug!("{} - BUSY", repo_path);
         Err("Repository busy. Please try again when other operations complete".to_string())
     } else {
-        println!("AVAILABLE");
+        debug!("{} - AVAILABLE", repo_path);
         active_repos.insert(repo_path.to_string());
         Ok(())
     }
@@ -63,7 +63,7 @@ pub fn release_repo(repo_path: &String) {
     let mut active_repos = match ACTIVE_REPOS.lock() {
         Ok(guard) => guard,
         Err(err) => {
-            eprintln!("Error releasing repo: HashSet mutex poisoned - {}", err);
+            error!("Error releasing repo: HashSet mutex poisoned - {}", err);
             return;
         }
     };
@@ -72,6 +72,14 @@ pub fn release_repo(repo_path: &String) {
 }
 
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
+    let msg = if has_lock {
+        "with lock"
+    } else {
+        "with no lock"
+    };
+
+    info!("Checking if {} is a repository {}", repo_path, msg);
+
     if !has_lock {
         is_repo_busy(repo_path)?;
     }
@@ -88,6 +96,8 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 
 #[command]
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
+    info!("Creating repository at {}", repo_path);
+
     is_repo_busy(&repo_path)?;
 
     let create_result = if is_repo(&repo_path, true)? {
@@ -106,41 +116,18 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
+    info!("Cloning {} into {}", repo_url, path);
+
     is_repo_busy(&path)?;
 
     let clone_path = Path::new(&path);
-    let result = match Repository::clone(&repo_url, &clone_path) {
-        Ok(_) => Ok("Repository cloned successfully".to_string()),
-        Err(e) => {
-            eprintln!("Technical error details: {:?}", e);
 
-            Err(match e.code() {
-                git2::ErrorCode::Auth => {
-                    format!("Authentication failed for repository:\n{}", repo_url)
-                }
-                git2::ErrorCode::NotFound => {
-                    format!("Repository not found for the provided URL:\n{}", repo_url)
-                }
-                git2::ErrorCode::Exists => format!(
-                    "The target directory is not empty:\n{}",
-                    clone_path.display()
-                ),
-                git2::ErrorCode::Certificate => "SSL certificate verification failed".to_string(),
-                _ => {
-                    let err_msg = format!(
-                        "Failed to clone the repository from:\n{}\n\n\
-                            Error details: {}",
-                        repo_url,
-                        e.message()
-                    );
+    let auth = GitAuthenticator::new().set_prompter();
 
-                    eprintln!("{}", err_msg);
-
-                    err_msg
-                }
-            })
-        }
-    };
+    let result = auth
+        .clone_repo(&repo_url, &clone_path)
+        .map(|_| "Successfully cloned repository".to_string())
+        .map_err(|e| format!("Error cloning repository - {}", e));
 
     release_repo(&path);
 
@@ -156,6 +143,8 @@ fn get_current_branch(repo: &Repository) -> String {
 
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
+    info!("Getting information of repository at {}", repo_path);
+
     is_repo_busy(&repo_path)?;
 
     if !is_repo(&repo_path, true)? {
@@ -206,7 +195,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
 
         let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
 
-        //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS
+        //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS IF BRANCH LABEL IS PRESENT AND VICEVERSA
         let repo = RepoInfo {
             name,
             main_branch,
@@ -217,7 +206,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
             commit_history,
         };
 
-        //println!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
+        //debug!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
 
         Ok(repo)
     })();
@@ -239,11 +228,8 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
             .name()
             .map_err(|e| e.to_string())?
             .unwrap_or_else(|| {
-                eprintln!(
-                    "Warning: Invalid branch name in entry {:?}",
-                    branch.name_bytes()
-                );
-                "(invalid)"
+                error!("Invalid branch name in entry {:?}", branch.name_bytes());
+                "##invalid##"
             });
 
         let info: Vec<&str> = branch_full_name.split('/').collect();
@@ -261,8 +247,8 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
                 .or_default()
                 .push(name.to_string());
         } else {
-            eprintln!(
-                "WARNING!!!! BRANCH NAME SPLIT RESULTED ON MORE THAN2: {}",
+            error!(
+                "Branch name split - Expected two tokens but instead got more: {}",
                 branch_full_name
             )
         }
@@ -273,6 +259,8 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
+    info!("Getting status of repository at {}", repo_path);
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -346,6 +334,11 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
+    info!(
+        "Adding files to staging area of repository at {}",
+        repo_path
+    );
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -371,6 +364,11 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
+    info!(
+        "Removing files from staging area of repository at {}",
+        repo_path
+    );
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -403,6 +401,8 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
+    info!("Fetching remotes of repository at {}", repo_path);
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -482,6 +482,11 @@ pub async fn pull_remote(
     remote_name: String,
     branches: Vec<String>,
 ) -> Result<String, String> {
+    info!(
+        "Pulling from remote {} of repository at {}",
+        remote_name, repo_path
+    );
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -643,14 +648,18 @@ pub async fn push_remote(
     local_branch: String,
     remote_branch: String,
 ) -> Result<(), String> {
-    is_repo_busy(&repo_path)?;
+    info!(
+        "Pushing changes to remote {} of repository at {}",
+        remote, repo_path
+    );
 
-    let auth = GitAuthenticator::default();
+    is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
     let mut remote = repo.find_remote(&remote).map_err(|e| e.to_string())?;
     let refspec = format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch);
 
+    let auth = GitAuthenticator::default();
     auth.push(&repo, &mut remote, &[&refspec])
         .map_err(|e| e.to_string())?;
 
@@ -665,6 +674,11 @@ pub async fn create_branch(
     branch_name: String,
     checkout: bool,
 ) -> Result<String, String> {
+    info!(
+        "Creating branch with name {} in repository at {}",
+        branch_name, repo_path
+    );
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -701,17 +715,16 @@ pub async fn commit(
     commit_summary: String,
     commit_body: String,
 ) -> Result<(), String> {
+    info!("Committing in repository at {}", repo_path);
+
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
     let mut index = repo.index().map_err(|e| e.to_string())?;
 
-    //TODO: FOR NOW GET THE USER'S CONFIG DIRECTLY, BUT LATER DO CONFIG OPTIONS
-    let config = repo.config().map_err(|e| e.to_string())?;
-    let name = config.get_string("user.name").map_err(|e| e.to_string())?;
-    let email = config.get_string("user.email").map_err(|e| e.to_string())?;
-    let signature = Signature::now(&name, &email).map_err(|e| e.to_string())?;
+    let config = config();
+    let signature = Signature::now(&config.username, &config.email).map_err(|e| e.to_string())?;
 
     let message = if commit_body.trim().is_empty() {
         commit_summary.to_string()

@@ -22,7 +22,7 @@ const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
 
   const rectXPadding = 10;
 
-  //TODO: PADDING FUCKS EVERYTHING UP
+  //NOTE: PADDING FUCKS EVERYTHING UP
   const rectHeight = 35;
   const rectYPadding = 0;
 

@@ -64,30 +64,37 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
   }
 
-  // Fetch repo data on load and initilize repo watchers
-  //TODO: DELETE REF ON RELEASE
-  const isLoaded = useRef(false);
-
+  // Fetch repo data on load and initilize repository watchers
+  const hasLoaded = useRef(false);
   useEffect(() => {
     if (repoInfo) return;
 
-    if (!isLoaded.current) {
-      isLoaded.current = true;
+    const shouldSetupWatchers =
+      !import.meta.env.DEV ||
+      (import.meta.env.DEV && !hasLoaded.current);
+
+    if (shouldSetupWatchers) {
+      if (import.meta.env.DEV) {
+        hasLoaded.current = true;
+      }
+
       const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
       invoke("setup_watchers", { repoPath, repoEvents })
         .catch(e => console.error("Error starting git watcher:", e));
+
+      getRepoInfo();
     }
 
+    // Set up listeners for watcher events
     const headUnlistenPromise = listen<string>(headEvent, getRepoInfo);
     const fetchUnlistenPromise = listen<string>(fetchEvent, getRepoInfo);
-
-    getRepoInfo();
 
     return () => {
       headUnlistenPromise.then(unlisten => unlisten());
       fetchUnlistenPromise.then(unlisten => unlisten());
     };
   }, []);
+
 
   useEffect(() => {
     if (isActive) setActiveRepoInfo(repoInfo);

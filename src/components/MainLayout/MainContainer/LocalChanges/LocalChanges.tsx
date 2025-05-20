@@ -40,18 +40,26 @@ const LocalChanges: React.FC = () => {
       .finally(() => 0);
   }
 
-  //TODO: DELETE REF ON RELEASE
+  // Listens to repository stauts changes and gets current status
   const hasLoaded = useRef(false);
   useEffect(() => {
-    if (!repoInfo || hasLoaded.current) return;
-    hasLoaded.current = true;
+    if (!repoInfo) return;
+
+    if (import.meta.env.DEV && hasLoaded.current) return;
+
+    if (import.meta.env.DEV) {
+      hasLoaded.current = true;
+    }
 
     const statusUnlistenPromise = listen<string>(statusEvent, getRepoStatus);
     const headUnlistenPromise = listen<string>(headEvent, getRepoStatus);
 
     invoke<RepoStatus>("get_repo_status", { repoPath })
       .then(setRepoStatus)
-      .catch((e) => { console.error(e); setNotification(e); })
+      .catch((e) => {
+        console.error(e);
+        setNotification(e);
+      });
 
     return () => {
       statusUnlistenPromise.then(unlisten => unlisten());

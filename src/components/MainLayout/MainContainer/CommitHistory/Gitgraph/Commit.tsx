@@ -48,7 +48,7 @@ export const Commit = (props: CommitsProps) => {
    * branch label rendered? Do they overlap or cause the message X position to be
    * in the wrong position?"
    *
-   * TODO: Investigate potential bug outlined above
+   * TODO Investigate potential bug outlined above
    */
   const branchLabelRef = React.useRef<SVGGElement>();
   const tagRefs: MutableRefObject<SVGGElement[]> = React.useRef([]);

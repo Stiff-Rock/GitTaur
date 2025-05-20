@@ -10,7 +10,6 @@ import Checkbox from "../../CheckBox/Checkbox";
 const PushRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
 
-  //TODO: FILL THE DEFAULT VALUES WTH THE LOCAL BRANCH, ORIGIN REMOTE AND THE REQUIVALENT BRANCH IN REMOTE OR THE FIRST AS FALLBACK
   const [remote, setRemote] = useState<string>("");
   const [localBranch, setLocalBranch] = useState<string>("");
   const [remoteBranch, setRemoteBranch] = useState<string>("");

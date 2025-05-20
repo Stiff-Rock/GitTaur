@@ -1,3 +1,4 @@
+use log::{error, warn};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -79,19 +80,15 @@ pub async fn setup_watchers(
                     let path_str = path.to_string_lossy().replace('\\', "/");
 
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
-                        println!("HEAD");
                         tx.send(("head", ())).ok();
                     } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
-                        println!("FETCH");
                         tx.send(("fetch", ())).ok();
                     } else if path.ends_with("index")
                         || path.ends_with("index.lock")
                         || (path_str.contains(&repo_path_str) && !path_str.contains("/.git/"))
                     {
-                        println!("STATUS");
                         tx.send(("status", ())).ok();
                     } else if has_unwatched_dirs && path_str.contains("/.git/") {
-                        println!("GIT");
                         tx.send((".git", ())).ok();
                     }
                 }
@@ -172,7 +169,7 @@ fn setup_unwatched_dirs(repo_path: &String) {
         let (path, _, recursive_mode) = &entries[i];
 
         if let Err(e) = watcher.watch(path, *recursive_mode) {
-            eprintln!("Failed to watch path {}: {}", path.display(), e);
+            error!("Failed to watch path {}: {}", path.display(), e);
             continue;
         }
 
@@ -183,7 +180,7 @@ fn setup_unwatched_dirs(repo_path: &String) {
         let git_path = PathBuf::from(repo_path).join(".git");
 
         if let Err(e) = watcher.unwatch(&git_path) {
-            eprintln!("Failed to unwatch .git directory: {}", e);
+            error!("Failed to unwatch .git directory: {}", e);
             return;
         }
 
@@ -196,7 +193,7 @@ pub async fn stop_git_watcher(repo_path: String) -> Result<(), String> {
     let removed = WATCHER_STORE.lock().unwrap().remove(&repo_path);
 
     if !removed.is_some() {
-        eprintln!("No watcher found for {}", repo_path);
+        warn!("No watcher found for {}", repo_path);
     }
 
     Ok(())

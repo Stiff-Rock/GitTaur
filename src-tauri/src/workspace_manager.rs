@@ -1,4 +1,5 @@
 use crate::{repo_manager::is_repo, types::workspace::*};
+use log::error;
 use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
@@ -73,7 +74,7 @@ pub fn restore_workspace() -> String {
     }
 
     serde_json::to_string(&workspace.to_dto()).unwrap_or_else(|e| {
-        eprintln!("Error during setup dto serialization - {}", e);
+        error!("Error during setup dto serialization - {}", e);
         String::from("{}")
     })
 }

@@ -75,16 +75,6 @@ hr {
   background-color: var(--lighter-bg);
 }
 
-/*TODO: CREO QUE ESTO NO HACE NADA
-* .patch {
-  background-color: var(--lighter-bg);
-  padding: 5px;
-  border-radius: 4px;
-  font-family: monospace;
-  white-space: pre-wrap;
-  margin-top: 5px;
-}*/
-
 .copyWrapper {
   position: relative;
   display: inline-block;

@@ -56,8 +56,6 @@ const ConfigPage: React.FC = () => {
   //TODO: ARE YOU SURE? dialog when trying to close the tab
 
   //TODO: ADD GRAPH COLOR THEMING
-
-  //TODO: ADD ENTIRE APP CONFIG
   return (
     <div className={`${styles.mainContainer} ${checkPageType("Config") || !workspace ? '' : 'inactive'}`}>
       <aside className={styles.configTabSidebar}>

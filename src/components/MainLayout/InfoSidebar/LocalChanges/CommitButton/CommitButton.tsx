@@ -15,8 +15,7 @@ const CommitButton: React.FC<CommitButtonProps> = (props) => {
 
   const { setNotification } = useAppContext();
   const { repoPath, } = useMainContext();
-  /*TODO: THERE'S A SLIGHT DELAY FROM WHEN YOU COMMIT WHERE THE INPUTS ARE EMPTY BUT THE CCHANGE ARE STILL IN STAGING AREA, 
-    PROBABLY DUE TO WATCHER DEBOUCE*/
+
   const commitChanges = () => {
     invoke("commit", { repoPath, commitSummary, commitBody }).then(() => {
       setCommitSummary("");

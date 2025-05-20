@@ -15,12 +15,14 @@ import ConfigPage from "./components/ConfigurationPage/ConfigPage";
 function App() {
   const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
 
-  //TODO: DELETE THIS SYSTEM IN RELEASE
-  const appLoaded = useRef<boolean>(false);
-  useEffect(() => {
-    if (!appLoaded.current) appLoaded.current = true;
-    else invoke("reset").catch((e) => console.error(e))
-  }, []);
+  // Debug effect and invoke
+  if (import.meta.env.DEV) {
+    const appLoaded = useRef<boolean>(false);
+    useEffect(() => {
+      if (!appLoaded.current) appLoaded.current = true;
+      else invoke("reset").catch((e) => console.error(e))
+    }, []);
+  }
 
   useEffect(() => {
     if (!notification) return;
