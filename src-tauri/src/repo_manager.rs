@@ -113,6 +113,9 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
     create_result
 }
 
+//TODO: AUTH APPROACH -> Make auth_git2 fork, add on-the-fly ssh key conversion to PEM and if that
+//fails, add in the app function a fallback using terminal commands directly
+
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
 #[command]
 pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
@@ -122,7 +125,7 @@ pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String
 
     let clone_path = Path::new(&path);
 
-    let auth = GitAuthenticator::new().set_prompter();
+    let auth = GitAuthenticator::new();
 
     let result = auth
         .clone_repo(&repo_url, &clone_path)
