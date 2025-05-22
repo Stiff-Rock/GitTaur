@@ -13,6 +13,9 @@ use std::fs::create_dir_all;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
 use types::config::Theme;
 
+//TODO: Credit libraries in readme, specially auth-git2 which I forked
+//TODO: CHECK OUT tools like cargo-license or license-checker for JS).
+
 //TODO: THIS IMPLEMENTATION IS TRASH. use https://v2.tauri.app/es/plugin/shell/
 #[command]
 fn open_terminal(mut path: String) -> Result<(), String> {
