@@ -30,7 +30,7 @@ serde = { version = "1", features = ["derive"] }
 
 # Project specific dependencies
 git2 = {version="0.20.0", features = [] }
-auth-git2 = "0.5.7"
+auth-git2-pem = { git = "https://github.com/Stiff-Rock/auth-git2-rs.git", branch="pure-rust" }
 
 chrono = "0.4.40"
 regex = "1.11.1"

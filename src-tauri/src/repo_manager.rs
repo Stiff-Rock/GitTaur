@@ -3,7 +3,7 @@ use crate::{
     git2json::{self, ChangeType, CommitLog, FileChanges},
     types::repo_info::{RepoInfo, RepoStatus},
 };
-use auth_git2::GitAuthenticator;
+use auth_git2_pem::GitAuthenticator;
 use git2::{
     build::CheckoutBuilder, AnnotatedCommit, BranchType, FetchOptions, IndexAddOption,
     MergeOptions, Reference, Repository, Signature, Status, StatusOptions,

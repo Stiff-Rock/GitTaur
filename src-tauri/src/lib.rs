@@ -172,8 +172,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
             .chain(Dispatch::new().level(LevelFilter::Trace))
             .format(move |out, message, record| {
                 out.finish(format_args!(
-                    "[{}][{}] {}",
-                    Local::now().format("%H:%M:%S"),
+                    "[{}] {}",
                     colors.color(record.level()),
                     message
                 ))
