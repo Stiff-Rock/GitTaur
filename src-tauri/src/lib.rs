@@ -13,8 +13,10 @@ use std::fs::create_dir_all;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
 use types::config::Theme;
 
-//TODO: Credit libraries in readme, specially auth-git2 which I forked
+//TODO: Credit libraries in readme, specially auth-git2 which I forked and git2json and gitgraphjs
 //TODO: CHECK OUT tools like cargo-license or license-checker for JS).
+
+//TODO: FUTURE:: Try to debug libssh2-rs to see why so many keys don't work or implement ssh-agent
 
 //TODO: THIS IMPLEMENTATION IS TRASH. use https://v2.tauri.app/es/plugin/shell/
 #[command]
