@@ -1,5 +1,5 @@
 use crate::{repo_manager::is_repo, types::workspace::*};
-use log::error;
+use log::{error, trace};
 use std::{
     fs::{self, metadata, File},
     io::{Read, Write},
@@ -40,6 +40,7 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
         return Ok("".to_string());
     }
 
+    trace!("repo_path: {}", repo_path);
     if !is_repo(&repo_path, false)? {
         return Err("Error: the selected directory is not a repository".to_string());
     }

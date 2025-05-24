@@ -13,7 +13,7 @@ type ConfigTabs = "general" | "git" | "ui";
 
 const ConfigPage: React.FC = () => {
   const { checkPageType, workspace, config, setConfig, setNotification } = useAppContext();
-  const { selectFileDialog } = useDialog();
+  const { selectFileDialog, selectDirectoryDialog } = useDialog();
 
   const [newConfig, setNewConfig] = useState<Configuration | null>(null);
   const [configTab, setConfigTab] = useState<ConfigTabs>("general");
@@ -148,6 +148,20 @@ const ConfigPage: React.FC = () => {
                 placeholder="Git email"
                 value={newConfig.email}
                 onChange={(value) => setNewConfig({ ...newConfig, email: value })}
+                className={styles.configInput}
+              />
+
+              <InputField
+                title="Clone directory"
+                type="text"
+                placeholder="path/to/directory"
+                value={newConfig.clonePath}
+                onChange={(value) => {
+                  console.log("NEWPATH: ", value)
+                  setNewConfig({ ...newConfig, clonePath: value })
+                }}
+                buttonIcon={<FileDirectoryIcon />}
+                onButtonClick={selectDirectoryDialog}
                 className={styles.configInput}
               />
             </div>

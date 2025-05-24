@@ -40,7 +40,7 @@ const PushRemoteModal: React.FC = () => {
 
       invoke<string>("push_remote", {
         repoPath, remote, localBranch,
-        remoteBranch
+        remoteBranch, forcePush
       }).then((msg) => {
         setActiveModal("");
         setNotification(msg as string);

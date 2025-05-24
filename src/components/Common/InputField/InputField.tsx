@@ -8,7 +8,7 @@ interface InputField {
   value: string,
   onChange: (value: string) => void,
   buttonIcon?: ReactNode,
-  onButtonClick?: () => void;
+  onButtonClick?: () => Promise<string | void>,
   min?: number,
   max?: number,
   className?: string;
@@ -16,6 +16,14 @@ interface InputField {
 
 const InputField: React.FC<InputField> = (props) => {
   const { title, type, placeholder, value, onChange, buttonIcon, onButtonClick, min, max, className } = props;
+
+  const handleButtonClick = () => {
+    if (!onButtonClick) return;
+    onButtonClick().then((value) => {
+      if (!value) return;
+      onChange(value);
+    });
+  }
 
   return (
     <div className={`${styles.inputFieldContainer} ${className}`}>
@@ -31,7 +39,7 @@ const InputField: React.FC<InputField> = (props) => {
       />
 
       {buttonIcon &&
-        <button onClick={onButtonClick} className={`actionButton ${styles.actionButton}`}>
+        <button onClick={handleButtonClick} className={`actionButton ${styles.actionButton}`}>
           {buttonIcon}
         </button>}
     </div>

@@ -1,3 +1,6 @@
+use std::path::{Path, PathBuf};
+
+use dirs::{document_dir, home_dir};
 use git2::Config;
 use serde::{Deserialize, Serialize};
 use tauri_plugin_os::locale;
@@ -62,6 +65,7 @@ pub struct Configuration {
     // Git configs
     pub username: String,
     pub email: String,
+    pub clone_path: String, //TODO:
 
     // UI Customization
     #[serde(default)]
@@ -89,6 +93,12 @@ impl Configuration {
         }
     }
 
+    fn get_default_clone_path() -> String {
+        let path = document_dir().unwrap_or(home_dir().unwrap_or(PathBuf::new()));
+
+        path.to_string_lossy().into_owned()
+    }
+
     pub fn default() -> Self {
         let (git_username, git_email) = Self::get_git_user_info();
 
@@ -99,6 +109,7 @@ impl Configuration {
             terminal_app: "".to_string(),
             username: git_username,
             email: git_email,
+            clone_path: Self::get_default_clone_path(),
             theme_config: Theme::System,
             theme_value: Theme::System,
             accent_color: "#50FA7B".to_string(),

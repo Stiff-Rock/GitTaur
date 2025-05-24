@@ -11,6 +11,7 @@ interface Configuration {
   // Git configs
   username: string,
   email: string,
+  clonePath: string,
   // UI Customization
   themeConfig: Theme,
   themeValue: Theme,

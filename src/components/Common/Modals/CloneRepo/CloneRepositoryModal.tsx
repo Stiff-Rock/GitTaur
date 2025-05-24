@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import baseStyle from "../BaseModal.module.css";
 import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useDialog } from "../../../../hooks/useDialog";
@@ -8,11 +8,16 @@ import { invoke } from "@tauri-apps/api/core";
 import InputField from "../../InputField/InputField";
 //TODO: THIS MODAL AN OTHERS, PROPER LOADING INDICATORS AND BLOCKING
 const CloneRepositoryModal: React.FC = () => {
-  const { setActiveModal, setNotification, openNewRepo } = useAppContext();
+  const { setActiveModal, setNotification, openNewRepo, config } = useAppContext();
   const { selectDirectoryDialog } = useDialog();
 
   const [path, setParentFolder] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
+
+  useEffect(() => {
+    if (!config || !config.clonePath) return;
+    setParentFolder(config.clonePath);
+  }, [config]);
 
   const chooseParentFolder = async () => {
     const path = await selectDirectoryDialog();
@@ -36,9 +41,10 @@ const CloneRepositoryModal: React.FC = () => {
       return;
     }
 
-    invoke<string>("clone_repo", { path, repoUrl })
-      .then((msg) => {
-        openNewRepo(path);
+    invoke<[string, string]>("clone_repo", { path, repoUrl })
+      .then((payload) => {
+        const [repoPath, msg] = payload;
+        openNewRepo(repoPath);
         setNotification(msg);
       })
       .catch((e) => {

@@ -15,10 +15,16 @@ use std::{
     path::Path,
     sync::{LazyLock, Mutex},
 };
-use tauri::command;
+use tauri::{command, AppHandle};
+use tauri_plugin_shell::{self, ShellExt};
 
 static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
+
+//TODO: HANDLE ANY ERROR ENSURING THAT RELEASE_REPO ALWAYS GET CALLED, EVERY ? IS POTENTIALLY A
+//FUCKUP - use "defer" pattern with Rust's Drop trait: RAII guard that calls release_repo when dropped
+
+//TODO: GitAuthenticator::set_prompter()
 
 #[cfg(debug_assertions)]
 #[command]
@@ -113,28 +119,66 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
     create_result
 }
 
-//TODO: AUTH APPROACH -> Make auth_git2 fork, add on-the-fly ssh key conversion to PEM and if that
-//fails, add in the app function a fallback using terminal commands directly
+//TODO: Fallback using terminal commands directly
 
 //TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
+
 #[command]
-pub async fn clone_repo(path: String, repo_url: String) -> Result<String, String> {
+pub async fn clone_repo(
+    app_handle: AppHandle,
+    path: String,
+    repo_url: String,
+) -> Result<(String, String), String> {
     info!("Cloning {} into {}", repo_url, path);
 
     is_repo_busy(&path)?;
 
-    let clone_path = Path::new(&path);
+    let last_component = repo_url.split("/").last().unwrap_or("");
+
+    let repo_name = last_component
+        .strip_suffix(".git")
+        .unwrap_or(last_component);
+
+    let clone_path = Path::new(&path).join(repo_name);
+
+    if clone_path.exists() {
+        release_repo(&path);
+
+        return Err(format!(
+            "Error: directory already exists at '{}'",
+            clone_path.display()
+        ));
+    }
 
     let auth = GitAuthenticator::new();
 
-    let result = auth
-        .clone_repo(&repo_url, &clone_path)
-        .map(|_| "Successfully cloned repository".to_string())
-        .map_err(|e| format!("Error cloning repository - {}", e));
+    let git2_clone_result = auth.clone_repo(&repo_url, &clone_path);
+
+    let repo_path = clone_path.to_string_lossy().to_string();
+
+    // Falback to git clone through commands
+    if let Err(err) = git2_clone_result {
+        info!("git2 clone method failed: {}", err);
+
+        let shell = app_handle.shell();
+
+        let output = shell
+            .command("git")
+            .args(["clone", &repo_url, &repo_path])
+            .output()
+            .await
+            .map_err(|e| format!("Failed to execute git clone command: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            release_repo(&path);
+            return Err(format!("Error cloning repository - {}", stderr));
+        }
+    }
 
     release_repo(&path);
 
-    result
+    Ok((repo_path, "Successfully cloned repository".to_string()))
 }
 
 fn get_current_branch(repo: &Repository) -> String {
@@ -401,27 +445,65 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
     Ok(())
 }
 
-//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
+//TODO: TEST FETCHING WITH GIT AUTH AND WITH GIT COMMAND
+
+//TODO: Live loading feedback
 #[command]
-pub async fn fetch_remote(repo_path: String, remotes: Vec<String>) -> Result<String, String> {
+pub async fn fetch_remote(
+    app_handle: AppHandle,
+    repo_path: String,
+    remotes: Vec<String>,
+) -> Result<String, String> {
     info!("Fetching remotes of repository at {}", repo_path);
 
     is_repo_busy(&repo_path)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
     let mut any_updates = false;
 
-    for remote_name in remotes {
-        let refs_before = get_remote_refs(&repo, &remote_name)?;
+    for remote_name in &remotes {
+        let refs_before = {
+            let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+            get_remote_refs(&repo, remote_name)?
+        };
 
-        let mut remote = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
-        let mut fetch_options = FetchOptions::new();
+        let git2_fetch_success = {
+            let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+            let mut remote = repo.find_remote(remote_name).map_err(|e| e.to_string())?;
+            let refspecs = &[] as &[&str];
+            let auth = GitAuthenticator::new();
 
-        remote
-            .fetch(&[] as &[&str], Some(&mut fetch_options), None)
-            .map_err(|e| format!("Failed to fetch from remote '{}': {}", &remote_name, e))?;
+            match auth.fetch(&repo, &mut remote, refspecs, None) {
+                Ok(_) => true,
+                Err(e) => {
+                    info!("git2 failed to fetch from remote '{}': {}", remote_name, e);
+                    false
+                }
+            }
+        };
 
-        let refs_after = get_remote_refs(&repo, &remote_name)?;
+        // If git2 fails, try using shell command
+        if !git2_fetch_success {
+            let shell = app_handle.shell();
+
+            let output = shell
+                .command("git")
+                .args(["fetch", remote_name])
+                .output()
+                .await
+                .map_err(|e| format!("Failed to execute git fetch command: {}", e))?;
+
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                release_repo(&repo_path);
+                return Err(format!("Error fetching - {}", stderr));
+            }
+        }
+
+        // Check for updates after fetching
+        let refs_after = {
+            let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+            get_remote_refs(&repo, remote_name)?
+        };
 
         if find_updated_refs(&refs_before, &refs_after) {
             any_updates = true;
@@ -478,7 +560,7 @@ fn find_updated_refs(
     false
 }
 
-//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
+//TODO: Live loading feedback
 #[command]
 pub async fn pull_remote(
     repo_path: String,
@@ -643,28 +725,67 @@ fn normal_merge(
     Ok("Merge successful".to_string())
 }
 
-//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
+//TODO: TEST FETCHING WITH GIT AUTH AND WITH GIT COMMAND
+
+//TODO: Live loading feedback
 #[command]
 pub async fn push_remote(
+    app_handle: AppHandle,
     repo_path: String,
-    remote: String,
+    remote_name: String,
     local_branch: String,
     remote_branch: String,
+    force_push: bool,
 ) -> Result<(), String> {
     info!(
         "Pushing changes to remote {} of repository at {}",
-        remote, repo_path
+        remote_name, repo_path
     );
 
     is_repo_busy(&repo_path)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-    let mut remote = repo.find_remote(&remote).map_err(|e| e.to_string())?;
     let refspec = format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch);
 
-    let auth = GitAuthenticator::default();
-    auth.push(&repo, &mut remote, &[&refspec])
-        .map_err(|e| e.to_string())?;
+    let push_result = {
+        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+        let mut remote = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
+
+        // Add "+" prefix to refspec if force_push is true
+        let refspec = if force_push {
+            format!("+refs/heads/{}:refs/heads/{}", local_branch, remote_branch)
+        } else {
+            format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch)
+        };
+
+        let auth = GitAuthenticator::new();
+        auth.push(&repo, &mut remote, &[&refspec])
+    };
+
+    if let Err(err) = push_result {
+        info!("git2 push failed: {err}");
+
+        let shell = app_handle.shell();
+
+        let mut args = vec!["push"];
+        if force_push {
+            args.push("--force");
+        }
+        args.push(&remote_name);
+        args.push(&refspec);
+
+        let output = shell
+            .command("git")
+            .args(args)
+            .output()
+            .await
+            .map_err(|e| format!("Failed to execute git push command: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            release_repo(&repo_path);
+            return Err(format!("Error pushing to remote - {}", stderr));
+        }
+    }
 
     release_repo(&repo_path);
 
