@@ -9,6 +9,7 @@ const StageAllButton: React.FC<ActionButtonProps> = (props) => {
   const { repoPath } = useMainContext();
   const { setNotification } = useAppContext();
 
+  //TODO: EN VEZ DE HAZCER AQUI EL INVOKE, SUBIR AL PADRE (LOCALCHANGES) LA FUNCION PARA QUE PUEDA GESTIONARLO TENIENOD EN CUNETA LOS REFS
   const stageAllFiles = async () => {
     onActionStart();
 

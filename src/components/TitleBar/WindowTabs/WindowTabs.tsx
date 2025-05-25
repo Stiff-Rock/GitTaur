@@ -4,7 +4,6 @@ import barStyles from '../TitleBar.module.css';
 import { useAppContext } from '../../../context/AppContext';
 import Tab from "./Tab";
 import NewTabButton from "./NewTabButton";
-import WorkspaceButton from "../TitleBarOptions/WorkspaceButton";
 import SettingsButton from "../TitleBarOptions/SettingsButton";
 
 const WindowTabs: React.FC = () => {
@@ -13,7 +12,7 @@ const WindowTabs: React.FC = () => {
   return (
     <div className={`${barStyles.windowTabs} ${styles.tabs}`}>
       <SettingsButton />
-      <WorkspaceButton />
+      {/*TODO: <WorkspaceButton /> */}
 
       {workspace?.tabs && [...workspace.tabs.entries()].map(([key, tab]) => (
         <Tab

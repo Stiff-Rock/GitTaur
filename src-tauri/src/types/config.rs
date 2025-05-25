@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use dirs::{document_dir, home_dir};
 use git2::Config;

@@ -1,5 +1,5 @@
 import styles from './LocalChanges.module.css';
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppContext } from "../../../../context/AppContext";
 import { listen } from "@tauri-apps/api/event";
@@ -10,12 +10,17 @@ import StageAllButton from './StageAllButton';
 import UnstageAllButton from './UnstageAllButton';
 import Scrollbars from 'react-custom-scrollbars-2';
 import Throbber from '../../../Common/Throbber/Throbber';
+import { Menu } from '@tauri-apps/api/menu';
+import { setupUnstagedFileCM } from '../../../../ContextMenus/UnstagedFileCM';
+import { setupStagedFileCM } from '../../../../ContextMenus/StagedFileCM';
 
 export interface ActionButtonProps {
   onActionStart: () => void;
   onActionEnd: () => void;
   statusUpdatePromise: React.RefObject<Promise<any> | null>;
 }
+
+//TODO: STASH AND POP
 
 const LocalChanges: React.FC = () => {
   const {
@@ -26,7 +31,10 @@ const LocalChanges: React.FC = () => {
     statusEvent, headEvent
   } = useMainContext();
 
-  const { setNotification } = useAppContext();
+  const { setNotification, contextMenuSelectedEl } = useAppContext();
+
+  const [unstagedFileCM, setUnstagedFileCM] = useState<Menu | null>(null);
+  const [stagedFileCM, setStagedFileCM] = useState<Menu | null>(null);
 
   const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
   const [isStagedLoading, setIsStageLoading] = useState(false);
@@ -39,6 +47,12 @@ const LocalChanges: React.FC = () => {
       .catch(e => setNotification(e))
       .finally(() => 0);
   }
+
+  // Loads the context menus associated with this component
+  useLayoutEffect(() => {
+    setupUnstagedFileCM(contextMenuSelectedEl).then(setUnstagedFileCM);
+    setupStagedFileCM(contextMenuSelectedEl).then(setStagedFileCM);
+  }, []);
 
   // Listens to repository stauts changes and gets current status
   const hasLoaded = useRef(false);
@@ -68,6 +82,7 @@ const LocalChanges: React.FC = () => {
   }, [repoInfo]);
 
   interface ChangesSectionProps {
+    state: FileStatusState
     sectionBarStyle: string;
     barIcon: ReactNode;
     sectionTitle: string;
@@ -75,10 +90,11 @@ const LocalChanges: React.FC = () => {
     actionButtons: ReactNode[];
     fileChangesArray: FileChanges[];
     isLoading: boolean;
+    contextMenu: Menu | null;
   }
 
   const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
-    const { sectionBarStyle, barIcon, sectionTitle, sectionFileCount, actionButtons, fileChangesArray, isLoading } = props;
+    const { state, sectionBarStyle, barIcon, sectionTitle, sectionFileCount, actionButtons, fileChangesArray, isLoading, contextMenu } = props;
 
     return (
       <div className={`${styles.section}`}>
@@ -121,7 +137,7 @@ const LocalChanges: React.FC = () => {
           )}
         >
           {repoStatus && fileChangesArray.map((changes, index) => (
-            <FileChangeItem key={index} fileName={changes.file} changeType={changes.changeType} className={styles.fileChangeItem} />
+            <FileChangeItem key={index} state={state} fileName={changes.file} changeType={changes.changeType} contextMenu={contextMenu} className={styles.fileChangeItem} />
           ))}
         </Scrollbars>
       </div>
@@ -135,6 +151,7 @@ const LocalChanges: React.FC = () => {
   }
 
   const unstagedFileSectionProps: ChangesSectionProps = {
+    state: "unstaged",
     sectionBarStyle: styles.stagedSectionBar,
     barIcon: <CheckboxIcon />,
     sectionTitle: 'Staged Files',
@@ -142,6 +159,7 @@ const LocalChanges: React.FC = () => {
     actionButtons: [<UnstageAllButton key={'unstageAll'} {...unstagedActionButtonProps} />],
     fileChangesArray: repoStatus?.stagedFiles ?? [],
     isLoading: isUnstagedLoading,
+    contextMenu: unstagedFileCM,
   }
 
   const stagedActionButtonProps: ActionButtonProps = {
@@ -151,6 +169,7 @@ const LocalChanges: React.FC = () => {
   }
 
   const stagedFileSectionProps: ChangesSectionProps = {
+    state: "staged",
     sectionBarStyle: styles.unstagedSectionBar,
     barIcon: <DiffModifiedIcon />,
     sectionTitle: 'Unstaged Files',
@@ -158,6 +177,7 @@ const LocalChanges: React.FC = () => {
     actionButtons: [<StageAllButton key={'stageAll'} {...stagedActionButtonProps} />],
     fileChangesArray: repoStatus?.unstagedFiles ?? [],
     isLoading: isStagedLoading,
+    contextMenu: stagedFileCM,
   }
 
   return (

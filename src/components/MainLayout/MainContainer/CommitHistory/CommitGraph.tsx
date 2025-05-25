@@ -10,7 +10,8 @@ import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 import { GitgraphOptions } from "@gitgraph/core";
 import { GraphCommitOptions } from "./Gitgraph/Commit.tsx";
 
-//TODO: apply config to graphs
+//TODO: apply config to graphs (such as the commit limit)
+//TODO: Add a visual indicator of unpushed changes
 //WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
 //NOTE: cant handle render of big repos
 

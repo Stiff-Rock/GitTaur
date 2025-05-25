@@ -11,6 +11,8 @@ interface RepoStatus {
 
 type ChangeType = "deleted" | "modified" | "added";
 
+type FileStatusState = "unstaged" | "staged";
+
 interface FileChanges {
   changeType: ChangeType;
   file: string;

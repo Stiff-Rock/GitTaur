@@ -1,9 +1,14 @@
-import React, { createContext, useState, useContext, useEffect, useLayoutEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useLayoutEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
+import { Menu } from '@tauri-apps/api/menu';
+import { getCurrentWindow, PhysicalPosition, Window } from '@tauri-apps/api/window';
 
 interface AppContextType {
+  // Refs
+  contextMenuSelectedEl: React.MutableRefObject<HTMLElement | null>;
+
   // State 
   workspace: Workspace | null;
   config: Configuration | null;
@@ -21,6 +26,7 @@ interface AppContextType {
   setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
 
   // Global Functions
+  openContextMenu: (menu: Menu, event: React.MouseEvent) => void;
   isWelcomePage: (text: string) => boolean;
   openNewRepo: (path: string) => void;
   setActiveTab: (tabId: string) => void;
@@ -49,6 +55,9 @@ let initConfig: Configuration | null = null;
 //TODO: MAYBE DO AN INVISILBE OVERLAY THAT APPEARS WHEN OPERATIONS THAT SHOULD BLOCK THE UI 
 //APPEAR AND MAYBE THE LOADING INDICATOR ON THE CURSOR OR SOMETHING
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const contextMenuSelectedEl = useRef<HTMLElement | null>(null);
+  const [mainWindow, setMainWindow] = useState<Window | null>(null);
+
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
   const [config, setConfig] = useState<Configuration | null>(initConfig);
 
@@ -58,7 +67,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const { selectDirectoryDialog } = useDialog();
 
-  //TODO: REVISE IF THIS REALLY NEEDS TO BE useLayoutEffect
+  useLayoutEffect(() => {
+    setMainWindow(getCurrentWindow());
+  }, []);
+
+  //TODO: REVISE IF THIS ALSO NEEDS TO BE useLayoutEffect
   useEffect(() => {
     // If theres already a workspace loaded, do not make api call
     if (!initWorkspace) {
@@ -73,6 +86,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .catch((e) => console.error("Could not get config - {}", e));
     }
   }, []);
+
+  const openContextMenu = (menu: Menu, event: React.MouseEvent) => {
+    event.preventDefault();
+    if (!mainWindow) return;
+    contextMenuSelectedEl.current = event.target as HTMLElement;
+
+    //TODO: DELETE ON RELEASE
+    if (!contextMenuSelectedEl.current) {
+      console.warn("Selected Element is null");
+    }
+
+    const position = new PhysicalPosition(event.clientX, event.clientY);
+    menu.popup(position, mainWindow);
+  }
 
   const checkPageType = (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => {
     if (!workspace) return false;
@@ -243,6 +270,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
+      // Refs
+      contextMenuSelectedEl,
       // States and Setters
       workspace, setWorkspace,
       config, setConfig,
@@ -252,6 +281,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       activeRepoInfo, setActiveRepoInfo,
 
       // Global Functions
+      openContextMenu,
       isWelcomePage,
       openNewRepo,
       closeWorkspaceTab,
