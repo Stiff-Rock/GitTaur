@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { createContext, useState, useContext, useEffect, useLayoutEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDialog } from '../hooks/useDialog';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
@@ -6,9 +6,6 @@ import { Menu } from '@tauri-apps/api/menu';
 import { getCurrentWindow, PhysicalPosition, Window } from '@tauri-apps/api/window';
 
 interface AppContextType {
-  // Refs
-  contextMenuSelectedEl: React.MutableRefObject<HTMLElement | null>;
-
   // State 
   workspace: Workspace | null;
   config: Configuration | null;
@@ -55,7 +52,6 @@ let initConfig: Configuration | null = null;
 //TODO: MAYBE DO AN INVISILBE OVERLAY THAT APPEARS WHEN OPERATIONS THAT SHOULD BLOCK THE UI 
 //APPEAR AND MAYBE THE LOADING INDICATOR ON THE CURSOR OR SOMETHING
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const contextMenuSelectedEl = useRef<HTMLElement | null>(null);
   const [mainWindow, setMainWindow] = useState<Window | null>(null);
 
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
@@ -90,12 +86,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openContextMenu = (menu: Menu, event: React.MouseEvent) => {
     event.preventDefault();
     if (!mainWindow) return;
-    contextMenuSelectedEl.current = event.target as HTMLElement;
-
-    //TODO: DELETE ON RELEASE
-    if (!contextMenuSelectedEl.current) {
-      console.warn("Selected Element is null");
-    }
 
     const position = new PhysicalPosition(event.clientX, event.clientY);
     menu.popup(position, mainWindow);
@@ -270,8 +260,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      // Refs
-      contextMenuSelectedEl,
       // States and Setters
       workspace, setWorkspace,
       config, setConfig,

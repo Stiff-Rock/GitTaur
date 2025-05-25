@@ -379,6 +379,7 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
     }
 }
 
+//TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     info!(
@@ -409,6 +410,7 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
     Ok(())
 }
 
+//TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     info!(

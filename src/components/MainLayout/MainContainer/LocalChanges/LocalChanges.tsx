@@ -1,5 +1,5 @@
 import styles from './LocalChanges.module.css';
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppContext } from "../../../../context/AppContext";
 import { listen } from "@tauri-apps/api/event";
@@ -10,10 +10,8 @@ import StageAllButton from './StageAllButton';
 import UnstageAllButton from './UnstageAllButton';
 import Scrollbars from 'react-custom-scrollbars-2';
 import Throbber from '../../../Common/Throbber/Throbber';
-import { Menu } from '@tauri-apps/api/menu';
-import { setupUnstagedFileCM } from '../../../../ContextMenus/UnstagedFileCM';
-import { setupStagedFileCM } from '../../../../ContextMenus/StagedFileCM';
 
+//TODO: FOLDERS WORK LIKE SHIT
 //TODO: STASH AND POP
 
 const LocalChanges: React.FC = () => {
@@ -25,10 +23,7 @@ const LocalChanges: React.FC = () => {
     statusEvent, headEvent
   } = useMainContext();
 
-  const { setNotification, contextMenuSelectedEl } = useAppContext();
-
-  const [unstagedFileCM, setUnstagedFileCM] = useState<Menu | null>(null);
-  const [stagedFileCM, setStagedFileCM] = useState<Menu | null>(null);
+  const { setNotification } = useAppContext();
 
   const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
   const [isStagedLoading, setIsStageLoading] = useState(false);
@@ -42,11 +37,50 @@ const LocalChanges: React.FC = () => {
       .finally(() => 0);
   }
 
-  // Loads the context menus associated with this component
-  useLayoutEffect(() => {
-    setupUnstagedFileCM(contextMenuSelectedEl).then(setUnstagedFileCM);
-    setupStagedFileCM(contextMenuSelectedEl).then(setStagedFileCM);
-  }, []);
+  const [selectedFile, setSelectedFile] = useState<string>("");
+
+  useEffect(() => {
+    console.log("SELECTED FILE: ", selectedFile);
+  }, [selectedFile]);
+
+  const addToStagingArea = async (files: Array<string> | null) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsStageLoading(true);
+
+    if (files === null) {
+      console.log("ISNULL: ", selectedFile)
+      files = [selectedFile];
+    }
+
+    console.log(`ADDING WITH path: ${repoPath} and files: ${files}`)
+
+    invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
+      const msg = `Error staging files - ${e}`
+      console.error(msg);
+      setNotification(msg);
+    }).finally(() => setIsStageLoading(false));
+  }
+
+  const removeFromStagingArea = async (files: Array<string> | null) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsUnstageLoading(true)
+
+    if (!files) {
+      files = [selectedFile];
+    }
+
+    invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
+      const msg = `Error unstaging files - ${e}`
+      console.error(msg);
+      setNotification(msg);
+    }).finally(() => setIsUnstageLoading(false));
+  }
 
   // Listens to repository stauts changes and gets current status
   const hasLoaded = useRef(false);
@@ -85,39 +119,20 @@ const LocalChanges: React.FC = () => {
     fileChangesArray: FileChanges[];
     isLoading: boolean;
     stagingAreaUpdate: (files: Array<string>) => void;
-    contextMenu: Menu | null;
-  }
-
-  const addToStagingArea = async (files: Array<string>) => {
-    if (statusUpdatePromiseRef.current) {
-      await statusUpdatePromiseRef.current.catch(() => { });
-    }
-
-    setIsStageLoading(true);
-
-    invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
-      const msg = `Error staging files - ${e}`
-      console.error(msg);
-      setNotification(msg);
-    }).finally(() => setIsStageLoading(false));
-  }
-
-  const removeFromStagingArea = async (files: Array<string>) => {
-    if (statusUpdatePromiseRef.current) {
-      await statusUpdatePromiseRef.current.catch(() => { });
-    }
-
-    setIsUnstageLoading(true)
-
-    invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
-      const msg = `Error unstaging files - ${e}`
-      console.error(msg);
-      setNotification(msg);
-    }).finally(() => setIsUnstageLoading(false));
   }
 
   const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
-    const { state, sectionBarStyle, barIcon, sectionTitle, sectionFileCount, actionButtons, fileChangesArray, isLoading, stagingAreaUpdate, contextMenu } = props;
+    const {
+      state,
+      sectionBarStyle,
+      barIcon,
+      sectionTitle,
+      sectionFileCount,
+      actionButtons,
+      fileChangesArray,
+      isLoading,
+      stagingAreaUpdate,
+    } = props;
 
     return (
       <div className={`${styles.section}`}>
@@ -165,7 +180,8 @@ const LocalChanges: React.FC = () => {
               state={state}
               fileName={changes.file}
               changeType={changes.changeType}
-              contextMenu={contextMenu}
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}
               stagingAreaUpdate={stagingAreaUpdate}
               className={styles.fileChangeItem}
             />
@@ -185,7 +201,6 @@ const LocalChanges: React.FC = () => {
     fileChangesArray: repoStatus?.stagedFiles ?? [],
     isLoading: isUnstagedLoading,
     stagingAreaUpdate: removeFromStagingArea,
-    contextMenu: unstagedFileCM,
   }
 
   const unstagedFileSectionProps: ChangesSectionProps = {
@@ -198,7 +213,6 @@ const LocalChanges: React.FC = () => {
     fileChangesArray: repoStatus?.unstagedFiles ?? [],
     isLoading: isStagedLoading,
     stagingAreaUpdate: addToStagingArea,
-    contextMenu: stagedFileCM,
   }
 
   return (

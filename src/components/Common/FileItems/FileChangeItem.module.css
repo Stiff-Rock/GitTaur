@@ -39,3 +39,7 @@
   word-break: break-all;
   overflow-wrap: break-word;
 }
+
+.active {
+  background-color: var(--lighter-bg) !important;
+}

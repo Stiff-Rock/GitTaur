@@ -8,23 +8,45 @@ interface FileChangeItemProps {
   changeType: ChangeType;
   state: FileStatusState;
   fileName: string;
-  contextMenu: Menu | null;
+  selectedFile: string
+  setSelectedFile: React.Dispatch<React.SetStateAction<string>>;
   stagingAreaUpdate: (files: Array<string>) => void,
   className?: string;
 }
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu } = useAppContext();
-  const { changeType, fileName, contextMenu, stagingAreaUpdate, className } = props;
+  const { changeType, state, fileName, selectedFile, setSelectedFile, stagingAreaUpdate, className } = props;
 
-  const handleOpenContextMenu = (event: React.MouseEvent) => {
-    if (!contextMenu) return;
+  //TODO: STASH, DISCARD, OPEN IN FILE EXPLORER
+  const handleOpenContextMenu = async (event: React.MouseEvent) => {
+    setSelectedFile(fileName);
+
+    const id = state.slice(0, state.length - 1);
+    const text = id.charAt(0).toUpperCase() + id.slice(1);
+
+    const contextMenu = await Menu.new({
+      items: [
+        {
+          id,
+          text,
+          action: () => {
+            stagingAreaUpdate([fileName]);
+          },
+        },
+      ],
+    });
+
     openContextMenu(contextMenu, event);
   }
 
-  //TODO: ON DOUBLE CLICK STAGE/UNSTAGE
   return (
-    <div className={`${styles.changeItem} ${className}`} onDoubleClick={() => stagingAreaUpdate([fileName])} onContextMenu={handleOpenContextMenu}>
+    <div
+      className={`${styles.changeItem} ${className} ${selectedFile === fileName ? styles.active : ''}`}
+      onClick={() => setSelectedFile(fileName)}
+      onDoubleClick={() => stagingAreaUpdate([fileName])}
+      onContextMenu={handleOpenContextMenu}
+    >
       {changeType === "modified" && <DiffIcon className={styles.diffIcon} />}
       {changeType === "added" && <PlusIcon className={styles.plusIcon} />}
       {changeType === "deleted" && <DashIcon className={styles.minusIcon} />}
