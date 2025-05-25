@@ -1,31 +1,8 @@
 import { FoldDownIcon } from '@primer/octicons-react'
-import { invoke } from '@tauri-apps/api/core';
-import { useAppContext } from '../../../../context/AppContext';
-import { ActionButtonProps } from './LocalChanges';
-import { useMainContext } from '../../../../context/MainContext';
 
-const StageAllButton: React.FC<ActionButtonProps> = (props) => {
-  const { onActionStart, onActionEnd, statusUpdatePromise } = props;
-  const { repoPath } = useMainContext();
-  const { setNotification } = useAppContext();
-
-  //TODO: EN VEZ DE HAZCER AQUI EL INVOKE, SUBIR AL PADRE (LOCALCHANGES) LA FUNCION PARA QUE PUEDA GESTIONARLO TENIENOD EN CUNETA LOS REFS
-  const stageAllFiles = async () => {
-    onActionStart();
-
-    if (statusUpdatePromise.current) {
-      await statusUpdatePromise.current.catch(() => { });
-    }
-
-    invoke("add_to_staging_area", { repoPath, files: [] }).catch((e) => {
-      const msg = `Error staging files - ${e}`
-      console.error(msg);
-      setNotification(msg);
-    }).finally(onActionEnd);
-  }
-
+const StageAllButton: React.FC<{ addToStagingArea: (files: Array<string>) => void }> = ({ addToStagingArea }) => {
   return (
-    <button onClick={stageAllFiles} className={`actionButton`} title='Stage all files'>
+    <button onClick={() => addToStagingArea([])} className={`actionButton`} title='Stage all files'>
       <FoldDownIcon />
     </button>
   );

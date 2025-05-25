@@ -4,7 +4,7 @@ import { useMainContext } from '../../../../context/MainContext';
 import CopyShaButton from './CopyShaButton';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import UserAvatar from './UserAvatar';
-import FileChangeItem from '../../../Common/FileChangeItem/FileChangeItem';
+import FileChangeItem from '../../../Common/FileItems/FileChangeItem';
 import { useAppContext } from '../../../../context/AppContext';
 
 const CommitInfoSidebar: React.FC = () => {

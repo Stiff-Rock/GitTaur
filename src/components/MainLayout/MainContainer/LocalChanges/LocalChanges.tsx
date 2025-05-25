@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useAppContext } from "../../../../context/AppContext";
 import { listen } from "@tauri-apps/api/event";
 import { useMainContext } from "../../../../context/MainContext";
-import FileChangeItem from "../../../Common/FileChangeItem/FileChangeItem";
+import FileChangeStatusItem from "../../../Common/FileItems/FileChangeStatusItem";
 import { DiffModifiedIcon, CheckboxIcon } from '@primer/octicons-react'
 import StageAllButton from './StageAllButton';
 import UnstageAllButton from './UnstageAllButton';
@@ -13,12 +13,6 @@ import Throbber from '../../../Common/Throbber/Throbber';
 import { Menu } from '@tauri-apps/api/menu';
 import { setupUnstagedFileCM } from '../../../../ContextMenus/UnstagedFileCM';
 import { setupStagedFileCM } from '../../../../ContextMenus/StagedFileCM';
-
-export interface ActionButtonProps {
-  onActionStart: () => void;
-  onActionEnd: () => void;
-  statusUpdatePromise: React.RefObject<Promise<any> | null>;
-}
 
 //TODO: STASH AND POP
 
@@ -39,8 +33,8 @@ const LocalChanges: React.FC = () => {
   const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
   const [isStagedLoading, setIsStageLoading] = useState(false);
 
+  // This ref is used to ensure that no other operation that might change status executes while another is runnning
   const statusUpdatePromiseRef = useRef<Promise<any> | null>(null);
-
   const getRepoStatus = () => {
     statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
       .then(setRepoStatus)
@@ -90,11 +84,40 @@ const LocalChanges: React.FC = () => {
     actionButtons: ReactNode[];
     fileChangesArray: FileChanges[];
     isLoading: boolean;
+    stagingAreaUpdate: (files: Array<string>) => void;
     contextMenu: Menu | null;
   }
 
+  const addToStagingArea = async (files: Array<string>) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsStageLoading(true);
+
+    invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
+      const msg = `Error staging files - ${e}`
+      console.error(msg);
+      setNotification(msg);
+    }).finally(() => setIsStageLoading(false));
+  }
+
+  const removeFromStagingArea = async (files: Array<string>) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsUnstageLoading(true)
+
+    invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
+      const msg = `Error unstaging files - ${e}`
+      console.error(msg);
+      setNotification(msg);
+    }).finally(() => setIsUnstageLoading(false));
+  }
+
   const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
-    const { state, sectionBarStyle, barIcon, sectionTitle, sectionFileCount, actionButtons, fileChangesArray, isLoading, contextMenu } = props;
+    const { state, sectionBarStyle, barIcon, sectionTitle, sectionFileCount, actionButtons, fileChangesArray, isLoading, stagingAreaUpdate, contextMenu } = props;
 
     return (
       <div className={`${styles.section}`}>
@@ -137,53 +160,51 @@ const LocalChanges: React.FC = () => {
           )}
         >
           {repoStatus && fileChangesArray.map((changes, index) => (
-            <FileChangeItem key={index} state={state} fileName={changes.file} changeType={changes.changeType} contextMenu={contextMenu} className={styles.fileChangeItem} />
+            <FileChangeStatusItem
+              key={index}
+              state={state}
+              fileName={changes.file}
+              changeType={changes.changeType}
+              contextMenu={contextMenu}
+              stagingAreaUpdate={stagingAreaUpdate}
+              className={styles.fileChangeItem}
+            />
           ))}
         </Scrollbars>
       </div>
     );
   }
 
-  const unstagedActionButtonProps: ActionButtonProps = {
-    onActionStart: () => setIsUnstageLoading(true),
-    onActionEnd: () => setIsUnstageLoading(false),
-    statusUpdatePromise: statusUpdatePromiseRef,
-  }
-
-  const unstagedFileSectionProps: ChangesSectionProps = {
+  const stagedFileSectionProps: ChangesSectionProps = {
     state: "unstaged",
     sectionBarStyle: styles.stagedSectionBar,
     barIcon: <CheckboxIcon />,
     sectionTitle: 'Staged Files',
     sectionFileCount: `(${repoStatus?.stagedFiles.length || 0})`,
-    actionButtons: [<UnstageAllButton key={'unstageAll'} {...unstagedActionButtonProps} />],
+    actionButtons: [<UnstageAllButton key={'unstageAll'} removeFromStagingArea={removeFromStagingArea} />],
     fileChangesArray: repoStatus?.stagedFiles ?? [],
     isLoading: isUnstagedLoading,
+    stagingAreaUpdate: removeFromStagingArea,
     contextMenu: unstagedFileCM,
   }
 
-  const stagedActionButtonProps: ActionButtonProps = {
-    onActionStart: () => setIsStageLoading(true),
-    onActionEnd: () => setIsStageLoading(false),
-    statusUpdatePromise: statusUpdatePromiseRef,
-  }
-
-  const stagedFileSectionProps: ChangesSectionProps = {
+  const unstagedFileSectionProps: ChangesSectionProps = {
     state: "staged",
     sectionBarStyle: styles.unstagedSectionBar,
     barIcon: <DiffModifiedIcon />,
     sectionTitle: 'Unstaged Files',
     sectionFileCount: `(${repoStatus?.unstagedFiles.length || 0})`,
-    actionButtons: [<StageAllButton key={'stageAll'} {...stagedActionButtonProps} />],
+    actionButtons: [<StageAllButton key={'stageAll'} addToStagingArea={addToStagingArea} />],
     fileChangesArray: repoStatus?.unstagedFiles ?? [],
     isLoading: isStagedLoading,
+    stagingAreaUpdate: addToStagingArea,
     contextMenu: stagedFileCM,
   }
 
   return (
     <div className={`${styles.localChangesContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
-      <ChangesSection {...stagedFileSectionProps} />
       <ChangesSection {...unstagedFileSectionProps} />
+      <ChangesSection {...stagedFileSectionProps} />
     </div >
   );
 };
