@@ -1,7 +1,10 @@
 use crate::{
     config_manager::config,
     git2json::{self, ChangeType, CommitLog, FileChanges},
-    types::repo_info::{RepoInfo, RepoStatus},
+    types::{
+        repo_guard::RepoGuard,
+        repo_info::{RepoInfo, RepoStatus},
+    },
 };
 use auth_git2_pem::GitAuthenticator;
 use git2::{
@@ -10,123 +13,21 @@ use git2::{
 };
 use indexmap::IndexMap;
 use log::{error, info};
-use std::{
-    collections::{HashMap, HashSet},
-    path::Path,
-    sync::{Condvar, LazyLock, Mutex},
-};
+use std::{collections::HashMap, path::Path};
 use tauri::{command, AppHandle};
 use tauri_plugin_shell::{self, ShellExt};
 
-static ACTIVE_REPOS: LazyLock<(Mutex<HashSet<String>>, Condvar)> =
-    LazyLock::new(|| (Mutex::new(HashSet::new()), Condvar::new()));
-
-struct RepoGuard {
-    repo_path: String,
-}
-
-impl RepoGuard {
-    fn new(repo_path: &String, wait: bool) -> Result<Option<Self>, String> {
-        let mut active_repos_set = match ACTIVE_REPOS.0.lock() {
-            Ok(guard) => guard,
-            Err(err) => {
-                let err_msg =
-                    format!("Error checking if repo is busy: HashSet mutex poisoned - {err}");
-                eprintln!("{}", err_msg);
-                return Err(err_msg);
-            }
-        };
-
-        // If repo is available, acquire it immediately
-        if !active_repos_set.contains(repo_path) {
-            active_repos_set.insert(repo_path.clone());
-            return Ok(Some(RepoGuard {
-                repo_path: repo_path.clone(),
-            }));
-        }
-
-        // If repo is in use and we don't want to wait, return None
-        if !wait {
-            return Ok(None);
-        }
-
-        // Wait for the repo to become available
-        let condvar = &ACTIVE_REPOS.1;
-
-        match condvar.wait_while(active_repos_set, |set| set.contains(repo_path)) {
-            Ok(mut guard) => {
-                guard.insert(repo_path.clone());
-                Ok(Some(RepoGuard {
-                    repo_path: repo_path.clone(),
-                }))
-            }
-            Err(e) => Err(format!(
-                "Error obtaining mutex of repo {repo_path}: Poisoned mutex - {e}"
-            )),
-        }
-    }
-}
-
-impl Drop for RepoGuard {
-    fn drop(&mut self) {
-        let mut active_repos = match ACTIVE_REPOS.0.lock() {
-            Ok(guard) => guard,
-            Err(err) => {
-                eprintln!(
-                    "Error releasing repository lock: HashSet mutex poisoned - {}",
-                    err
-                );
-                return;
-            }
-        };
-
-        active_repos.remove(&self.repo_path);
-
-        let condvar = &ACTIVE_REPOS.1;
-
-        condvar.notify_all();
-    }
-}
-
-//TODO: HANDLE ANY ERROR ENSURING THAT RELEASE_REPO ALWAYS GET CALLED, EVERY ? IS POTENTIALLY A
-//FUCKUP - use "defer" pattern with Rust's Drop trait: RAII guard that calls release_repo when dropped
-
 //TODO: GitAuthenticator::set_prompter()
-
-#[cfg(debug_assertions)]
-#[command]
-pub async fn reset() -> Result<(), String> {
-    info!("---Resetting ACTIVE_REPOS state---");
-
-    match ACTIVE_REPOS.0.lock() {
-        Ok(mut active_repos) => {
-            active_repos.clear();
-            Ok(())
-        }
-        Err(e) => Err(e.to_string()),
-    }
-}
-
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
-    let msg = if has_lock {
-        "with lock"
-    } else {
-        "with no lock"
-    };
-
-    info!("Checking if {} is a repository {}", repo_path, msg);
-
     let _repo_lock;
     if !has_lock {
         _repo_lock = RepoGuard::new(repo_path, true)?;
     }
 
-    let result = match Repository::open(repo_path) {
+    match Repository::open(repo_path) {
         Ok(_) => Ok(true),
         Err(_) => Ok(false),
-    };
-
-    result
+    }
 }
 
 #[command]
@@ -135,21 +36,16 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let create_result = if is_repo(&repo_path, true)? {
+    if is_repo(&repo_path, true)? {
         Err("This directory already contains a repository".to_string())
     } else {
         Repository::init(&repo_path)
             .map(|_| format!("Successfully created repository at {}", repo_path))
             .map_err(|e| format!("Error creating repository at '{}' - {}", repo_path, e))
-    };
-
-    create_result
+    }
 }
 
-//TODO: Fallback using terminal commands directly
-
-//TODO: AUTH AND let mut callbacks = RemoteCallbacks::new();
-
+//TODO: Live loading feedback
 #[command]
 pub async fn clone_repo(
     app_handle: AppHandle,
@@ -221,67 +117,63 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         return Err(format!("{} is not a repository", &repo_path));
     }
 
-    let result = (|| {
-        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-        let name = repo_path.to_string();
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let name = repo_path.to_string();
 
-        // Get the branch that is considered the principal in this repo
-        let main_branch: String;
-        if repo.head_detached().map_err(|e| e.to_string())? {
-            main_branch = "master".to_string();
+    // Get the branch that is considered the principal in this repo
+    let main_branch: String;
+    if repo.head_detached().map_err(|e| e.to_string())? {
+        main_branch = "master".to_string();
+    } else {
+        let head = repo.head().map_err(|e| e.to_string())?;
+        if let Some(branch_name) = head.shorthand() {
+            main_branch = branch_name.to_string();
         } else {
-            let head = repo.head().map_err(|e| e.to_string())?;
-            if let Some(branch_name) = head.shorthand() {
-                main_branch = branch_name.to_string();
-            } else {
-                panic!("\nCould not determine the current branch.");
-            }
+            panic!("\nCould not determine the current branch.");
         }
+    }
 
-        // Get current branch
-        let current_branch = get_current_branch(&repo);
+    // Get current branch
+    let current_branch = get_current_branch(&repo);
 
-        // Get local branches
-        let local_branches = repo
-            .branches(Some(git2::BranchType::Local))
-            .map_err(|e| e.to_string())?
-            .filter_map(|b| b.ok())
-            .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
-            .collect::<Vec<String>>();
+    // Get local branches
+    let local_branches = repo
+        .branches(Some(git2::BranchType::Local))
+        .map_err(|e| e.to_string())?
+        .filter_map(|b| b.ok())
+        .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
+        .collect::<Vec<String>>();
 
-        let tags = repo
-            .tag_names(None)
-            .map_err(|e| e.to_string())?
-            .iter()
-            .filter_map(|t| t.map(|s| s.to_string()))
-            .collect::<Vec<String>>();
+    let tags = repo
+        .tag_names(None)
+        .map_err(|e| e.to_string())?
+        .iter()
+        .filter_map(|t| t.map(|s| s.to_string()))
+        .collect::<Vec<String>>();
 
-        let commit_history: IndexMap<String, CommitLog> = git2json::get_repo_json(&repo_path)
-            .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
-            .into_iter()
-            .enumerate()
-            .map(|(_, v)| (v.hash.clone(), v))
-            .collect();
+    let commit_history: IndexMap<String, CommitLog> = git2json::get_repo_json(&repo_path)
+        .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
+        .into_iter()
+        .enumerate()
+        .map(|(_, v)| (v.hash.clone(), v))
+        .collect();
 
-        let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
+    let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
 
-        //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS IF BRANCH LABEL IS PRESENT AND VICEVERSA
-        let repo = RepoInfo {
-            name,
-            main_branch,
-            current_branch,
-            local_branches,
-            remotes,
-            tags,
-            commit_history,
-        };
+    //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS IF BRANCH LABEL IS PRESENT AND VICEVERSA
+    let repo = RepoInfo {
+        name,
+        main_branch,
+        current_branch,
+        local_branches,
+        remotes,
+        tags,
+        commit_history,
+    };
 
-        //debug!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
+    //debug!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
 
-        Ok(repo)
-    })();
-
-    result
+    Ok(repo)
 }
 
 fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>, String> {
@@ -325,7 +217,6 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
     Ok(remote_branches_map)
 }
 
-//TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
@@ -406,7 +297,6 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
     }
 }
 
-//TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
@@ -438,7 +328,6 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
     Ok(())
 }
 
-//TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
@@ -478,8 +367,6 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 
     Ok(())
 }
-
-//TODO: TEST FETCHING WITH GIT AUTH AND WITH GIT COMMAND
 
 //TODO: Live loading feedback
 #[command]
@@ -755,8 +642,6 @@ fn normal_merge(
     Ok("Merge successful".to_string())
 }
 
-//TODO: TEST FETCHING WITH GIT AUTH AND WITH GIT COMMAND
-
 //TODO: Live loading feedback
 #[command]
 pub async fn push_remote(
@@ -859,7 +744,6 @@ pub async fn create_branch(
     Ok(format!("Successfully created {} branch", branch_name))
 }
 
-//BUG: ALWAYS BUSY WHILE COMMITING BUT IT COMMITS PEFECTLY
 #[command]
 pub async fn commit(
     repo_path: String,
