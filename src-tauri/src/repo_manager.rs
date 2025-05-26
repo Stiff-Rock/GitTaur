@@ -330,6 +330,11 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
             let status = entry.status();
             let path_str = path.to_string();
 
+            let full_path = Path::new(&repo_path).join(path);
+            if full_path.is_dir() {
+                continue;
+            }
+
             if status.intersects(
                 Status::INDEX_NEW
                     | Status::INDEX_MODIFIED
@@ -339,6 +344,7 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
             ) {
                 let change_type =
                     determine_change_type(status, Status::INDEX_DELETED, Status::INDEX_NEW);
+                debug!("{:#?} : {:#?}", &change_type, path);
                 staged_files.push(FileChanges {
                     change_type,
                     file: path_str.clone(),
@@ -353,6 +359,7 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
                     | Status::WT_TYPECHANGE,
             ) {
                 let change_type = determine_change_type(status, Status::WT_DELETED, Status::WT_NEW);
+                debug!("{:#?} : {:#?}", &change_type, path);
                 unstaged_files.push(FileChanges {
                     change_type,
                     file: path_str,
@@ -835,6 +842,7 @@ pub async fn create_branch(
     Ok(format!("Successfully created {} branch", branch_name))
 }
 
+//BUG: ALWAYS BUSY WHILE COMMITING BUT IT COMMITS PEFECTLY
 #[command]
 pub async fn commit(
     repo_path: String,

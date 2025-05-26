@@ -16,13 +16,13 @@ You'll need to run two terminals, one to execute `cargo run` on the `src-tauri` 
 
 This project wouldn't be possible without the work of the open-source community. Special thanks to the following projects:
 
-- [**git2json by fabien0102**](https://github.com/fabien0102/git2json) - No License
+- [**git2json by fabien0102**](https://github.com/fabien0102/git2json) - No License <br>
   Inspired the Git-to-JSON conversion logic. This functionality has been fully reimplemented in Rust for GitTaur's backend.
 
-- [**gitgraph.js by nicoespeon**](https://github.com/nicoespeon/gitgraph.js/) - MIT License
+- [**gitgraph.js by nicoespeon**](https://github.com/nicoespeon/gitgraph.js/) - MIT License <br>
   Used as the foundation for GitTaur’s graph rendering. A custom fork was adapted to meet the specific needs of the app.
 
-- [**auth-git2-rs by de-vri-es**](https://github.com/de-vri-es/auth-git2-rs) - BSD-2-Clause License
+- [**auth-git2-rs by de-vri-es**](https://github.com/de-vri-es/auth-git2-rs) - BSD-2-Clause License <br>
   Provided crucial utilities for handling authentication for `git2-rs` backend operations.
 
 GitTaur uses many additional open-source crates and packages from the Rust and JavaScript/React ecosystems. For a complete list of all libraries and licenses, see the [CREDITS.md](CREDITS.md).

@@ -72,7 +72,6 @@ pub async fn setup_watchers(
     let event_app_handle = app_handle.clone();
 
     let repo_path_str = repo_path.clone().replace('\\', "/");
-    //TODO: FILTER THE .git from the repo_path
     let mut watcher = RecommendedWatcher::new(
         move |result: Result<notify::Event, notify::Error>| {
             if let Ok(event) = result {

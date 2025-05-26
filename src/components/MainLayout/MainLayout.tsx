@@ -20,7 +20,7 @@ import { listen } from '@tauri-apps/api/event';
 import CreateBranchModal from '../Common/Modals/CreateBranch/CreateBranchModal';
 
 //TODO: CONTEXT MENUS -> {
-//  Status: STASH, DISCARD, OPEN IN FILE EXPLORER
+//  Status: STASH
 //  Commits: CHECKOUT, REVERT, COPYSHA, TAG, BRANCH FROM THERE
 //  ACTIONPANEL: CHECKOUT BRANCH, FETCH REMOTE, COPY TAG NAME
 //  STASHES (when MODAL done, use localCHanges for stashes too): APPLY, DROP

@@ -12,7 +12,7 @@ import Scrollbars from 'react-custom-scrollbars-2';
 import Throbber from '../../../Common/Throbber/Throbber';
 
 //TODO: FOLDERS WORK LIKE SHIT
-//TODO: STASH AND POP
+//TODO: STASH, DISCARD AND POP
 
 const LocalChanges: React.FC = () => {
   const {
