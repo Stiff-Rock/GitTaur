@@ -41,7 +41,7 @@ const CloneRepositoryModal: React.FC = () => {
       return;
     }
 
-    invoke<[string, string]>("clone_repo", { path, repoUrl })
+    invoke<[string, string]>("clone_repo", { repoPath: path, repoUrl })
       .then((payload) => {
         const [repoPath, msg] = payload;
         openNewRepo(repoPath);

@@ -9,17 +9,84 @@ use git2::{
     MergeOptions, Reference, Repository, Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
-use log::{debug, error, info};
+use log::{error, info};
 use std::{
     collections::{HashMap, HashSet},
     path::Path,
-    sync::{LazyLock, Mutex},
+    sync::{Condvar, LazyLock, Mutex},
 };
 use tauri::{command, AppHandle};
 use tauri_plugin_shell::{self, ShellExt};
 
-static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
-    LazyLock::new(|| Mutex::new(HashSet::new()));
+static ACTIVE_REPOS: LazyLock<(Mutex<HashSet<String>>, Condvar)> =
+    LazyLock::new(|| (Mutex::new(HashSet::new()), Condvar::new()));
+
+struct RepoGuard {
+    repo_path: String,
+}
+
+impl RepoGuard {
+    fn new(repo_path: &String, wait: bool) -> Result<Option<Self>, String> {
+        let mut active_repos_set = match ACTIVE_REPOS.0.lock() {
+            Ok(guard) => guard,
+            Err(err) => {
+                let err_msg =
+                    format!("Error checking if repo is busy: HashSet mutex poisoned - {err}");
+                eprintln!("{}", err_msg);
+                return Err(err_msg);
+            }
+        };
+
+        // If repo is available, acquire it immediately
+        if !active_repos_set.contains(repo_path) {
+            active_repos_set.insert(repo_path.clone());
+            return Ok(Some(RepoGuard {
+                repo_path: repo_path.clone(),
+            }));
+        }
+
+        // If repo is in use and we don't want to wait, return None
+        if !wait {
+            return Ok(None);
+        }
+
+        // Wait for the repo to become available
+        let condvar = &ACTIVE_REPOS.1;
+
+        match condvar.wait_while(active_repos_set, |set| set.contains(repo_path)) {
+            Ok(mut guard) => {
+                guard.insert(repo_path.clone());
+                Ok(Some(RepoGuard {
+                    repo_path: repo_path.clone(),
+                }))
+            }
+            Err(e) => Err(format!(
+                "Error obtaining mutex of repo {repo_path}: Poisoned mutex - {e}"
+            )),
+        }
+    }
+}
+
+impl Drop for RepoGuard {
+    fn drop(&mut self) {
+        let mut active_repos = match ACTIVE_REPOS.0.lock() {
+            Ok(guard) => guard,
+            Err(err) => {
+                eprintln!(
+                    "Error releasing repository lock: HashSet mutex poisoned - {}",
+                    err
+                );
+                return;
+            }
+        };
+
+        active_repos.remove(&self.repo_path);
+
+        let condvar = &ACTIVE_REPOS.1;
+
+        condvar.notify_all();
+    }
+}
 
 //TODO: HANDLE ANY ERROR ENSURING THAT RELEASE_REPO ALWAYS GET CALLED, EVERY ? IS POTENTIALLY A
 //FUCKUP - use "defer" pattern with Rust's Drop trait: RAII guard that calls release_repo when dropped
@@ -31,50 +98,13 @@ static ACTIVE_REPOS: LazyLock<Mutex<HashSet<String>>> =
 pub async fn reset() -> Result<(), String> {
     info!("---Resetting ACTIVE_REPOS state---");
 
-    match ACTIVE_REPOS.lock() {
+    match ACTIVE_REPOS.0.lock() {
         Ok(mut active_repos) => {
             active_repos.clear();
             Ok(())
         }
         Err(e) => Err(e.to_string()),
     }
-}
-
-fn is_repo_busy(repo_path: &String) -> Result<(), String> {
-    // Waits until it acquires the HasSet mutext
-    let mut active_repos = match ACTIVE_REPOS.lock() {
-        Ok(guard) => guard,
-        Err(err) => {
-            error!(
-                "Error checking if repo is busy: HasSet mutex poisoned - {}",
-                err
-            );
-            Err("Error checking availability of the repository")
-        }?,
-    };
-
-    // If the repoPath is present in the set, it means that the repository is busy at the moment,
-    // if not, we add it to the HashSet to flag it as busy until released
-    if active_repos.contains(repo_path) {
-        debug!("{} - BUSY", repo_path);
-        Err("Repository busy. Please try again when other operations complete".to_string())
-    } else {
-        debug!("{} - AVAILABLE", repo_path);
-        active_repos.insert(repo_path.to_string());
-        Ok(())
-    }
-}
-
-pub fn release_repo(repo_path: &String) {
-    let mut active_repos = match ACTIVE_REPOS.lock() {
-        Ok(guard) => guard,
-        Err(err) => {
-            error!("Error releasing repo: HashSet mutex poisoned - {}", err);
-            return;
-        }
-    };
-
-    active_repos.remove(repo_path);
 }
 
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
@@ -86,16 +116,15 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 
     info!("Checking if {} is a repository {}", repo_path, msg);
 
+    let _repo_lock;
     if !has_lock {
-        is_repo_busy(repo_path)?;
+        _repo_lock = RepoGuard::new(repo_path, true)?;
     }
 
     let result = match Repository::open(repo_path) {
         Ok(_) => Ok(true),
         Err(_) => Ok(false),
     };
-
-    release_repo(repo_path);
 
     result
 }
@@ -104,7 +133,7 @@ pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
 pub async fn create_repo(repo_path: String) -> Result<String, String> {
     info!("Creating repository at {}", repo_path);
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let create_result = if is_repo(&repo_path, true)? {
         Err("This directory already contains a repository".to_string())
@@ -113,8 +142,6 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
             .map(|_| format!("Successfully created repository at {}", repo_path))
             .map_err(|e| format!("Error creating repository at '{}' - {}", repo_path, e))
     };
-
-    release_repo(&repo_path);
 
     create_result
 }
@@ -126,12 +153,12 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
 #[command]
 pub async fn clone_repo(
     app_handle: AppHandle,
-    path: String,
+    repo_path: String,
     repo_url: String,
 ) -> Result<(String, String), String> {
-    info!("Cloning {} into {}", repo_url, path);
+    info!("Cloning {} into {}", repo_url, repo_path);
 
-    is_repo_busy(&path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let last_component = repo_url.split("/").last().unwrap_or("");
 
@@ -139,11 +166,9 @@ pub async fn clone_repo(
         .strip_suffix(".git")
         .unwrap_or(last_component);
 
-    let clone_path = Path::new(&path).join(repo_name);
+    let clone_path = Path::new(&repo_path).join(repo_name);
 
     if clone_path.exists() {
-        release_repo(&path);
-
         return Err(format!(
             "Error: directory already exists at '{}'",
             clone_path.display()
@@ -171,12 +196,10 @@ pub async fn clone_repo(
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            release_repo(&path);
+
             return Err(format!("Error cloning repository - {}", stderr));
         }
     }
-
-    release_repo(&path);
 
     Ok((repo_path, "Successfully cloned repository".to_string()))
 }
@@ -192,7 +215,7 @@ fn get_current_branch(repo: &Repository) -> String {
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     info!("Getting information of repository at {}", repo_path);
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     if !is_repo(&repo_path, true)? {
         return Err(format!("{} is not a repository", &repo_path));
@@ -258,8 +281,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         Ok(repo)
     })();
 
-    release_repo(&repo_path);
-
     result
 }
 
@@ -307,7 +328,7 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 //TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -369,8 +390,6 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
         }
     }
 
-    release_repo(&repo_path);
-
     Ok(RepoStatus {
         unstaged_files,
         staged_files,
@@ -390,7 +409,7 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 //TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -416,15 +435,13 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 
     index.write().map_err(|e| e.to_string())?;
 
-    release_repo(&repo_path);
-
     Ok(())
 }
 
 //TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -459,8 +476,6 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 
     index.write().map_err(|e| e.to_string())?;
 
-    release_repo(&repo_path);
-
     Ok(())
 }
 
@@ -475,7 +490,7 @@ pub async fn fetch_remote(
 ) -> Result<String, String> {
     info!("Fetching remotes of repository at {}", repo_path);
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let mut any_updates = false;
 
@@ -513,7 +528,7 @@ pub async fn fetch_remote(
 
             if !output.status.success() {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                release_repo(&repo_path);
+
                 return Err(format!("Error fetching - {}", stderr));
             }
         }
@@ -528,8 +543,6 @@ pub async fn fetch_remote(
             any_updates = true;
         }
     }
-
-    release_repo(&repo_path);
 
     if any_updates {
         Ok("Successfully fetched remotes".to_string())
@@ -591,7 +604,7 @@ pub async fn pull_remote(
         remote_name, repo_path
     );
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -653,8 +666,6 @@ pub async fn pull_remote(
             has_updated_content = true;
         }
     }
-
-    release_repo(&repo_path);
 
     let msg: String = if has_updated_content {
         "Successfully pulled changes".to_string()
@@ -761,7 +772,7 @@ pub async fn push_remote(
         remote_name, repo_path
     );
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let refspec = format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch);
 
@@ -801,12 +812,10 @@ pub async fn push_remote(
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            release_repo(&repo_path);
+
             return Err(format!("Error pushing to remote - {}", stderr));
         }
     }
-
-    release_repo(&repo_path);
 
     Ok(())
 }
@@ -822,7 +831,7 @@ pub async fn create_branch(
         branch_name, repo_path
     );
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -847,8 +856,6 @@ pub async fn create_branch(
             .map_err(|e| e.to_string())?;
     }
 
-    release_repo(&repo_path);
-
     Ok(format!("Successfully created {} branch", branch_name))
 }
 
@@ -861,7 +868,7 @@ pub async fn commit(
 ) -> Result<(), String> {
     info!("Committing in repository at {}", repo_path);
 
-    is_repo_busy(&repo_path)?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
@@ -901,8 +908,6 @@ pub async fn commit(
         &parent_refs,
     )
     .map_err(|e| e.to_string())?;
-
-    release_repo(&repo_path);
 
     Ok(())
 }
