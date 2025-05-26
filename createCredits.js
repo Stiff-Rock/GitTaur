@@ -26,10 +26,10 @@ console.log(`${colors.bright}${colors.cyan}=== Generating Project Dependencies C
 function createTemplates() {
   console.log(`${colors.yellow}Creating template files...${colors.reset}`);
 
-  // Create Handlebars template for cargo-about
+  // Create Handlebars template for cargo-about with <br> tags
   const handlebarsTemplate = `{{#each licenses}}
 {{#each used_by}}
-[{{crate.name}}@{{crate.version}}]({{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}}) - {{../name}}
+[{{crate.name}}@{{crate.version}}]({{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}}) - {{../name}}<br>
 {{/each}}
 {{/each}}`;
 
@@ -56,7 +56,23 @@ function createTemplates() {
 function generateFrontendCredits() {
   console.log(`${colors.yellow}Generating frontend dependencies...${colors.reset}`);
   try {
-    execSync(`npx license-checker --markdown > ${tempFrontendFile}`, { stdio: 'inherit' });
+    // Generate the raw markdown content
+    execSync(`npx license-checker --markdown > ${tempFrontendFile}.raw`, { stdio: 'inherit' });
+
+    // Add <br> tags to each line in the npm license-checker output
+    const rawContent = fs.readFileSync(`${tempFrontendFile}.raw`, 'utf8');
+    const lines = rawContent.split('\n');
+    const processedLines = lines.map(line => {
+      // Only add <br> to lines that actually contain license info (not empty lines or headers)
+      if (line.trim() && !line.startsWith('#')) {
+        return line + '<br>';
+      }
+      return line;
+    });
+
+    fs.writeFileSync(tempFrontendFile, processedLines.join('\n'));
+    fs.unlinkSync(`${tempFrontendFile}.raw`);
+
     console.log(`${colors.green}✓ Frontend dependencies generated${colors.reset}`);
     return true;
   } catch (error) {
@@ -73,6 +89,7 @@ function generateBackendCredits() {
     process.chdir(rustProjectPath);
 
     // Run cargo-about and redirect output
+    // The template already includes <br> tags
     execSync(`cargo about generate ${path.join(projectRoot, 'about.hbs')} > ${tempBackendFile}`, { stdio: 'inherit' });
 
     // Navigate back to project root
