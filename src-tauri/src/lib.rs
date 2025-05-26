@@ -10,6 +10,7 @@ use fern::Dispatch;
 use log::{error, info, LevelFilter};
 use std::error::Error;
 use std::fs::create_dir_all;
+use std::path::Path;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
 use types::config::Theme;
 

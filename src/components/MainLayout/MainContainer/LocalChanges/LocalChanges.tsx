@@ -6,8 +6,8 @@ import { listen } from "@tauri-apps/api/event";
 import { useMainContext } from "../../../../context/MainContext";
 import FileChangeStatusItem from "../../../Common/FileItems/FileChangeStatusItem";
 import { DiffModifiedIcon, CheckboxIcon } from '@primer/octicons-react'
-import StageAllButton from './StageAllButton';
-import UnstageAllButton from './UnstageAllButton';
+import StageAllButton from './ActionButtons/StageAllButton';
+import UnstageAllButton from './ActionButtons/UnstageAllButton';
 import Scrollbars from 'react-custom-scrollbars-2';
 import Throbber from '../../../Common/Throbber/Throbber';
 
