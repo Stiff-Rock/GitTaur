@@ -105,13 +105,6 @@ const LocalChanges: React.FC = () => {
     };
   }, [repoInfo]);
 
-  useEffect(() => {
-    if (!repoStatus) return;
-    console.info("--------------------------------");
-    console.info("UNSTAGED: ", JSON.stringify(repoStatus.unstagedFiles));
-    console.info("STAGED: ", JSON.stringify(repoStatus.stagedFiles));
-  }, [repoStatus]);
-
   interface ChangesSectionProps {
     state: FileStatusState
     sectionBarStyle: string;

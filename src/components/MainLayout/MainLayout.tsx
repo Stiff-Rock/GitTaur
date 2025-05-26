@@ -157,7 +157,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
           <TodoPanel />
         </Panel>
 
-        {showInfoSidebar && (
+        {showInfoSidebar ? (
           <>
             <PanelResizeHandle className={styles.resizeHandle} disabled={!isActive} />
             <Panel
@@ -190,6 +190,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
 
             </Panel>
           </>
+        ) : (
+          // We add this div so the elements dont get shifted 1px when the right panel is unloaded
+          <div style={{ minWidth: '1px', maxWidth: '1px' }} />
         )}
       </PanelGroup>
 
