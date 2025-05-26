@@ -163,13 +163,14 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         .error(Color::Red)
         .warn(Color::Yellow)
         .info(Color::Green)
-        .debug(Color::Blue);
+        .debug(Color::Blue)
+        .trace(Color::Magenta);
 
     let is_dev = cfg!(debug_assertions);
 
     if is_dev {
         Dispatch::new()
-            .chain(Dispatch::new().level(LevelFilter::Trace))
+            .level(LevelFilter::Debug)
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}] {}",
@@ -190,6 +191,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         let log_file = app_log_dir.join("app.log");
 
         Dispatch::new()
+            .level(LevelFilter::Info)
             .chain(Dispatch::new().level(LevelFilter::Info))
             .format(move |out, message, record| {
                 out.finish(format_args!(

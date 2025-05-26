@@ -39,10 +39,6 @@ const LocalChanges: React.FC = () => {
 
   const [selectedFile, setSelectedFile] = useState<string>("");
 
-  useEffect(() => {
-    console.log("SELECTED FILE: ", selectedFile);
-  }, [selectedFile]);
-
   const addToStagingArea = async (files: Array<string> | null) => {
     if (statusUpdatePromiseRef.current) {
       await statusUpdatePromiseRef.current.catch(() => { });
@@ -108,6 +104,13 @@ const LocalChanges: React.FC = () => {
       headUnlistenPromise.then(unlisten => unlisten());
     };
   }, [repoInfo]);
+
+  useEffect(() => {
+    if (!repoStatus) return;
+    console.info("--------------------------------");
+    console.info("UNSTAGED: ", JSON.stringify(repoStatus.unstagedFiles));
+    console.info("STAGED: ", JSON.stringify(repoStatus.stagedFiles));
+  }, [repoStatus]);
 
   interface ChangesSectionProps {
     state: FileStatusState

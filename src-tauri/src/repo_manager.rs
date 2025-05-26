@@ -304,10 +304,9 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
     Ok(remote_branches_map)
 }
 
+//TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
-    info!("Getting status of repository at {}", repo_path);
-
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -316,7 +315,9 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
     status_opts
         .include_untracked(true)
         .show(git2::StatusShow::IndexAndWorkdir)
-        .include_unmodified(false);
+        .include_unmodified(false)
+        .recurse_untracked_dirs(true)
+        .recurse_ignored_dirs(false);
 
     let statuses = repo
         .statuses(Some(&mut status_opts))
@@ -335,6 +336,7 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
                 continue;
             }
 
+            // Checks the file changes present in the staging area
             if status.intersects(
                 Status::INDEX_NEW
                     | Status::INDEX_MODIFIED
@@ -344,13 +346,13 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
             ) {
                 let change_type =
                     determine_change_type(status, Status::INDEX_DELETED, Status::INDEX_NEW);
-                debug!("{:#?} : {:#?}", &change_type, path);
                 staged_files.push(FileChanges {
                     change_type,
                     file: path_str.clone(),
                 });
             }
 
+            // Checks the file changes present in the working directory
             if status.intersects(
                 Status::WT_NEW
                     | Status::WT_MODIFIED
@@ -359,7 +361,6 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
                     | Status::WT_TYPECHANGE,
             ) {
                 let change_type = determine_change_type(status, Status::WT_DELETED, Status::WT_NEW);
-                debug!("{:#?} : {:#?}", &change_type, path);
                 unstaged_files.push(FileChanges {
                     change_type,
                     file: path_str,
@@ -389,11 +390,6 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 //TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    info!(
-        "Adding files to staging area of repository at {}",
-        repo_path
-    );
-
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -406,7 +402,15 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
             .map_err(|e| e.to_string())?;
     } else {
         for file in &files {
-            index.add_path(Path::new(file)).map_err(|e| e.to_string())?;
+            let file_path = Path::new(&repo_path).join(file);
+
+            if file_path.exists() {
+                index.add_path(Path::new(file)).map_err(|e| e.to_string())?;
+            } else {
+                index
+                    .remove_path(Path::new(file))
+                    .map_err(|e| e.to_string())?;
+            }
         }
     }
 
@@ -420,11 +424,6 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 //TODO: FOLDERS WORK LIKE SHIT
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
-    info!(
-        "Removing files from staging area of repository at {}",
-        repo_path
-    );
-
     is_repo_busy(&repo_path)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -440,10 +439,21 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 
         index.read_tree(&tree).map_err(|e| e.to_string())?;
     } else {
-        for file in &files {
-            index
-                .remove_path(Path::new(file))
-                .map_err(|e| e.to_string())?;
+        if let Ok(head) = repo.head() {
+            let head_commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+
+            for file in &files {
+                let commit_obj = head_commit.as_object();
+
+                repo.reset_default(Some(commit_obj), &[Path::new(&file)])
+                    .map_err(|e| e.to_string())?;
+            }
+        } else {
+            for file in &files {
+                index
+                    .remove_path(Path::new(file))
+                    .map_err(|e| e.to_string())?;
+            }
         }
     }
 
