@@ -11,3 +11,7 @@ Run `npm run tauri dev` or use the run script with `npm run app` on the root fol
 
 ### Linux
 You'll need to run two terminals, one to execute `cargo run` on the `src-tauri` folder and another to start the frontend in the root folder with `npm run dev`. 
+
+## Credits
+cargo about generate about.hbs > CREDITS-backcend.md
+npx license-checker --markdown > CREDITS-frontend.md

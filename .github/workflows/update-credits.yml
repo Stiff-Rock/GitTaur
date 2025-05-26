@@ -1,0 +1,80 @@
+name: Update Credits
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  update-credits:
+    runs-on: ubuntu-latest 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-about
+        run: cargo install cargo-about
+
+      - name: Create about.hbs
+        run: |
+          cat > about.hbs << 'EOF'
+            {{#each licenses}}
+            {{#each used_by}}
+            [{{crate.name}}@{{crate.version}}]({{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}}) - {{../name}}
+            {{/each}}
+            {{/each}}
+          EOF
+
+      - name: Create about.toml
+        run: |
+          cat > about.toml << 'EOF'
+            accepted = [
+              "MIT",
+              "Apache-2.0",
+              "BSD-2-Clause",
+              "BSD-3-Clause", 
+              "MPL-2.0",
+              "Unicode-3.0",
+              "ISC",
+              "CC0-1.0",
+              "Apache-2.0 WITH LLVM-exception",
+            ]
+          EOF
+
+      - name: Generate backend credits
+        working-directory: ./src-tauri
+        run: cargo about generate ../about.hbs > ../CREDITS-backend.md
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Generate frontend credits
+        run: npx license-checker --markdown > CREDITS-frontend.md
+      
+      - name: Combine credits
+        run: |
+          echo "# Project Dependencies" > CREDITS.md
+          echo "" >> CREDITS.md
+          echo "## Frontend Dependencies" >> CREDITS.md
+          echo "" >> CREDITS.md
+          cat CREDITS-frontend.md >> CREDITS.md
+          echo "" >> CREDITS.md
+          echo "## Backend Dependencies" >> CREDITS.md
+          echo "" >> CREDITS.md
+          cat CREDITS-backend.md >> CREDITS.md
+
+      - name: Commit updated credits
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update dependencies credits [skip ci]"
+          file_pattern: "CREDITS.md"
