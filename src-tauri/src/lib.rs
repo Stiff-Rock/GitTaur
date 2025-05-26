@@ -13,6 +13,9 @@ use std::fs::create_dir_all;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
 use types::config::Theme;
 
+#[cfg(debug_assertions)]
+use crate::types::repo_guard;
+
 //TODO: Credit libraries in readme, specially auth-git2 which I forked and git2json and gitgraphjs
 //TODO: CHECK OUT tools like cargo-license or license-checker for JS).
 
@@ -244,7 +247,7 @@ pub fn run() {
             repo_watcher::stop_git_watcher,
             // Debug functions
             #[cfg(debug_assertions)]
-            repo_manager::reset,
+            repo_guard::reset,
         ])
         .setup(|app| {
             setup_logging(app)?;
