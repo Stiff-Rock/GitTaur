@@ -4,6 +4,7 @@ import styles from '../../ActionBar.module.css';
 import { useAppContext } from '../../../../context/AppContext';
 import { invoke } from '@tauri-apps/api/core';
 
+//TODO: EXTRACT COMMON ELMENTS
 const OpenTerminalDirButton: React.FC = () => {
   const { setNotification, workspace, checkPageType } = useAppContext();
 
@@ -13,8 +14,9 @@ const OpenTerminalDirButton: React.FC = () => {
     const path = checkPageType("Welcome") || checkPageType("Config") ? "" : workspace.activeTab;
 
     invoke('open_terminal', { path }).catch((e) => {
-      console.error(e);
-      setNotification("Failed to open terminal: " + e)
+      const errMsg = `Failed to open terminal: ${e}`
+      console.error(errMsg);
+      setNotification(errMsg)
     });
   };
 

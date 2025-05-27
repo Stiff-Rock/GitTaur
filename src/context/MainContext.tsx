@@ -28,7 +28,7 @@ interface MainContextType {
   statusEvent: string;
 
   // Refs
-  scrollbarsRef: React.MutableRefObject<Scrollbars | null>;
+  scrollbarRef: React.MutableRefObject<Scrollbars | null>;
 
   // Global Functions
   scrollToCommit: () => void;
@@ -59,7 +59,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
 
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
 
-  const scrollbarsRef = useRef<Scrollbars>(null);
+  const scrollbarRef = useRef<Scrollbars>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
 
   let lastInfoSidebarState = useRef(false);
@@ -153,7 +153,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       fetchEvent,
       statusEvent,
 
-      scrollbarsRef,
+      scrollbarRef,
       scrollToCommit,
     }}>
       {children}

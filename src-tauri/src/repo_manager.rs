@@ -109,8 +109,6 @@ fn get_current_branch(repo: &Repository) -> String {
 
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
-    info!("Getting information of repository at {}", repo_path);
-
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     if !is_repo(&repo_path, true)? {
@@ -299,6 +297,8 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 
 #[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
+    info!("Staging {:#?} in repo {}", files, repo_path);
+
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -330,6 +330,8 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 
 #[command]
 pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
+    info!("Unstaging {:#?} in repo {}", files, repo_path);
+
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -364,6 +366,50 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
     }
 
     index.write().map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn discard_changes(repo_path: String, files: Vec<String>) -> Result<(), String> {
+    info!("Discarding {:#?} in repo {}", files, repo_path);
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let head = repo.head().map_err(|e| e.to_string())?;
+    let commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+    let tree = commit.tree().map_err(|e| e.to_string())?;
+
+    let mut status_opts = git2::StatusOptions::new();
+    status_opts.include_untracked(true);
+    let statuses = repo
+        .statuses(Some(&mut status_opts))
+        .map_err(|e| e.to_string())?;
+
+    let tree_obj = tree.as_object();
+    for file in &files {
+        let is_untracked = statuses.iter().any(|entry| {
+            entry.path().map_or(false, |path| path == file)
+                && entry.status().contains(git2::Status::WT_NEW)
+        });
+
+        if is_untracked {
+            // For untracked files, remove them directly
+            let full_path = std::path::Path::new(&repo_path).join(file);
+            if full_path.exists() {
+                std::fs::remove_file(&full_path).map_err(|e| e.to_string())?;
+            }
+        } else {
+            // For tracked files, use checkout to restore from HEAD
+            let mut checkout_opts = CheckoutBuilder::new();
+            checkout_opts.force().path(file);
+            if let Err(e) = repo.checkout_tree(tree_obj, Some(&mut checkout_opts)) {
+                error!("Checkout failed for {}: {}", file, e);
+            }
+        }
+    }
 
     Ok(())
 }
@@ -562,6 +608,8 @@ pub async fn pull_remote(
 
     Ok(msg)
 }
+
+//TODO: REBASING
 
 // Handle a fast-forward merge
 fn fast_forward(

@@ -8,7 +8,7 @@ interface InputField {
   value: string,
   onChange: (value: string) => void,
   buttonIcon?: ReactNode,
-  onButtonClick?: () => Promise<string | void>,
+  onButtonClick?: () => Promise<string | null | void>,
   min?: number,
   max?: number,
   className?: string;

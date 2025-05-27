@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 48px;
+  height: 15%;
   padding: 10px;
   background-color: var(--secondary-bg);
   border-style: solid;
@@ -41,6 +41,10 @@
 
 .sectionFileCount {
   max-width: 75px;
+}
+
+.sectionContent {
+  height: 85%;
 }
 
 .actionsContainer {

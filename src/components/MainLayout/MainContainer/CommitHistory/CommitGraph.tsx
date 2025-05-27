@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, useState } from "react";
-import Scrollbars from "react-custom-scrollbars-2";
 import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
@@ -9,6 +8,7 @@ import { Gitgraph, templateExtend, TemplateName } from "./Gitgraph";
 import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 import { GitgraphOptions } from "@gitgraph/core";
 import { GraphCommitOptions } from "./Gitgraph/Commit.tsx";
+import ScrollBar from "../../../Common/ScrollBar/ScrollBar.tsx";
 
 //TODO: apply config to graphs (such as the commit limit)
 //TODO: Add a visual indicator of unpushed changes
@@ -56,7 +56,7 @@ const graphCommitOptions: GraphCommitOptions = {
 }
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarsRef, repoInfo, currentAppTab } = useMainContext();
+  const { scrollbarRef, repoInfo, currentAppTab } = useMainContext();
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
@@ -74,22 +74,11 @@ const CommitGraph: React.FC = () => {
   //TODO: FIX VERTICAL AND HORIZONTAL SCROLLBARS
   //TODO: RECTS HAVE TO FIT ENTERILY AND SELECTED COMMTIS ARE BUGGER SOMEHOW
   return (
-    <Scrollbars
+    <ScrollBar
+      autoHide={true}
+      offset={2}
       className={currentAppTab === "commit-history" ? '' : 'inactive'}
-      ref={scrollbarsRef}
-      autoHide
-      autoHideTimeout={500}
-      autoHideDuration={300}
-      renderThumbVertical={({ style, ...props }) => (
-        <div {...props} className={styles.scrollbar} />
-      )}
-      renderTrackVertical={({ style, ...props }) => (
-        <div
-          {...props}
-          className={styles.trackVertical}
-          style={{ ...style, width: '10px', right: '2px', borderRadius: '4px' }}
-        />
-      )}
+      ref={scrollbarRef}
     >
       <div className={`${styles.container} ${graphStyles.graph}`}>
         {commitLogs ? (
@@ -106,7 +95,7 @@ const CommitGraph: React.FC = () => {
           <p>Loading repository info...</p>
         )}
       </div>
-    </Scrollbars >
+    </ScrollBar >
   );
 };
 

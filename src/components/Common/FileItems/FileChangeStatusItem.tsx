@@ -2,12 +2,13 @@ import { Menu, MenuItemOptions } from '@tauri-apps/api/menu';
 import { useAppContext } from '../../../context/AppContext';
 import styles from './FileChangeItem.module.css'
 import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
-import { openPath } from '@tauri-apps/plugin-opener';
+import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { join } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/core';
 
 interface FileChangeItemProps {
   changeType: ChangeType;
-  state: FileStatusState;
+  status: FileStatusState;
   fileName: string;
   selectedFile: string
   setSelectedFile: React.Dispatch<React.SetStateAction<string>>;
@@ -17,16 +18,31 @@ interface FileChangeItemProps {
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu, workspace, setNotification } = useAppContext();
-  const { changeType, state, fileName, selectedFile, setSelectedFile, stagingAreaUpdate, className } = props;
+  const { changeType, status, fileName, selectedFile, setSelectedFile, stagingAreaUpdate, className } = props;
 
-  //TODO: STASH, DISCARD ONLY IN UNSTAGED
+  //TODO: STASH
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
     setSelectedFile(fileName);
 
-    const statusId = state.slice(0, state.length - 1);
-    const statusText = statusId.charAt(0).toUpperCase() + statusId.slice(1);
+    if (!workspace) {
+      console.error("Error opening context menu: Unexpected null workspace");
+      setNotification("An internal error has occurred, please report this issue");
+      return;
+    }
+    const repoPath = workspace.activeTab;
 
     const menuItems: MenuItemOptions[] = [];
+
+    let statusId;
+    let statusText;
+
+    if (status === "unstaged") {
+      statusId = "stageFile";
+      statusText = "Stage";
+    } else {
+      statusId = "unstageFile";
+      statusText = "Unstage";
+    }
 
     menuItems.push({
       id: statusId,
@@ -36,19 +52,25 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
       },
     })
 
+    if (status === "unstaged") {
+      menuItems.push({
+        id: 'discardFile',
+        text: 'Discard',
+        action: () => {
+          invoke("discard_changes", { repoPath, files: [fileName] }).catch((e) => {
+            console.error("Error discarding changes: ", e);
+            setNotification("Error discarding changes: " + e);
+          });
+        }
+      })
+    }
+
     if (changeType !== "deleted") {
       menuItems.push({
         id: 'viewInFileExpl',
         text: "Open in file explorer",
         action: () => {
-          if (!workspace) {
-            console.error("Error while opening file in file explorer: Unexpected null workspace");
-            setNotification("Could not open file in file exlorer due to an internal error");
-            return;
-          }
-
-          const repoPath = workspace.activeTab;
-          join(repoPath, fileName).then((full_path) => openPath(full_path)).catch((e) => {
+          join(repoPath, fileName).then((full_path) => revealItemInDir(full_path)).catch((e) => {
             console.error("Error while opening file in file explorer: ", e);
             setNotification("Could not open file in file exlorer: " + e);
           })
@@ -74,7 +96,15 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
       {changeType === "added" && <PlusIcon className={styles.plusIcon} />}
       {changeType === "deleted" && <DashIcon className={styles.minusIcon} />}
 
-      <span className={styles.value}>{fileName}</span>
+      <span className={styles.value}
+        style={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}
+      >
+        {fileName}
+      </span>
     </div >
   );
 }

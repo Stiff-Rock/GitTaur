@@ -1,11 +1,11 @@
-import React from 'react';
 import styles from './CommitInfoSidebar.module.css';
+import React from 'react';
 import { useMainContext } from '../../../../context/MainContext';
 import CopyShaButton from './CopyShaButton';
-import { Scrollbars } from 'react-custom-scrollbars-2';
 import UserAvatar from './UserAvatar';
 import FileChangeItem from '../../../Common/FileItems/FileChangeItem';
 import { useAppContext } from '../../../../context/AppContext';
+import ScrollBar from '../../../Common/ScrollBar/ScrollBar';
 
 const CommitInfoSidebar: React.FC = () => {
   const { config } = useAppContext();
@@ -64,30 +64,7 @@ const CommitInfoSidebar: React.FC = () => {
   return (
     <div className={`${styles.infoSidebar} ${currentAppTab === "commit-history" ? '' : 'inactive'}`}>
       {commitInfo ? (
-        <Scrollbars
-          autoHide
-          autoHideTimeout={500}
-          autoHideDuration={300}
-          renderThumbVertical={({ style, ...props }) => (
-            <div
-              {...props}
-              className='scrollbar'
-            />
-          )}
-          renderTrackVertical={({ style, ...props }) => (
-            <div
-              {...props}
-              style={{
-                ...style,
-                width: '10px',
-                bottom: '2px',
-                right: '0',
-                top: '2px',
-                borderRadius: '4px',
-              }}
-            />
-          )}
-        >
+        <ScrollBar autoHide={true} offset={0}>
           <div className={styles.content}>
             <span className={styles.title}>Author</span>
 
@@ -167,7 +144,7 @@ const CommitInfoSidebar: React.FC = () => {
               )}
             </div>
           </div >
-        </Scrollbars>
+        </ScrollBar>
       ) : (
         <span>No commit info available</span>
       )

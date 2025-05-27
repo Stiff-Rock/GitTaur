@@ -1,0 +1,11 @@
+.renderThumbVertical {
+  background-color: var(--lighter-bg);
+  border-radius: 8px;
+  margin-left: 5px;
+}
+
+.renderTrackVertical {
+  top: 2px;
+  bottom: 2px;
+  border-radius: 4px;
+}

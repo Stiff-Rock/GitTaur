@@ -118,7 +118,7 @@ const ConfigPage: React.FC = () => {
               />
 
               {/*TODO: Maybe provide the path of the system default*/}
-              <InputField
+              {/*<InputField
                 title="Terminal app"
                 type="text"
                 placeholder="(Empty for system default)"
@@ -127,7 +127,7 @@ const ConfigPage: React.FC = () => {
                 buttonIcon={<FileDirectoryIcon />}
                 onButtonClick={selectFileDialog}
                 className={styles.configInput}
-              />
+              />*/}
             </div>
           }
 

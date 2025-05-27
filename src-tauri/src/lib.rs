@@ -5,13 +5,16 @@ mod repo_watcher;
 mod types;
 mod workspace_manager;
 use chrono::Local;
+use config_manager::config;
 use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
-use log::{error, info, LevelFilter};
+use log::{info, LevelFilter};
 use std::error::Error;
 use std::fs::create_dir_all;
-use std::path::Path;
+use tauri::AppHandle;
 use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
+use tauri_plugin_shell::process::Command;
+use tauri_plugin_shell::ShellExt;
 use types::config::Theme;
 
 #[cfg(debug_assertions)]
@@ -22,9 +25,9 @@ use crate::types::repo_guard;
 
 //TODO: FUTURE:: Try to debug libssh2-rs to see why so many keys don't work or implement ssh-agent
 
-//TODO: THIS IMPLEMENTATION IS TRASH. use https://v2.tauri.app/es/plugin/shell/
+//TODO: Terminal personalization
 #[command]
-fn open_terminal(mut path: String) -> Result<(), String> {
+fn open_terminal(mut path: String, app_handle: AppHandle) -> Result<(), String> {
     if path.is_empty() {
         path = dirs::home_dir()
             .ok_or_else(|| "Could not determine home directory".to_string())?
@@ -32,41 +35,33 @@ fn open_terminal(mut path: String) -> Result<(), String> {
             .to_string();
     }
 
+    let shell = app_handle.shell();
+    let command: Command;
+
     #[cfg(target_os = "windows")]
     {
-        if let Err(e) = std::process::Command::new("cmd.exe")
+        command = shell
+            .command("cmd.exe")
             .args(&["/C", "start", "cmd.exe", "/K", "cd", "/d", &path])
-            .spawn()
-        {
-            error!("Error opening terminal on Windows: {}", e);
-            return Err(e.to_string());
-        }
     }
 
     #[cfg(target_os = "macos")]
     {
         let script = format!("tell application \"Terminal\" to do script \"cd {}\"", path);
-        if let Err(e) = std::process::Command::new("osascript")
-            .args(&["-e", &script])
-            .spawn()
-        {
-            error!("Error opening terminal on macOS: {}", e);
-            return Err(e.to_string());
-        }
+        command = shell.command("osascript").args(&["-e", &script])
     }
-    //TODO: USER CONFIG, LET USER SELECT WHAT TERMINAL TO USE
+
     #[cfg(target_os = "linux")]
     {
         let terminal =
             std::env::var("TERMINAL").unwrap_or_else(|_| "x-terminal-emulator".to_string());
-        if let Err(e) = std::process::Command::new(terminal)
-            .current_dir(&path)
-            .spawn()
-        {
-            error!("Error opening terminal on Linux: {}", e);
-            return Err(e.to_string());
-        }
+        command = shell.command(terminal).current_dir(&path)
     }
+
+    command
+        .spawn()
+        .map_err(|e| format!("Error executing terminal: {e}"))?;
+
     Ok(())
 }
 
@@ -238,6 +233,7 @@ pub fn run() {
             repo_manager::get_repo_status,
             repo_manager::add_to_staging_area,
             repo_manager::remove_from_staging_area,
+            repo_manager::discard_changes,
             repo_manager::fetch_remote,
             repo_manager::pull_remote,
             repo_manager::push_remote,

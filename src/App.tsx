@@ -24,6 +24,7 @@ function App() {
     }, []);
   }
 
+  //TODO: ANY ERROR ALSO DO CONSOLE.ERROR
   useEffect(() => {
     if (!notification) return;
 

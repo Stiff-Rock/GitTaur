@@ -19,6 +19,7 @@ const LocalChangesInfoSidebar: React.FC = () => {
   return (
     <div className={`${styles.mainContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
       <div className={styles.diffSection}>
+        IMPLEMENT!!!
       </div>
 
       <div className={styles.commitSection}>

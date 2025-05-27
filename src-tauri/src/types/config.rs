@@ -1,8 +1,7 @@
-use std::path::PathBuf;
-
 use dirs::{document_dir, home_dir};
 use git2::Config;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use tauri_plugin_os::locale;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -99,6 +98,23 @@ impl Configuration {
         path.to_string_lossy().into_owned()
     }
 
+    fn get_dafault_terminal() -> String {
+        #[cfg(target_os = "windows")]
+        {
+            "cmd.exe".to_string()
+        }
+
+        #[cfg(target_os = "macos")]
+        {
+            "Terminal".to_string()
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            std::env::var("TERMINAL").unwrap_or_else(|_| "x-terminal-emulator".to_string())
+        }
+    }
+
     pub fn default() -> Self {
         let (git_username, git_email) = Self::get_git_user_info();
 
@@ -128,7 +144,7 @@ impl Configuration {
         }
 
         if self.terminal_app.is_empty() {
-            self.terminal_app = default.terminal_app;
+            self.terminal_app = Self::get_dafault_terminal();
         }
 
         let (git_username, git_email) = Self::get_git_user_info();

@@ -82,12 +82,6 @@ textarea {
   color: var(--active-color);
 }
 
-.scrollbar {
-  background-color: var(--lighter-bg);
-  border-radius: 8px;
-  margin-left: 5px;
-}
-
 a {
   color: var(--link-color);
   text-decoration: none;
