@@ -13,6 +13,12 @@ import ScrollBar from '../../../Common/ScrollBar/ScrollBar';
 
 //TODO: STASH, DISCARD AND POP
 
+export interface FileItem {
+  fileName: string;
+  changeType: ChangeType;
+  status: FileStatusState;
+}
+
 const LocalChanges: React.FC = () => {
   const {
     repoPath,
@@ -36,18 +42,17 @@ const LocalChanges: React.FC = () => {
       .finally(() => 0);
   }
 
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([]);
 
-  const addToStagingArea = async (files: Array<string> | null) => {
+  const addToStagingArea = async (files: string[]) => {
     if (statusUpdatePromiseRef.current) {
       await statusUpdatePromiseRef.current.catch(() => { });
     }
-
     setIsStageLoading(true);
 
-    if (files === null) {
-      files = selectedFiles;
-    }
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
 
     invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
       const msg = `Error staging files - ${e}`
@@ -57,21 +62,36 @@ const LocalChanges: React.FC = () => {
   }
 
   //BUG: DOUBLE CLICK STOPPED WORKING
-  const removeFromStagingArea = async (files: Array<string> | null) => {
+  const removeFromStagingArea = async (files: string[]) => {
     if (statusUpdatePromiseRef.current) {
       await statusUpdatePromiseRef.current.catch(() => { });
     }
+    setIsUnstageLoading(true);
 
-    setIsUnstageLoading(true)
-
-    if (!files) {
-      files = selectedFiles;
-    }
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
 
     invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
       const msg = `Error unstaging files - ${e}`
       console.error(msg);
       setNotification(msg);
+    }).finally(() => setIsUnstageLoading(false));
+  }
+
+  const discardChanges = async (files: string[]) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+    setIsUnstageLoading(true);
+
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
+
+    invoke("discard_changes", { repoPath, files }).catch((e) => {
+      console.error("Error discarding changes: ", e);
+      setNotification("Error discarding changes: " + e);
     }).finally(() => setIsUnstageLoading(false));
   }
 
@@ -103,7 +123,7 @@ const LocalChanges: React.FC = () => {
   }, [repoInfo]);
 
   interface ChangesSectionProps {
-    state: FileStatusState
+    status: FileStatusState
     sectionBarStyle: string;
     barIcon: ReactNode;
     sectionTitle: string;
@@ -111,14 +131,14 @@ const LocalChanges: React.FC = () => {
     actionButtons: ReactNode[];
     fileChangesArray: FileChanges[];
     isLoading: boolean;
-    stagingAreaUpdate: (files: Array<string>) => void;
+    stagingAreaUpdate: (files: string[]) => void;
   }
 
   //TODO: MULTI-SELECTION
 
   const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
     const {
-      state,
+      status,
       sectionBarStyle,
       barIcon,
       sectionTitle,
@@ -148,18 +168,19 @@ const LocalChanges: React.FC = () => {
         <ScrollBar autoHide={true} offset={5}>
           {/*TODO: HIDDEN OVERFLOWING CONTENT*/}
           <div className={styles.sectionContent}>
-            {repoStatus && fileChangesArray.map((changes, index) => (
-              <FileChangeStatusItem
-                key={index}
-                status={state}
-                fileName={changes.file}
-                changeType={changes.changeType}
-                selectedFiles={selectedFiles}
-                setSelectedFiles={setSelectedFiles}
-                stagingAreaUpdate={stagingAreaUpdate}
-                className={styles.fileChangeItem}
-              />
-            ))}
+            {repoStatus && fileChangesArray.map((changes, index) => {
+              const file: FileItem = { fileName: changes.file, status, changeType: changes.changeType };
+              return (
+                <FileChangeStatusItem
+                  key={index}
+                  file={file}
+                  selectedFiles={selectedFiles}
+                  setSelectedFiles={setSelectedFiles}
+                  stagingAreaUpdate={stagingAreaUpdate}
+                  discardChanges={discardChanges}
+                  className={styles.fileChangeItem} />
+              );
+            })}
           </div>
         </ScrollBar>
       </div >
@@ -167,7 +188,7 @@ const LocalChanges: React.FC = () => {
   }
 
   const stagedFileSectionProps: ChangesSectionProps = {
-    state: "staged",
+    status: "staged",
     sectionBarStyle: styles.stagedSectionBar,
     barIcon: <CheckboxIcon />,
     sectionTitle: 'Staged Files',
@@ -179,7 +200,7 @@ const LocalChanges: React.FC = () => {
   }
 
   const unstagedFileSectionProps: ChangesSectionProps = {
-    state: "unstaged",
+    status: "unstaged",
     sectionBarStyle: styles.unstagedSectionBar,
     barIcon: <DiffModifiedIcon />,
     sectionTitle: 'Unstaged Files',

@@ -4,73 +4,63 @@ import styles from './FileChangeItem.module.css'
 import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { join } from '@tauri-apps/api/path';
-import { invoke } from '@tauri-apps/api/core';
+import { useRef } from 'react';
+import { FileItem } from '../../MainLayout/MainContainer/LocalChanges/LocalChanges';
 
 interface FileChangeItemProps {
-  changeType: ChangeType;
-  status: FileStatusState;
-  fileName: string;
-  selectedFiles: string[]
-  setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
-  stagingAreaUpdate: (files: Array<string>) => void,
-  className?: string;
+  file: FileItem
+  selectedFiles: FileItem[]
+  setSelectedFiles: React.Dispatch<React.SetStateAction<FileItem[]>>
+  stagingAreaUpdate: (files: string[]) => void
+  discardChanges: (files: string[]) => void
+  className?: string
 }
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu, workspace, setNotification } = useAppContext();
-  const { changeType, status, fileName, selectedFiles, setSelectedFiles, stagingAreaUpdate, className } = props;
+  const { file, selectedFiles, setSelectedFiles, stagingAreaUpdate, discardChanges, className } = props;
+  const { fileName, changeType, status } = file;
 
   //TODO: STASH
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
-    setSelectedFile(fileName);
+    const currentSelectedFiles = selectedFiles.some(f => f.fileName === fileName)
+      ? selectedFiles
+      : [file];
+    setSelectedFiles(currentSelectedFiles);
+    const files = currentSelectedFiles.map(f => f.fileName);
 
     if (!workspace) {
       console.error("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
-    const repoPath = workspace.activeTab;
 
+    // Build the context menu items
     const menuItems: MenuItemOptions[] = [];
 
-    let statusId;
-    let statusText;
-
-    if (status === "unstaged") {
-      statusId = "stageFile";
-      statusText = "Stage";
-    } else {
-      statusId = "unstageFile";
-      statusText = "Unstage";
-    }
-
+    // Action to stage/unstage the file
     menuItems.push({
-      id: statusId,
-      text: statusText,
-      action: () => {
-        stagingAreaUpdate([fileName]);
-      },
+      id: status === "unstaged" ? "stageFile" : "unstageFile",
+      text: status === "unstaged" ? "Stage" : "Unstage",
+      action: () => { stagingAreaUpdate(files) },
     })
 
+    // Action to discard a unstaged file
     if (status === "unstaged") {
       menuItems.push({
         id: 'discardFile',
         text: 'Discard',
-        action: () => {
-          invoke("discard_changes", { repoPath, files: [fileName] }).catch((e) => {
-            console.error("Error discarding changes: ", e);
-            setNotification("Error discarding changes: " + e);
-          });
-        }
+        action: () => { discardChanges(files) },
       })
     }
 
-    if (changeType !== "deleted") {
+    // Action to view an existing file in the systems file explorer
+    if (setSelectedFiles.length === 1 && changeType !== "deleted") {
       menuItems.push({
         id: 'viewInFileExpl',
         text: "Open in file explorer",
         action: () => {
-          join(repoPath, fileName).then((full_path) => revealItemInDir(full_path)).catch((e) => {
+          join(workspace.activeTab, fileName).then((full_path) => revealItemInDir(full_path)).catch((e) => {
             console.error("Error while opening file in file explorer: ", e);
             setNotification("Could not open file in file exlorer: " + e);
           })
@@ -78,39 +68,52 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
       })
     }
 
-    const contextMenu = await Menu.new({
-      items: menuItems
-    });
-
-    openContextMenu(contextMenu, event);
+    openContextMenu(await Menu.new({ items: menuItems }), event);
   }
 
-  //BUG: DOUBLE CLICK STOPPED WORKING
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleItemClick = (event: React.MouseEvent) => {
-    event.preventDefault();
-    if (event.ctrlKey || event.metaKey) {
-      setSelectedFiles(prevSelectedFiles => {
-        if (prevSelectedFiles.includes(fileName)) {
-          const newSelectedIds = prevSelectedFiles.filter(file => file !== fileName);
-          return newSelectedIds;
-        }
-        else {
-          const newSelectedIds = [...prevSelectedFiles, fileName];
-          return newSelectedIds;
-        }
-      });
-    } else {
-      const newSelectedIds = [fileName];
-      setSelectedFiles(newSelectedIds);
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
     }
+
+    clickTimerRef.current = setTimeout(() => {
+      if (event.ctrlKey || event.metaKey) {
+        setSelectedFiles(prev => {
+          if (prev.length > 0 && prev[0].status !== status) {
+            return [file];
+          }
+          else if (prev.some(f => f.fileName === file.fileName)) {
+            return prev.filter(f => f.fileName !== file.fileName);
+          } else {
+            return [...prev, file];
+          }
+        });
+      } else {
+        setSelectedFiles([file]);
+      }
+
+      clickTimerRef.current = null;
+    }, 20);
   }
+
+  const handleDoubleClick = () => {
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+
+    stagingAreaUpdate([fileName]);
+  };
 
   return (
     <div
-      className={`${styles.changeItem} ${className} ${selectedFiles.includes(fileName) ? styles.active : ''}`}
-      onClick={handleItemClick}
-      onDoubleClick={() => stagingAreaUpdate([fileName])}
+      className={`${styles.changeItem} ${className} ${selectedFiles.some(f => f.fileName === file.fileName) ? styles.active : ''}`}
       onContextMenu={handleOpenContextMenu}
+      onClick={handleItemClick}
+      onDoubleClick={handleDoubleClick}
     >
       {changeType === "modified" && <DiffIcon className={styles.diffIcon} />}
       {changeType === "added" && <PlusIcon className={styles.plusIcon} />}

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import styles from './ScrollBar.module.css';
 import Scrollbars from 'react-custom-scrollbars-2';
 
@@ -8,11 +9,10 @@ interface ScrollBarProps {
   autoHide?: boolean,
   autoHideTimeout?: number,
   autoHideDuration?: number
-  ref?: React.MutableRefObject<Scrollbars | null>,
   className?: string,
 }
 
-const ScrollBar: React.FC<ScrollBarProps> = (props) => {
+const ScrollBar = forwardRef<Scrollbars, ScrollBarProps>((props, ref) => {
   const {
     children,
     width = 10,
@@ -20,7 +20,6 @@ const ScrollBar: React.FC<ScrollBarProps> = (props) => {
     autoHide,
     autoHideTimeout = 500,
     autoHideDuration = 300,
-    ref,
     className
   } = props;
 
@@ -54,6 +53,6 @@ const ScrollBar: React.FC<ScrollBarProps> = (props) => {
       {children}
     </Scrollbars >
   );
-}
+});
 
 export default ScrollBar;
