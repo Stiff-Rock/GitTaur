@@ -174,6 +174,7 @@ const LocalChanges: React.FC = () => {
                 <FileChangeStatusItem
                   key={index}
                   file={file}
+                  fileChangesArray={fileChangesArray}
                   selectedFiles={selectedFiles}
                   setSelectedFiles={setSelectedFiles}
                   stagingAreaUpdate={stagingAreaUpdate}

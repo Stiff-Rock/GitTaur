@@ -9,6 +9,7 @@ import { FileItem } from '../../MainLayout/MainContainer/LocalChanges/LocalChang
 
 interface FileChangeItemProps {
   file: FileItem
+  fileChangesArray: FileChanges[]
   selectedFiles: FileItem[]
   setSelectedFiles: React.Dispatch<React.SetStateAction<FileItem[]>>
   stagingAreaUpdate: (files: string[]) => void
@@ -18,7 +19,7 @@ interface FileChangeItemProps {
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu, workspace, setNotification } = useAppContext();
-  const { file, selectedFiles, setSelectedFiles, stagingAreaUpdate, discardChanges, className } = props;
+  const { file, fileChangesArray, selectedFiles, setSelectedFiles, stagingAreaUpdate, discardChanges, className } = props;
   const { fileName, changeType, status } = file;
 
   //TODO: STASH
@@ -91,6 +92,31 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
             return [...prev, file];
           }
         });
+      } else if (event.shiftKey) {
+        const lastSelectedFile = selectedFiles.at(-1);
+
+        const lastIndex = fileChangesArray.findIndex(c => c.file === lastSelectedFile?.fileName);
+        const currentIndex = fileChangesArray.findIndex(c => c.file === fileName);
+
+        console.log("fileChangesArray:", fileChangesArray)
+        console.log("lastIndex: " + lastIndex + " currentIndex: " + currentIndex);
+
+        if (lastIndex !== -1 && currentIndex !== -1) {
+          const startIndex = Math.min(lastIndex, currentIndex);
+          const endIndex = Math.max(lastIndex, currentIndex);
+
+          const filesToSelect = fileChangesArray
+            .slice(startIndex, endIndex + 1)
+            .map(change => ({
+              fileName: change.file,
+              status,
+              changeType: change.changeType
+            }));
+
+          setSelectedFiles(filesToSelect);
+        } else {
+          setSelectedFiles([file]);
+        }
       } else {
         setSelectedFiles([file]);
       }
