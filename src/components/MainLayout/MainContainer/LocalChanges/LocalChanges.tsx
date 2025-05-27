@@ -36,7 +36,7 @@ const LocalChanges: React.FC = () => {
       .finally(() => 0);
   }
 
-  const [selectedFile, setSelectedFile] = useState<string>("");
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
   const addToStagingArea = async (files: Array<string> | null) => {
     if (statusUpdatePromiseRef.current) {
@@ -46,7 +46,7 @@ const LocalChanges: React.FC = () => {
     setIsStageLoading(true);
 
     if (files === null) {
-      files = [selectedFile];
+      files = selectedFiles;
     }
 
     invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
@@ -56,6 +56,7 @@ const LocalChanges: React.FC = () => {
     }).finally(() => setIsStageLoading(false));
   }
 
+  //BUG: DOUBLE CLICK STOPPED WORKING
   const removeFromStagingArea = async (files: Array<string> | null) => {
     if (statusUpdatePromiseRef.current) {
       await statusUpdatePromiseRef.current.catch(() => { });
@@ -64,7 +65,7 @@ const LocalChanges: React.FC = () => {
     setIsUnstageLoading(true)
 
     if (!files) {
-      files = [selectedFile];
+      files = selectedFiles;
     }
 
     invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
@@ -153,8 +154,8 @@ const LocalChanges: React.FC = () => {
                 status={state}
                 fileName={changes.file}
                 changeType={changes.changeType}
-                selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile}
+                selectedFiles={selectedFiles}
+                setSelectedFiles={setSelectedFiles}
                 stagingAreaUpdate={stagingAreaUpdate}
                 className={styles.fileChangeItem}
               />

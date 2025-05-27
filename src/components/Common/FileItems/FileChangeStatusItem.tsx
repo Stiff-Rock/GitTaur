@@ -10,15 +10,15 @@ interface FileChangeItemProps {
   changeType: ChangeType;
   status: FileStatusState;
   fileName: string;
-  selectedFile: string
-  setSelectedFile: React.Dispatch<React.SetStateAction<string>>;
+  selectedFiles: string[]
+  setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>;
   stagingAreaUpdate: (files: Array<string>) => void,
   className?: string;
 }
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu, workspace, setNotification } = useAppContext();
-  const { changeType, status, fileName, selectedFile, setSelectedFile, stagingAreaUpdate, className } = props;
+  const { changeType, status, fileName, selectedFiles, setSelectedFiles, stagingAreaUpdate, className } = props;
 
   //TODO: STASH
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
@@ -85,10 +85,30 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     openContextMenu(contextMenu, event);
   }
 
+  //BUG: DOUBLE CLICK STOPPED WORKING
+  const handleItemClick = (event: React.MouseEvent) => {
+    event.preventDefault();
+    if (event.ctrlKey || event.metaKey) {
+      setSelectedFiles(prevSelectedFiles => {
+        if (prevSelectedFiles.includes(fileName)) {
+          const newSelectedIds = prevSelectedFiles.filter(file => file !== fileName);
+          return newSelectedIds;
+        }
+        else {
+          const newSelectedIds = [...prevSelectedFiles, fileName];
+          return newSelectedIds;
+        }
+      });
+    } else {
+      const newSelectedIds = [fileName];
+      setSelectedFiles(newSelectedIds);
+    }
+  }
+
   return (
     <div
-      className={`${styles.changeItem} ${className} ${selectedFile === fileName ? styles.active : ''}`}
-      onClick={() => setSelectedFile(fileName)}
+      className={`${styles.changeItem} ${className} ${selectedFiles.includes(fileName) ? styles.active : ''}`}
+      onClick={handleItemClick}
       onDoubleClick={() => stagingAreaUpdate([fileName])}
       onContextMenu={handleOpenContextMenu}
     >
