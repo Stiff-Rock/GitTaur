@@ -1,0 +1,75 @@
+.section {
+  height: 50%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sectionBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 15%;
+  padding: 10px;
+  background-color: var(--secondary-bg);
+  border-style: solid;
+  border-color: var(--border-color);
+  border-width: 1px 0 1px 0;
+  box-sizing: border-box;
+}
+
+.sectionBar div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.sectionIcon {
+  width: 25%;
+  justify-content: flex-start !important;
+}
+
+.sectionName {
+  text-align: center;
+  width: 100%;
+}
+
+.actionsContainer {
+  justify-content: flex-end !important;
+  gap: 4px;
+}
+
+.actionsContainer svg {
+  padding: 5px;
+  border-radius: 5px;
+  transition: 0.1s ease;
+}
+
+.actionsContainer svg:hover {
+  background-color: var(--lighter-bg);
+}
+
+.sectionFileCount {
+  max-width: 75px;
+}
+
+.sectionContent {
+  height: 85%;
+}
+
+.fileChangeItem {
+  user-select: none;
+  background-color: transparent;
+  height: 25px;
+  padding: 5px;
+  padding-left: 10px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.fileChangeItem:hover {
+  background-color: var(--lighter-bg);
+  cursor: pointer;
+}
