@@ -2,6 +2,42 @@
   height: 100%;
 }
 
+.changesTabs {
+  height: 6%;
+  width: 100%;
+  display: flex;
+}
+
+.tabButton {
+  height: 100%;
+  flex: 1;
+  border: none;
+  background-color: var(--primary-bg);
+  border-radius: 0px;
+  color: var(--secondary-text);
+}
+
+.tabButton:hover {
+  background-color: var(--lighter-bg);
+  color: var(--primary-text);
+}
+
+.activeTab {
+  background-color: var(--secondary-bg);
+  color: var(--active-color);
+}
+
+.tabButton.activeTab:hover {
+  background-color: var(--secondary-bg);
+  color: var(--primary-text);
+}
+
+.buttonSeparator {
+  height: 100%;
+  border: solid 1px var(--border-color);
+  border-width: 0 1px 0 0;
+}
+
 .section {
   height: 50%;
   box-sizing: border-box;
@@ -18,6 +54,7 @@
   background-color: var(--secondary-bg);
   border-style: solid;
   border-color: var(--border-color);
+  border-width: 1px 0 1px 0;
   box-sizing: border-box;
 }
 
@@ -60,14 +97,6 @@
 
 .actionsContainer svg:hover {
   background-color: var(--lighter-bg);
-}
-
-.unstagedSectionBar {
-  border-width: 0 0 1px 0;
-}
-
-.stagedSectionBar {
-  border-width: 1px 0 1px 0;
 }
 
 .fileChangeItem {

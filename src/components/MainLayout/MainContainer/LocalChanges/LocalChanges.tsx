@@ -33,6 +33,8 @@ const LocalChanges: React.FC = () => {
   const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
   const [isStagedLoading, setIsStageLoading] = useState(false);
 
+  const [inChangesTab, setInChangesTab] = useState(true);
+
   // This ref is used to ensure that no other operation that might change status executes while another is runnning
   const statusUpdatePromiseRef = useRef<Promise<any> | null>(null);
   const getRepoStatus = () => {
@@ -134,8 +136,6 @@ const LocalChanges: React.FC = () => {
     stagingAreaUpdate: (files: string[]) => void;
   }
 
-  //TODO: MULTI-SELECTION
-
   const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
     const {
       status,
@@ -214,8 +214,36 @@ const LocalChanges: React.FC = () => {
 
   return (
     <div className={`${styles.localChangesContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
-      <ChangesSection {...unstagedFileSectionProps} />
-      <ChangesSection {...stagedFileSectionProps} />
+      <div className={styles.changesTabs}>
+        <button
+          className={`appButton ${styles.tabButton} ${inChangesTab ? styles.activeTab : ''}`}
+          onClick={() => setInChangesTab(true)}
+        >
+          Changes
+        </button>
+        <div className={styles.buttonSeparator} />
+        <button
+          className={`appButton ${styles.tabButton} ${!inChangesTab ? styles.activeTab : ''}`}
+          onClick={() => setInChangesTab(false)}
+        >
+          Stashes
+        </button>
+      </div>
+
+      {inChangesTab &&
+        <>
+          <ChangesSection {...unstagedFileSectionProps} />
+          <ChangesSection {...stagedFileSectionProps} />
+        </>
+      }
+
+      {!inChangesTab &&
+        <>
+          {/*TODO: MAKE STASH SECTION*/}
+          <ChangesSection {...unstagedFileSectionProps} />
+          <ChangesSection {...stagedFileSectionProps} />
+        </>
+      }
     </div >
   );
 };

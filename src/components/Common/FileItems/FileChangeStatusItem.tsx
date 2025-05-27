@@ -98,9 +98,6 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
         const lastIndex = fileChangesArray.findIndex(c => c.file === lastSelectedFile?.fileName);
         const currentIndex = fileChangesArray.findIndex(c => c.file === fileName);
 
-        console.log("fileChangesArray:", fileChangesArray)
-        console.log("lastIndex: " + lastIndex + " currentIndex: " + currentIndex);
-
         if (lastIndex !== -1 && currentIndex !== -1) {
           const startIndex = Math.min(lastIndex, currentIndex);
           const endIndex = Math.max(lastIndex, currentIndex);
