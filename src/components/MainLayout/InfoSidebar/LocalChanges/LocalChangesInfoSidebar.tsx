@@ -7,7 +7,7 @@ import { useAppContext } from "../../../../context/AppContext";
 
 const LocalChangesInfoSidebar: React.FC = () => {
   const { setNotification, workspace } = useAppContext();
-  const { currentAppTab, inChangesTab, selectedChange, fileDiff, setFileDiff } = useMainContext();
+  const { currentAppTab, inChangesTab, lastSelectedChange, fileDiff, setFileDiff } = useMainContext();
 
   const [commitSummary, setCommitSummary] = useState("");
   const [commitBody, setCommitBody] = useState("");
@@ -20,11 +20,11 @@ const LocalChangesInfoSidebar: React.FC = () => {
   };
 
   useLayoutEffect(() => {
-    if (!selectedChange || !workspace) return;
+    if (!lastSelectedChange || !workspace) return;
 
     const repoPath = workspace.activeTab;
-    const filePath = selectedChange.name;
-    const status = selectedChange.status;
+    const filePath = lastSelectedChange.name;
+    const status = lastSelectedChange.status;
 
     invoke<string>("get_file_diff", { repoPath, filePath, status })
       .then(setFileDiff)
@@ -32,7 +32,7 @@ const LocalChangesInfoSidebar: React.FC = () => {
         console.error(e);
         setNotification(e);
       });
-  }, [selectedChange])
+  }, [lastSelectedChange])
 
   //TODO: MAYBE USE https://www.npmjs.com/package/react-diff-viewer 
 
@@ -44,7 +44,7 @@ const LocalChangesInfoSidebar: React.FC = () => {
           fileDiff
             ? { __html: fileDiff }
             : {
-              __html: selectedChange && !fileDiff
+              __html: lastSelectedChange && !fileDiff
                 ? "New file or no content changes"
                 : "Select a file to see diff"
             }

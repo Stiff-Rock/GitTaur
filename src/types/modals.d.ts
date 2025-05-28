@@ -1,1 +1,1 @@
-type AppModals = "" | "createRepo" | "cloneRepo" | "fetch" | "pull" | "push" | "branch";
+type AppModals = "" | "createRepo" | "cloneRepo" | "fetch" | "pull" | "push" | "branch" | "stash";

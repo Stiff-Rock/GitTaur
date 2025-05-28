@@ -18,6 +18,7 @@ import PullRemoteModal from '../Common/Modals/PullRemote/PullRemoteModal';
 import PushRemoteModal from '../Common/Modals/PushRemote/PushRemoteModal';
 import { listen } from '@tauri-apps/api/event';
 import CreateBranchModal from '../Common/Modals/CreateBranch/CreateBranchModal';
+import StashChangesModal from '../Common/Modals/StashChanges/StashChangesModal';
 
 //TODO: CONTEXT MENUS -> {
 //  Status: STASH
@@ -200,6 +201,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       {activeModal === "pull" && <PullRemoteModal />}
       {activeModal === "push" && <PushRemoteModal />}
       {activeModal === "branch" && <CreateBranchModal />}
+      {activeModal === "stash" && <StashChangesModal />}
     </div>
   );
 };

@@ -11,17 +11,24 @@ import { useMainContext } from '../../../context/MainContext';
 interface FileChangeItemProps {
   file: FileItem
   fileChangesArray: FileChanges[]
-  selectedFiles: FileItem[]
-  setSelectedFiles: React.Dispatch<React.SetStateAction<FileItem[]>>
-  stagingAreaUpdate: (files: string[]) => void
-  discardChanges: (files: string[]) => void
   className?: string
 }
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
-  const { openContextMenu, workspace, setNotification } = useAppContext();
-  const { setSelectedChange } = useMainContext();
-  const { file, fileChangesArray, selectedFiles, setSelectedFiles, stagingAreaUpdate, discardChanges, className } = props;
+  const { openContextMenu, workspace, setNotification, setActiveModal } = useAppContext();
+  const {
+    selectedFiles,
+    setSelectedFiles,
+    setLastSelectedChange,
+    addToStagingArea,
+    removeFromStagingArea,
+    discardChanges
+  } = useMainContext();
+  const {
+    file,
+    fileChangesArray,
+    className
+  } = props;
   const { fileName, changeType, status } = file;
 
   //TODO: STASH
@@ -46,7 +53,13 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     menuItems.push({
       id: status === "unstaged" ? "stageFile" : "unstageFile",
       text: status === "unstaged" ? "Stage" : "Unstage",
-      action: () => { stagingAreaUpdate(files) },
+      action: () => {
+        if (status === "unstaged") {
+          addToStagingArea(files);
+        } else {
+          removeFromStagingArea(files);
+        }
+      },
     })
 
     // Action to discard a unstaged file
@@ -57,6 +70,12 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
         action: () => { discardChanges(files) },
       })
     }
+
+    menuItems.push({
+      id: 'stashChanges',
+      text: 'Stash Changes',
+      action: () => { setActiveModal("stash") },
+    });
 
     // Action to view an existing file in the systems file explorer
     if (setSelectedFiles.length === 1 && changeType !== "deleted") {
@@ -131,7 +150,11 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
       clickTimerRef.current = null;
     }
 
-    stagingAreaUpdate([fileName]);
+    if (status === "unstaged") {
+      addToStagingArea([fileName]);
+    } else {
+      removeFromStagingArea([fileName]);
+    }
   };
 
   const isSelected = useRef(false);
@@ -141,7 +164,7 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     isSelected.current = selectedFiles.some(f => f.fileName === file.fileName)
 
     if (isSelected.current && selectedFiles.at(-1)?.fileName === fileName) {
-      setSelectedChange({ name: fileName, status });
+      setLastSelectedChange({ name: fileName, status });
     }
 
   }, [selectedFiles])

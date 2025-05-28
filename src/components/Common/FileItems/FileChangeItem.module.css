@@ -42,4 +42,5 @@
 
 .active {
   background-color: var(--lighter-bg) !important;
+  color: var(--active-color);
 }

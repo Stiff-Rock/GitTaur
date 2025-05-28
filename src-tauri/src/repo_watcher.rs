@@ -1,4 +1,4 @@
-use log::{error, warn};
+use log::{error, trace, warn};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -79,15 +79,19 @@ pub async fn setup_watchers(
                     let path_str = path.to_string_lossy().replace('\\', "/");
 
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
+                        trace!("--HEAD EVENT--");
                         tx.send(("head", ())).ok();
                     } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
+                        trace!("--FETCH EVENT--");
                         tx.send(("fetch", ())).ok();
                     } else if path.ends_with("index")
                         || path.ends_with("index.lock")
                         || (path_str.contains(&repo_path_str) && !path_str.contains("/.git/"))
                     {
+                        trace!("--INDEX EVENT--");
                         tx.send(("status", ())).ok();
                     } else if has_unwatched_dirs && path_str.contains("/.git/") {
+                        trace!("--GIT EVENT--");
                         tx.send((".git", ())).ok();
                     }
                 }

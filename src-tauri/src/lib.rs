@@ -25,6 +25,9 @@ use crate::types::repo_guard;
 //TODO: FUTURE:: Try to debug libssh2-rs to see why so many keys don't work or implement ssh-agent
 
 //TODO: Terminal personalization
+
+//TODO: PROPER ERRORS, INSTEAD OF SO MUCH .map_err
+
 #[command]
 fn open_terminal(mut path: String, app_handle: AppHandle) -> Result<(), String> {
     if path.is_empty() {
@@ -236,6 +239,7 @@ pub fn run() {
             repo_manager::add_to_staging_area,
             repo_manager::remove_from_staging_area,
             repo_manager::discard_changes,
+            repo_manager::stash_changes,
             repo_manager::fetch_remote,
             repo_manager::pull_remote,
             repo_manager::push_remote,

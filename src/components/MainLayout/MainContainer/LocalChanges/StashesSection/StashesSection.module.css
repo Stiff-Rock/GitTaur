@@ -114,4 +114,5 @@
 
 .selected {
   background-color: var(--lighter-bg);
+  color: var(--active-color);
 }

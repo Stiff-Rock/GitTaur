@@ -13,11 +13,7 @@ export interface ChangesSectionProps {
   sectionFileCount: string;
   actionButtons: ReactNode[];
   fileChangesArray: FileChanges[];
-  selectedFiles: FileItem[]
-  setSelectedFiles: React.Dispatch<React.SetStateAction<FileItem[]>>
   isLoading: boolean;
-  stagingAreaUpdate: (files: string[]) => void;
-  discardChanges: (files: string[]) => void;
 }
 
 const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
@@ -28,11 +24,7 @@ const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
     sectionFileCount,
     actionButtons,
     fileChangesArray,
-    selectedFiles,
-    setSelectedFiles,
     isLoading,
-    stagingAreaUpdate,
-    discardChanges,
   } = props;
 
   const { repoStatus, inChangesTab } = useMainContext();
@@ -62,10 +54,6 @@ const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
                 key={index}
                 file={file}
                 fileChangesArray={fileChangesArray}
-                selectedFiles={selectedFiles}
-                setSelectedFiles={setSelectedFiles}
-                stagingAreaUpdate={stagingAreaUpdate}
-                discardChanges={discardChanges}
                 className={styles.fileChangeItem} />
             );
           })}

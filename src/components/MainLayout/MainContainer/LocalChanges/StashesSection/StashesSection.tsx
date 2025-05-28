@@ -7,9 +7,10 @@ import React, { useState } from 'react';
 import FileChangeItem from '../../../../Common/FileItems/FileChangeItem';
 import { invoke } from '@tauri-apps/api/core';
 import { useAppContext } from '../../../../../context/AppContext';
+import { formatTimestamp } from '../../../../../utils/dateParser';
 
 const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
-  const { workspace, setNotification } = useAppContext();
+  const { config, workspace, setNotification } = useAppContext();
   const { repoStashes, inChangesTab, setFileDiff } = useMainContext();
 
   const [selectedStash, setSelectedStash] = useState<Stash | null>(null);
@@ -20,7 +21,7 @@ const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
       <div className={`${styles.stashItem} ${selectedStash === stash && styles.selected}`} onClick={() => setSelectedStash(stash)}>
         <span className={styles.stashName}>{stash.name}</span>
         <span className={styles.stashId}>SHA: {stash.id.slice(0, 7)}</span>
-        <span className={styles.stashTimestamp}>DATE: {stash.timestamp}</span>
+        <span className={styles.stashTimestamp}>DATE: {formatTimestamp(config?.dateFormat || "", stash.timestamp)}</span>
       </div>
     );
   }

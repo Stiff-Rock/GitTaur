@@ -11,6 +11,7 @@ import { GraphCommitOptions } from "./Gitgraph/Commit.tsx";
 import ScrollBar from "../../../Common/ScrollBar/ScrollBar.tsx";
 
 //TODO: apply config to graphs (such as the commit limit)
+//TODO: ADD AUTHOR ICON
 //TODO: Add a visual indicator of unpushed changes
 //WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
 //NOTE: cant handle render of big repos

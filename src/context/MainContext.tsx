@@ -1,6 +1,9 @@
 import React, { createContext, useState, useContext, useEffect, useRef, useLayoutEffect } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Base64 } from 'js-base64';
+import { useAppContext } from './AppContext';
+import { invoke } from '@tauri-apps/api/core';
+import { FileItem } from '../components/MainLayout/MainContainer/LocalChanges/LocalChanges';
 
 interface MainContextType {
   // State 
@@ -13,7 +16,7 @@ interface MainContextType {
   repoStatus: RepoStatus | null;
   repoStashes: Stash[] | null;
 
-  selectedChange: { name: string, status: FileStatusState } | null;
+  lastSelectedChange: { name: string, status: FileStatusState } | null;
   fileDiff: string;
 
   commitInfo: CommitLog | null;
@@ -21,15 +24,22 @@ interface MainContextType {
   showInfoSidebar: boolean;
   shouldScroll: boolean;
 
+  isUnstagedLoading: boolean;
+  isStagedLoading: boolean;
+  isStashLoading: boolean;
+
+  selectedFiles: FileItem[];
+  setSelectedFiles: React.Dispatch<React.SetStateAction<FileItem[]>>;
+
   // Setters 
   setCurrentAppTab: React.Dispatch<React.SetStateAction<AppTabs>>;
-  setInChangesTab: React.Dispatch<React.SetStateAction<boolean>>
+  setInChangesTab: React.Dispatch<React.SetStateAction<boolean>>;
 
   setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
   setRepoStatus: React.Dispatch<React.SetStateAction<RepoStatus | null>>;
   setRepoStashes: React.Dispatch<React.SetStateAction<Stash[] | null>>;
 
-  setSelectedChange: React.Dispatch<React.SetStateAction<{ name: string, status: FileStatusState } | null>>;
+  setLastSelectedChange: React.Dispatch<React.SetStateAction<{ name: string, status: FileStatusState } | null>>;
   setFileDiff: React.Dispatch<React.SetStateAction<string>>;
 
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
@@ -47,6 +57,14 @@ interface MainContextType {
 
   // Global Functions
   scrollToCommit: () => void;
+
+  getRepoStatus: () => void;
+  getStashedChanges: () => void;
+
+  addToStagingArea: (files: string[]) => void;
+  removeFromStagingArea: (files: string[]) => void;
+  discardChanges: (files: string[]) => void;
+  stashChanges: (stashMsg: String) => void;
 }
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
@@ -58,6 +76,8 @@ interface MainProviderProps {
 
 export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const { children, repoPath } = props;
+
+  const { setNotification } = useAppContext();
 
   const repoId = Base64.encodeURI(repoPath);
   const headEvent = `git-head-updated-${repoId}`;
@@ -71,7 +91,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);
 
-  const [selectedChange, setSelectedChange] = useState<{ name: string, status: FileStatusState } | null>(null);
+  const [lastSelectedChange, setLastSelectedChange] = useState<{ name: string, status: FileStatusState } | null>(null);
   const [fileDiff, setFileDiff] = useState<string>("");
 
   const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
@@ -157,6 +177,111 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     scrollbars.scrollTop(targetScrollTop);*/
   };
 
+  // Changes section functions and states
+  const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
+  const [isStagedLoading, setIsStageLoading] = useState(false);
+  const [isStashLoading, setIsStashLoading] = useState(false);
+
+  // This ref is used to ensure that no other operation that might change status executes while another is runnning
+  const statusUpdatePromiseRef = useRef<Promise<any> | null>(null);
+
+  const getRepoStatus = () => {
+    statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
+      .then(setRepoStatus)
+      .catch(e => {
+        console.error(e);
+        setNotification(e);
+      })
+  };
+
+  const getStashedChanges = () => {
+    statusUpdatePromiseRef.current = invoke<Stash[]>("get_stashed_changes", { repoPath })
+      .then(setRepoStashes)
+      .catch(e => {
+        console.error(e);
+        setNotification(e);
+      }).finally(() => setIsStashLoading(false));
+  };
+
+  const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([]);
+
+  const addToStagingArea = async (files: string[]) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+    setIsStageLoading(true);
+
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
+
+    statusUpdatePromiseRef.current = invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
+      const msg = `Error staging files - ${e}`
+      console.error(msg);
+      setNotification(msg);
+    }).finally(() => setIsStageLoading(false));
+  };
+
+  const removeFromStagingArea = async (files: string[]) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+    setIsUnstageLoading(true);
+
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
+
+    statusUpdatePromiseRef.current = invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
+      const msg = `Error unstaging files - ${e}`
+      console.error(msg);
+      setNotification(msg);
+    }).finally(() => setIsUnstageLoading(false));
+  };
+
+  const discardChanges = async (files: string[]) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+    setIsUnstageLoading(true);
+
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
+
+    statusUpdatePromiseRef.current = invoke("discard_changes", { repoPath, files }).catch((e) => {
+      console.error("Error discarding changes: ", e);
+      setNotification("Error discarding changes: " + e);
+    }).finally(() => setIsUnstageLoading(false));
+  };
+
+  const stashChanges = async (stashMsg: String) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    const files = selectedFiles.map(f => f.fileName);
+    const fileStatus = files[0];
+
+    let loadingIndicatorState: (isLoading: boolean) => void;
+    if (fileStatus === "unstaged") {
+      loadingIndicatorState = setIsUnstageLoading;
+    } else {
+      loadingIndicatorState = setIsStageLoading;
+    }
+
+    loadingIndicatorState(true);
+
+    setSelectedFiles((prev => {
+      return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
+    }))
+
+    statusUpdatePromiseRef.current = invoke("stash_changes", { repoPath, stashMsg, files }).catch((e) => {
+      console.error("Error stashing changes: ", e);
+      setNotification("Error stashing changes: " + e);
+    }).finally(() => loadingIndicatorState(false));
+  };
+
   return (
     <MainContext.Provider value={{
       repoPath,
@@ -168,7 +293,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       repoStatus, setRepoStatus,
       repoStashes, setRepoStashes,
 
-      selectedChange, setSelectedChange,
+      lastSelectedChange, setLastSelectedChange,
       fileDiff, setFileDiff,
 
       commitInfo, setCommitInfo,
@@ -176,12 +301,25 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       showInfoSidebar, setShowInfoSidebar,
       shouldScroll, setShouldScroll,
 
+      isUnstagedLoading,
+      isStagedLoading,
+      isStashLoading,
+
+      selectedFiles, setSelectedFiles,
+
       headEvent,
       fetchEvent,
       statusEvent,
 
       scrollbarRef,
       scrollToCommit,
+
+      getRepoStatus,
+      getStashedChanges,
+      addToStagingArea,
+      removeFromStagingArea,
+      discardChanges,
+      stashChanges,
     }}>
       {children}
     </MainContext.Provider>
