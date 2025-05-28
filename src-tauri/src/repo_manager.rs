@@ -697,8 +697,8 @@ pub async fn discard_changes(repo_path: String, files: Vec<String>) -> Result<()
     Ok(())
 }
 
+//TODO: STASH
 #[command]
-//BUG: IS STAGES CHANGES FOR SOME REASON
 pub async fn stash_changes(
     repo_path: String,
     stash_msg: String,
@@ -708,50 +708,28 @@ pub async fn stash_changes(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-    let signature = repo.signature().map_err(|e| e.to_string())?;
 
-    // Create a pathspec for filtering
-    let pathspec = git2::Pathspec::new(files.iter()).map_err(|e| e.to_string())?;
+    Ok(())
+}
 
-    // First, stage everything
-    let mut index = repo.index().map_err(|e| e.to_string())?;
+//TODO: APPLY
+#[command]
+pub async fn apply_stash(repo_path: String, stash_id: String) -> Result<(), String> {
+    info!("Applying stash {stash_id} in repo {repo_path}");
 
-    // Use status to find all changes
-    let statuses = repo
-        .statuses(Some(
-            git2::StatusOptions::new()
-                .include_untracked(true)
-                .recurse_untracked_dirs(true),
-        ))
-        .map_err(|e| e.to_string())?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    // Stage all changes that match our pathspec
-    for entry in statuses.iter() {
-        if let Some(path) = entry.path() {
-            if pathspec.matches_path(Path::new(path), git2::PathspecFlags::DEFAULT) {
-                if entry.status().is_wt_deleted() {
-                    index
-                        .remove_path(Path::new(path))
-                        .map_err(|e| e.to_string())?;
-                } else {
-                    index.add_path(Path::new(path)).map_err(|e| e.to_string())?;
-                }
-            }
-        }
-    }
+    Ok(())
+}
 
-    index.write().map_err(|e| e.to_string())?;
+//TODO: DROP
+#[command]
+pub async fn drop_stash(repo_path: String, stash_id: String) -> Result<(), String> {
+    info!("Dropping stash {stash_id} in repo {repo_path}");
 
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-    // Create stash
-    repo.stash_save(&signature, &stash_msg, Some(StashFlags::KEEP_INDEX))
-        .map_err(|e| e.to_string())?;
-
-    // Reset working directory
-    let head = repo.head().map_err(|e| e.to_string())?;
-    let tree = head.peel_to_tree().map_err(|e| e.to_string())?;
-    repo.reset(&tree.into_object(), git2::ResetType::Mixed, None)
-        .map_err(|e| e.to_string())?;
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
     Ok(())
 }
