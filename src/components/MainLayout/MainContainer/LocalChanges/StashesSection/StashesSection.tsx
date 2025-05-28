@@ -3,23 +3,29 @@ import ScrollBar from "../../../../Common/ScrollBar/ScrollBar";
 import Throbber from '../../../../Common/Throbber/Throbber';
 import { useMainContext } from '../../../../../context/MainContext';
 import { ArchiveIcon, FileDiffIcon } from '@primer/octicons-react'
-import FileStatusChangeItem from '../../../../Common/FileItems/FileChangeStatusItem';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import FileChangeItem from '../../../../Common/FileItems/FileChangeItem';
 
-export interface StashesSectionProps {
-  stashes: string[]
-  isLoading: boolean;
-}
+const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
+  const { repoStashes, inChangesTab, selectedFile, setSelectedFile } = useMainContext();
 
-const StashesSection: React.FC<StashesSectionProps> = (props) => {
-  const { isLoading, stashes } = props;
-  const { repoStatus } = useMainContext();
+  const [selectedStash, setSelectedStash] = useState<Stash | null>(null);
 
-  const [selectedStash, setSelectedStash] = useState<string[]>([]);
+  const StashItem: React.FC<{ stash: Stash }> = ({ stash }) => {
+    return (
+      <div className={`${styles.stashItem} ${selectedStash === stash && styles.selected}`} onClick={() => setSelectedStash(stash)}>
+        <span className={styles.stashName}>{stash.name}</span>
+        <span className={styles.stashId}>SHA: {stash.id}</span>
+        <span className={styles.stashTimestamp}>DATE: {stash.timestamp}</span>
+      </div>
+    );
+  }
+
+  React.useEffect(() => { console.log("STASHES: ", repoStashes); }, [repoStashes])
 
   return (
     <>
-      <div className={`${styles.section}`}>
+      <div className={`${styles.section} ${!inChangesTab ? '' : 'inactive'}`}>
         <div className={`${styles.sectionBar}`}>
           <div className={styles.sectionIcon}>
             <ArchiveIcon />
@@ -28,21 +34,21 @@ const StashesSection: React.FC<StashesSectionProps> = (props) => {
           <span className={styles.sectionName}>Stashes</span>
 
           <div className={styles.actionsContainer}>
-            <span className={styles.sectionFileCount}>({stashes.length})</span>
+            <span className={styles.sectionFileCount}>({repoStashes?.length || 0})</span>
             <Throbber size='small' isVisible={isLoading} />
           </div>
         </div>
 
-        <ScrollBar autoHide={true} offset={5}>
+        <ScrollBar containerHeight={85} autoHide={true} offset={5}>
           <div className={styles.sectionContent}>
-            {repoStatus && stashes.map((_stash, _index) => (
-              <></>
+            {repoStashes && repoStashes.map((stash, index) => (
+              <StashItem key={index} stash={stash} />
             ))}
           </div>
         </ScrollBar>
       </div >
 
-      <div className={`${styles.section}`}>
+      <div className={`${styles.section} ${!inChangesTab ? '' : 'inactive'}`}>
         <div className={`${styles.sectionBar}`}>
           <div className={styles.sectionIcon}>
             <FileDiffIcon />
@@ -51,22 +57,20 @@ const StashesSection: React.FC<StashesSectionProps> = (props) => {
           <span className={styles.sectionName}>Changes</span>
 
           <div className={styles.actionsContainer}>
-            <span className={styles.sectionFileCount}>({selectedStash.length})</span>
+            <span className={styles.sectionFileCount}>({selectedStash?.contents.length || 0})</span>
           </div>
         </div>
 
-        <ScrollBar autoHide={true} offset={5}>
+        <ScrollBar containerHeight={85} autoHide={true} offset={5}>
           <div className={styles.sectionContent}>
-            {repoStatus && selectedStash.map((_change, _index) => (
-              <FileStatusChangeItem
+            {selectedStash && selectedStash.contents.map((file, index) => (
+              <FileChangeItem
                 key={index}
-                file={file}
-                fileChangesArray={fileChangesArray}
-                selectedFiles={selectedFiles}
-                setSelectedFiles={setSelectedFiles}
-                stagingAreaUpdate={stagingAreaUpdate}
-                discardChanges={discardChanges}
-                className={styles.fileChangeItem} />
+                onClick={() => setSelectedFile(file.file)}
+                changeType={file.changeType}
+                fileName={file.file}
+                className={`${styles.stashFileChange} ${selectedFile.includes(file.file) ? styles.selected : ''}`}
+              />
             ))}
           </div>
         </ScrollBar>

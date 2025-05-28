@@ -21,3 +21,12 @@ pub struct RepoStatus {
     pub unstaged_files: Vec<FileChanges>,
     pub staged_files: Vec<FileChanges>,
 }
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Stash {
+    pub id: String,
+    pub name: String,
+    pub timestamp: i64,
+    pub contents: Vec<FileChanges>,
+}

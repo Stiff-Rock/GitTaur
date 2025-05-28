@@ -10,6 +10,7 @@
 }
 
 .diffSection,
+.stashChangesSection,
 .commitSection,
 .commitSummaryContainer,
 .commitBodyInput {
@@ -19,6 +20,10 @@
 .diffSection {
   border-bottom: solid 1px var(--border-color);
   height: 60%;
+}
+
+.stashChangesSection {
+  height: 100%;
 }
 
 .commitSection {
@@ -92,4 +97,37 @@
 .commitSection button {
   margin-bottom: 0;
   height: 35px;
+}
+
+.section {
+  height: 50%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sectionBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 15%;
+  padding: 10px;
+  background-color: var(--secondary-bg);
+  border-style: solid;
+  border-color: var(--border-color);
+  border-width: 1px 0 1px 0;
+  box-sizing: border-box;
+}
+
+.sectionBar div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.sectionIcon {
+  width: 25%;
+  justify-content: flex-start !important;
 }

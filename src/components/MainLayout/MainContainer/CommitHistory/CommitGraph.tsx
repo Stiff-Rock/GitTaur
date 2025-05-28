@@ -75,6 +75,7 @@ const CommitGraph: React.FC = () => {
   //TODO: RECTS HAVE TO FIT ENTERILY AND SELECTED COMMTIS ARE BUGGER SOMEHOW
   return (
     <ScrollBar
+      containerHeight={100}
       autoHide={true}
       offset={2}
       className={currentAppTab === "commit-history" ? '' : 'inactive'}

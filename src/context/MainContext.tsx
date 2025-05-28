@@ -5,9 +5,16 @@ import { Base64 } from 'js-base64';
 interface MainContextType {
   // State 
   currentAppTab: AppTabs;
+  inChangesTab: boolean;
+
   repoPath: string;
+
   repoInfo: RepoInfo | null;
   repoStatus: RepoStatus | null;
+  repoStashes: Stash[] | null;
+
+  selectedFile: string;
+
   commitInfo: CommitLog | null;
   selectedCommit: string;
   showInfoSidebar: boolean;
@@ -15,8 +22,14 @@ interface MainContextType {
 
   // Setters 
   setCurrentAppTab: React.Dispatch<React.SetStateAction<AppTabs>>;
+  setInChangesTab: React.Dispatch<React.SetStateAction<boolean>>
+
   setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
   setRepoStatus: React.Dispatch<React.SetStateAction<RepoStatus | null>>;
+  setRepoStashes: React.Dispatch<React.SetStateAction<Stash[] | null>>;
+
+  setSelectedFile: React.Dispatch<React.SetStateAction<string>>;
+
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -50,9 +63,13 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const statusEvent = `git-status-changed-${repoId}`;
 
   const [currentAppTab, setCurrentAppTab] = useState<AppTabs>("commit-history");
+  const [inChangesTab, setInChangesTab] = useState(true);
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
+  const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);
+
+  const [selectedFile, setSelectedFile] = useState<string>("");
 
   const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
@@ -142,8 +159,14 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       repoPath,
 
       currentAppTab, setCurrentAppTab,
+      inChangesTab, setInChangesTab,
+
       repoInfo, setRepoInfo,
       repoStatus, setRepoStatus,
+      repoStashes, setRepoStashes,
+
+      selectedFile, setSelectedFile,
+
       commitInfo, setCommitInfo,
       selectedCommit, setSelectedCommit,
       showInfoSidebar, setShowInfoSidebar,

@@ -5,6 +5,7 @@
 .changesTabs {
   height: 6%;
   width: 100%;
+  box-sizing: border-box;
   display: flex;
 }
 

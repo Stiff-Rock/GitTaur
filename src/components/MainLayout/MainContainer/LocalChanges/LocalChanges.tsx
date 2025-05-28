@@ -8,7 +8,7 @@ import { DiffModifiedIcon, CheckboxIcon } from '@primer/octicons-react'
 import StageAllButton from './ActionButtons/StageAllButton';
 import UnstageAllButton from './ActionButtons/UnstageAllButton';
 import ChangesSection, { ChangesSectionProps } from './ChangesSection/ChangesSection';
-import StashesSection, { StashesSectionProps } from './StashesSection/StashesSection';
+import StashesSection from './StashesSection/StashesSection';
 
 //TODO: STASH AND POP
 
@@ -24,6 +24,8 @@ const LocalChanges: React.FC = () => {
     currentAppTab,
     repoInfo,
     repoStatus, setRepoStatus,
+    inChangesTab, setInChangesTab,
+    setRepoStashes,
     statusEvent, headEvent
   } = useMainContext();
 
@@ -32,8 +34,6 @@ const LocalChanges: React.FC = () => {
   const [isUnstagedLoading, setIsUnstageLoading] = useState(false);
   const [isStagedLoading, setIsStageLoading] = useState(false);
   const [isStashLoading, setIsStashLoading] = useState(false);
-
-  const [inChangesTab, setInChangesTab] = useState(true);
 
   // This ref is used to ensure that no other operation that might change status executes while another is runnning
   const statusUpdatePromiseRef = useRef<Promise<any> | null>(null);
@@ -48,8 +48,8 @@ const LocalChanges: React.FC = () => {
   }
 
   const getStashedChanges = () => {
-    statusUpdatePromiseRef.current = invoke<RepoStatus>("get_stashed_changes", { repoPath })
-      .then(setRepoStatus)
+    statusUpdatePromiseRef.current = invoke<Stash[]>("get_stashed_changes", { repoPath })
+      .then(setRepoStashes)
       .catch(e => {
         console.error(e);
         setNotification(e);
@@ -163,11 +163,6 @@ const LocalChanges: React.FC = () => {
     discardChanges
   }
 
-  const stashesSectionProps: StashesSectionProps = {
-    stashes: [],
-    isLoading: isStashLoading,
-  }
-
   return (
     <div className={`${styles.localChangesContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
       <div className={styles.changesTabs}>
@@ -186,18 +181,10 @@ const LocalChanges: React.FC = () => {
         </button>
       </div>
 
-      {inChangesTab &&
-        <>
-          {/*BUG: BOTH SECTIONS ARE NOT THE SAME SIZE*/}
-          <ChangesSection {...unstagedFileSectionProps} />
-          <ChangesSection {...stagedFileSectionProps} />
-        </>
-      }
+      <ChangesSection {...unstagedFileSectionProps} />
+      <ChangesSection {...stagedFileSectionProps} />
 
-      {!inChangesTab &&
-        /*BUG: BOTH SECTIONS ARE NOT THE SAME SIZE*/
-        <StashesSection {...stashesSectionProps} />
-      }
+      <StashesSection isLoading={isStashLoading} />
     </div >
   );
 };

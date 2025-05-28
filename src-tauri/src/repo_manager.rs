@@ -3,13 +3,13 @@ use crate::{
     git2json::{self, ChangeType, CommitLog, FileChanges},
     types::{
         repo_guard::RepoGuard,
-        repo_info::{RepoInfo, RepoStatus},
+        repo_info::{RepoInfo, RepoStatus, Stash},
     },
 };
 use auth_git2_pem::GitAuthenticator;
 use git2::{
-    build::CheckoutBuilder, AnnotatedCommit, BranchType, FetchOptions, IndexAddOption,
-    MergeOptions, Reference, Repository, Signature, Status, StatusOptions,
+    build::CheckoutBuilder, AnnotatedCommit, BranchType, Commit, Delta, FetchOptions,
+    IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use log::{error, info};
@@ -283,6 +283,112 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
         unstaged_files,
         staged_files,
     })
+}
+
+#[command]
+pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String> {
+    let _repo_lock = RepoGuard::new(&repo_path, true)?;
+
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut stash_entries: Vec<(String, Oid)> = vec![];
+    repo.stash_foreach(|_index, name, stash_id| {
+        stash_entries.push((name.to_string(), *stash_id));
+        true
+    })
+    .map_err(|e| format!("Error iterating through repo stashes: {e}"))?;
+
+    let mut stashes: Vec<Stash> = vec![];
+    for (name, oid) in stash_entries {
+        let stash_commit = repo
+            .find_commit(oid)
+            .map_err(|e| format!("Failed to obtain stash info for {name}-{oid}: {e}"))?;
+
+        let timestamp = stash_commit.time().seconds();
+
+        let contents: Vec<FileChanges> = get_stash_content(&repo, &stash_commit)
+            .map_err(|e| format!("Failed to get stash changes for {name}-{oid}: {e}"))?;
+
+        let id = oid.to_string().chars().take(7).collect();
+
+        stashes.push(Stash {
+            id,
+            name,
+            timestamp,
+            contents,
+        });
+    }
+
+    Ok(stashes)
+}
+
+fn get_stash_content(repo: &Repository, commit: &Commit) -> Result<Vec<FileChanges>, git2::Error> {
+    let mut changes = Vec::new();
+
+    if commit.parent_count() == 0 {
+        return Ok(changes);
+    }
+
+    // Get the base commit (parent 0)
+    let parent0 = commit.parent(0)?;
+    let parent_tree = parent0.tree()?;
+
+    // Get all the parent trees we need to diff
+    let mut trees_to_diff = vec![
+        commit.tree()?, // The stash itself (unstaged changes)
+    ];
+
+    // Add index changes if present
+    if commit.parent_count() > 1 {
+        trees_to_diff.push(commit.parent(1)?.tree()?);
+    }
+
+    // Add untracked files if present
+    if commit.parent_count() > 2 {
+        trees_to_diff.push(commit.parent(2)?.tree()?);
+    }
+
+    // Process all trees
+    let mut diff_options = git2::DiffOptions::new();
+    let mut file_set = std::collections::HashSet::new();
+
+    for tree in trees_to_diff {
+        let diff =
+            repo.diff_tree_to_tree(Some(&parent_tree), Some(&tree), Some(&mut diff_options))?;
+
+        diff.foreach(
+            &mut |delta, _| {
+                let file_path = match delta.status() {
+                    Delta::Deleted => delta.old_file().path(),
+                    _ => delta.new_file().path(),
+                };
+
+                if let Some(file_path) = file_path {
+                    let path_str = file_path.to_string_lossy().into_owned();
+                    if !file_set.contains(&path_str) {
+                        file_set.insert(path_str.clone());
+
+                        let change_type = match delta.status() {
+                            Delta::Added => ChangeType::Added,
+                            Delta::Deleted => ChangeType::Deleted,
+                            _ => ChangeType::Modified,
+                        };
+
+                        changes.push(FileChanges {
+                            change_type,
+                            file: path_str,
+                        });
+                    }
+                }
+                true
+            },
+            None,
+            None,
+            None,
+        )?;
+    }
+
+    Ok(changes)
 }
 
 fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status) -> ChangeType {

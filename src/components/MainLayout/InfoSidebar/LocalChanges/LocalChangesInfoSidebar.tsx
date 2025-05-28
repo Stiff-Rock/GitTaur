@@ -4,7 +4,7 @@ import CommitButton from "./CommitButton/CommitButton";
 import { useState } from "react";
 
 const LocalChangesInfoSidebar: React.FC = () => {
-  const { currentAppTab } = useMainContext();
+  const { currentAppTab, inChangesTab, selectedFile } = useMainContext();
 
   const [commitSummary, setCommitSummary] = useState("");
   const [commitBody, setCommitBody] = useState("");
@@ -18,11 +18,11 @@ const LocalChangesInfoSidebar: React.FC = () => {
 
   return (
     <div className={`${styles.mainContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
-      <div className={styles.diffSection}>
-        IMPLEMENT!!!
+      <div className={inChangesTab ? styles.diffSection : styles.stashChangesSection}>
+        {selectedFile}
       </div>
 
-      <div className={styles.commitSection}>
+      <div className={`${styles.commitSection} ${inChangesTab ? '' : 'inactive'}`}>
         <span className={styles.commitSectionTitle}>Commit Options</span>
 
         <div className={styles.commitInputsContainer}>

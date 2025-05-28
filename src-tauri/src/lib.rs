@@ -5,7 +5,6 @@ mod repo_watcher;
 mod types;
 mod workspace_manager;
 use chrono::Local;
-use config_manager::config;
 use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
 use log::{info, LevelFilter};
@@ -231,6 +230,7 @@ pub fn run() {
             repo_manager::clone_repo,
             repo_manager::get_repo_info,
             repo_manager::get_repo_status,
+            repo_manager::get_stashed_changes,
             repo_manager::add_to_staging_area,
             repo_manager::remove_from_staging_area,
             repo_manager::discard_changes,

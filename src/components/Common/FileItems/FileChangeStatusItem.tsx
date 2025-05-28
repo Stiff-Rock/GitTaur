@@ -1,11 +1,12 @@
+import styles from './FileChangeItem.module.css'
 import { Menu, MenuItemOptions } from '@tauri-apps/api/menu';
 import { useAppContext } from '../../../context/AppContext';
-import styles from './FileChangeItem.module.css'
 import { DashIcon, PlusIcon, DiffIcon } from '@primer/octicons-react'
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { join } from '@tauri-apps/api/path';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { FileItem } from '../../MainLayout/MainContainer/LocalChanges/LocalChanges';
+import { useMainContext } from '../../../context/MainContext';
 
 interface FileChangeItemProps {
   file: FileItem
@@ -19,10 +20,12 @@ interface FileChangeItemProps {
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu, workspace, setNotification } = useAppContext();
+  const { setSelectedFile } = useMainContext();
   const { file, fileChangesArray, selectedFiles, setSelectedFiles, stagingAreaUpdate, discardChanges, className } = props;
   const { fileName, changeType, status } = file;
 
   //TODO: STASH
+  //BUG: TOGGLE AFTER SHIFT SELECT IS BUGGED AS HELL
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
     const currentSelectedFiles = selectedFiles.some(f => f.fileName === fileName)
       ? selectedFiles
@@ -131,9 +134,21 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     stagingAreaUpdate([fileName]);
   };
 
+  const isSelected = useRef(false);
+  useEffect(() => {
+    if (!selectedFiles) return;
+
+    isSelected.current = selectedFiles.some(f => f.fileName === file.fileName)
+
+    if (isSelected.current && selectedFiles.at(-1)?.fileName === fileName) {
+      setSelectedFile(fileName);
+    }
+
+  }, [selectedFiles])
+
   return (
     <div
-      className={`${styles.changeItem} ${className} ${selectedFiles.some(f => f.fileName === file.fileName) ? styles.active : ''}`}
+      className={`${styles.changeItem} ${className} ${isSelected.current ? styles.active : ''}`}
       onContextMenu={handleOpenContextMenu}
       onClick={handleItemClick}
       onDoubleClick={handleDoubleClick}

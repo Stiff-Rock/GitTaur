@@ -43,3 +43,10 @@ interface RepoInfo {
   tags: string[];
   commitHistory: Record<string, CommitLog>;
 }
+
+interface Stash {
+  id: string,
+  name: string,
+  timestamp: number,
+  contents: FileChanges[],
+}

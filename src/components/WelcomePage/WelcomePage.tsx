@@ -18,6 +18,7 @@ function WelcomePage() {
     <div className={`${styles.main} ${checkPageType("Welcome") || !workspace ? '' : 'inactive'}`}>
       <div className={styles.subContainer}>
         <span className={styles.title}>Let's start working</span>
+        {/*TODO: WELCOMEPAGE OPENED REPOS HISTORY*/}
         <ScrollBar autoHide={true} offset={5}>
           <div className={styles.history}>
             <span className={styles.noneFoundMsg}>No recently opened repositories found</span>

@@ -35,10 +35,10 @@ const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
     discardChanges,
   } = props;
 
-  const { repoStatus } = useMainContext();
+  const { repoStatus, inChangesTab } = useMainContext();
 
   return (
-    <div className={`${styles.section}`}>
+    <div className={`${styles.section} ${inChangesTab ? '' : 'inactive'}`}>
       <div className={`${styles.sectionBar}`}>
         <div className={styles.sectionIcon}>
           {barIcon}
@@ -53,7 +53,7 @@ const ChangesSection: React.FC<ChangesSectionProps> = (props) => {
         </div>
       </div>
 
-      <ScrollBar autoHide={true} offset={5}>
+      <ScrollBar containerHeight={85} autoHide={true} offset={5}>
         <div className={styles.sectionContent}>
           {repoStatus && fileChangesArray.map((changes, index) => {
             const file: FileItem = { fileName: changes.file, status, changeType: changes.changeType };

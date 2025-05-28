@@ -1,5 +1,5 @@
 .section {
-  height: 50%;
+  height: 47%;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -59,7 +59,39 @@
   height: 85%;
 }
 
-.fileChangeItem {
+.stashItem {
+  user-select: none;
+  height: 70px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5px;
+  border-bottom: solid 2px var(--secondary-bg);
+  box-sizing: border-box;
+}
+
+.stashItem:hover {
+  background-color: var(--lighter-bg);
+  cursor: pointer;
+}
+
+.stashItem span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stashName {
+  margin-bottom: 5px;
+}
+
+.stashId,
+.stashTimestamp {
+  font-size: var(--font-size-tab);
+}
+
+.stashFileChange {
   user-select: none;
   background-color: transparent;
   height: 25px;
@@ -69,7 +101,17 @@
   border-radius: 0;
 }
 
-.fileChangeItem:hover {
+.stashFileChange span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stashFileChange:hover {
   background-color: var(--lighter-bg);
   cursor: pointer;
+}
+
+.selected {
+  background-color: var(--lighter-bg);
 }

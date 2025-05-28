@@ -4,6 +4,7 @@ import Scrollbars from 'react-custom-scrollbars-2';
 
 interface ScrollBarProps {
   children: React.ReactNode;
+  containerHeight: number;
   width?: number,
   offset?: number,
   autoHide?: boolean,
@@ -15,6 +16,7 @@ interface ScrollBarProps {
 const ScrollBar = forwardRef<Scrollbars, ScrollBarProps>((props, ref) => {
   const {
     children,
+    containerHeight,
     width = 10,
     offset = 0,
     autoHide,
@@ -25,6 +27,7 @@ const ScrollBar = forwardRef<Scrollbars, ScrollBarProps>((props, ref) => {
 
   return (
     <Scrollbars
+      style={{ height: `${containerHeight}%` }}
       autoHide={autoHide}
       autoHideTimeout={autoHideTimeout}
       autoHideDuration={autoHideDuration}

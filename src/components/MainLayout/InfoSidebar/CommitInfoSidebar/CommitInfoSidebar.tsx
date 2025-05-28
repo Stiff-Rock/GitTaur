@@ -64,7 +64,7 @@ const CommitInfoSidebar: React.FC = () => {
   return (
     <div className={`${styles.infoSidebar} ${currentAppTab === "commit-history" ? '' : 'inactive'}`}>
       {commitInfo ? (
-        <ScrollBar autoHide={true} offset={0}>
+        <ScrollBar containerHeight={100} autoHide={true} offset={0}>
           <div className={styles.content}>
             <span className={styles.title}>Author</span>
 
