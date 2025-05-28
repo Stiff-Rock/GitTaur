@@ -1,10 +1,13 @@
 import styles from "./LocalChangesInfoSidebar.module.css";
 import { useMainContext } from "../../../../context/MainContext";
 import CommitButton from "./CommitButton/CommitButton";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { useAppContext } from "../../../../context/AppContext";
 
 const LocalChangesInfoSidebar: React.FC = () => {
-  const { currentAppTab, inChangesTab, selectedFile } = useMainContext();
+  const { setNotification, workspace } = useAppContext();
+  const { currentAppTab, inChangesTab, selectedChange, fileDiff, setFileDiff } = useMainContext();
 
   const [commitSummary, setCommitSummary] = useState("");
   const [commitBody, setCommitBody] = useState("");
@@ -16,11 +19,37 @@ const LocalChangesInfoSidebar: React.FC = () => {
     setCommitBody,
   };
 
+  useLayoutEffect(() => {
+    if (!selectedChange || !workspace) return;
+
+    const repoPath = workspace.activeTab;
+    const filePath = selectedChange.name;
+    const status = selectedChange.status;
+
+    invoke<string>("get_file_diff", { repoPath, filePath, status })
+      .then(setFileDiff)
+      .catch((e) => {
+        console.error(e);
+        setNotification(e);
+      });
+  }, [selectedChange])
+
+  //TODO: MAYBE USE https://www.npmjs.com/package/react-diff-viewer 
+
   return (
     <div className={`${styles.mainContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
-      <div className={inChangesTab ? styles.diffSection : styles.stashChangesSection}>
-        {selectedFile}
-      </div>
+      <div
+        className={`${styles.diffSection} ${!inChangesTab && styles.stashChangesSection}`}
+        dangerouslySetInnerHTML={
+          fileDiff
+            ? { __html: fileDiff }
+            : {
+              __html: selectedChange && !fileDiff
+                ? "New file or no content changes"
+                : "Select a file to see diff"
+            }
+        }
+      />
 
       <div className={`${styles.commitSection} ${inChangesTab ? '' : 'inactive'}`}>
         <span className={styles.commitSectionTitle}>Commit Options</span>

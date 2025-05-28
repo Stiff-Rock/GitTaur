@@ -5,23 +5,37 @@ import { useMainContext } from '../../../../../context/MainContext';
 import { ArchiveIcon, FileDiffIcon } from '@primer/octicons-react'
 import React, { useState } from 'react';
 import FileChangeItem from '../../../../Common/FileItems/FileChangeItem';
+import { invoke } from '@tauri-apps/api/core';
+import { useAppContext } from '../../../../../context/AppContext';
 
 const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
-  const { repoStashes, inChangesTab, selectedFile, setSelectedFile } = useMainContext();
+  const { workspace, setNotification } = useAppContext();
+  const { repoStashes, inChangesTab, setFileDiff } = useMainContext();
 
   const [selectedStash, setSelectedStash] = useState<Stash | null>(null);
+  const [selectedFileChange, setSelectedFileChange] = useState<string>("");
 
   const StashItem: React.FC<{ stash: Stash }> = ({ stash }) => {
     return (
       <div className={`${styles.stashItem} ${selectedStash === stash && styles.selected}`} onClick={() => setSelectedStash(stash)}>
         <span className={styles.stashName}>{stash.name}</span>
-        <span className={styles.stashId}>SHA: {stash.id}</span>
+        <span className={styles.stashId}>SHA: {stash.id.slice(0, 7)}</span>
         <span className={styles.stashTimestamp}>DATE: {stash.timestamp}</span>
       </div>
     );
   }
 
-  React.useEffect(() => { console.log("STASHES: ", repoStashes); }, [repoStashes])
+  const getStashChangeDiff = (filePath: string) => {
+    if (!workspace || !selectedStash) return;
+    const repoPath = workspace.activeTab;
+    const stashId = selectedStash.id;
+    invoke<string>("get_file_diff_from_stash", { repoPath, stashId, filePath })
+      .then(setFileDiff)
+      .catch((e) => {
+        console.error(e);
+        setNotification(e);
+      });
+  };
 
   return (
     <>
@@ -39,6 +53,7 @@ const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
           </div>
         </div>
 
+        {/*TODO: APPLY & DROP*/}
         <ScrollBar containerHeight={85} autoHide={true} offset={5}>
           <div className={styles.sectionContent}>
             {repoStashes && repoStashes.map((stash, index) => (
@@ -66,10 +81,13 @@ const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
             {selectedStash && selectedStash.contents.map((file, index) => (
               <FileChangeItem
                 key={index}
-                onClick={() => setSelectedFile(file.file)}
+                onClick={() => {
+                  setSelectedFileChange(file.file);
+                  getStashChangeDiff(file.file);
+                }}
                 changeType={file.changeType}
                 fileName={file.file}
-                className={`${styles.stashFileChange} ${selectedFile.includes(file.file) ? styles.selected : ''}`}
+                className={`${styles.stashFileChange} ${selectedFileChange === file.file ? styles.selected : ''}`}
               />
             ))}
           </div>

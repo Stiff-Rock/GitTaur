@@ -231,6 +231,8 @@ pub fn run() {
             repo_manager::get_repo_info,
             repo_manager::get_repo_status,
             repo_manager::get_stashed_changes,
+            repo_manager::get_file_diff,
+            repo_manager::get_file_diff_from_stash,
             repo_manager::add_to_staging_area,
             repo_manager::remove_from_staging_area,
             repo_manager::discard_changes,

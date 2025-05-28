@@ -20,7 +20,7 @@ interface FileChangeItemProps {
 
 const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   const { openContextMenu, workspace, setNotification } = useAppContext();
-  const { setSelectedFile } = useMainContext();
+  const { setSelectedChange } = useMainContext();
   const { file, fileChangesArray, selectedFiles, setSelectedFiles, stagingAreaUpdate, discardChanges, className } = props;
   const { fileName, changeType, status } = file;
 
@@ -141,7 +141,7 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     isSelected.current = selectedFiles.some(f => f.fileName === file.fileName)
 
     if (isSelected.current && selectedFiles.at(-1)?.fileName === fileName) {
-      setSelectedFile(fileName);
+      setSelectedChange({ name: fileName, status });
     }
 
   }, [selectedFiles])

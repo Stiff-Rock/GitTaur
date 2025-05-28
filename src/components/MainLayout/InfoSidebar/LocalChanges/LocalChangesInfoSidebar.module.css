@@ -23,6 +23,7 @@
 }
 
 .stashChangesSection {
+  border-bottom: none;
   height: 100%;
 }
 

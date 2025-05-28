@@ -140,3 +140,43 @@ input[type="number"]::-webkit-outer-spin-button {
   scrollbar-width: thin;
   scrollbar-color: var(--lighter-bg) transparent;
 }
+
+/* For diff section */
+.diff,
+.hunk,
+.diff>*,
+.hunk>* {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-header {
+  text-align: center;
+}
+
+.hunk-header {
+  border-top: solid 1px var(--tertiary-bg);
+  border-bottom: solid 1px var(--tertiary-bg);
+  text-align: center;
+  padding: 5px 0 5px 0;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.addition {
+  width: 100%;
+  height: fit-content;
+  line-height: 1;
+  font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
+  font-size: var(--font-size-small);
+}
+
+.context {
+  display: none;
+  visibility: hidden;
+}

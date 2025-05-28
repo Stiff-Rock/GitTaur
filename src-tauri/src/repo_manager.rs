@@ -8,8 +8,9 @@ use crate::{
 };
 use auth_git2_pem::GitAuthenticator;
 use git2::{
-    build::CheckoutBuilder, AnnotatedCommit, BranchType, Commit, Delta, FetchOptions,
-    IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature, Status, StatusOptions,
+    build::CheckoutBuilder, AnnotatedCommit, BranchType, Commit, Delta, Diff, DiffOptions,
+    FetchOptions, IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature, Status,
+    StatusOptions,
 };
 use indexmap::IndexMap;
 use log::{error, info};
@@ -285,6 +286,16 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
     })
 }
 
+fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status) -> ChangeType {
+    if status.contains(deleted_flag) {
+        ChangeType::Deleted
+    } else if status.contains(new_flag) {
+        ChangeType::Added
+    } else {
+        ChangeType::Modified
+    }
+}
+
 #[command]
 pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String> {
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
@@ -309,7 +320,7 @@ pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String
         let contents: Vec<FileChanges> = get_stash_content(&repo, &stash_commit)
             .map_err(|e| format!("Failed to get stash changes for {name}-{oid}: {e}"))?;
 
-        let id = oid.to_string().chars().take(7).collect();
+        let id = oid.to_string();
 
         stashes.push(Stash {
             id,
@@ -391,14 +402,180 @@ fn get_stash_content(repo: &Repository, commit: &Commit) -> Result<Vec<FileChang
     Ok(changes)
 }
 
-fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status) -> ChangeType {
-    if status.contains(deleted_flag) {
-        ChangeType::Deleted
-    } else if status.contains(new_flag) {
-        ChangeType::Added
-    } else {
-        ChangeType::Modified
+#[command]
+pub async fn get_file_diff(
+    repo_path: String,
+    file_path: String,
+    status: String,
+) -> Result<String, String> {
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    match status.as_str() {
+        "unstaged" => get_unstaged_file_diff(repo, file_path),
+        "staged" => get_staged_file_diff(repo, file_path),
+        _ => Err(format!("Invalid status: {}", status)),
     }
+}
+
+fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
+    info!("Obtaining file diff from unstaged file");
+
+    // Set up diff options for this file
+    let mut diff_opts = DiffOptions::new();
+    diff_opts.pathspec(file_path);
+    diff_opts.show_untracked_content(true);
+    diff_opts.include_untracked(true);
+
+    // Get diff between index and working directory
+    let diff = repo
+        .diff_index_to_workdir(None, Some(&mut diff_opts))
+        .map_err(|e| e.to_string())?;
+
+    let diff_text = get_diff_content(diff)?;
+
+    Ok(diff_text)
+}
+
+fn get_staged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
+    info!("Obtaining file diff from staged file");
+
+    // Get HEAD commit
+    let head = repo.head().map_err(|e| e.to_string())?;
+    let head_commit = repo
+        .find_commit(head.target().unwrap())
+        .map_err(|e| e.to_string())?;
+    let head_tree = head_commit.tree().map_err(|e| e.to_string())?;
+
+    // Set up diff options
+    let mut diff_opts = DiffOptions::new();
+    diff_opts.pathspec(file_path);
+
+    // Get diff between HEAD and index
+    let diff = repo
+        .diff_tree_to_index(Some(&head_tree), None, Some(&mut diff_opts))
+        .map_err(|e| e.to_string())?;
+
+    let diff_text = get_diff_content(diff)?;
+
+    Ok(diff_text)
+}
+
+#[command]
+pub async fn get_file_diff_from_stash(
+    repo_path: String,
+    stash_id: String,
+    file_path: String,
+) -> Result<String, String> {
+    info!("Obtaining file diff from stash file");
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    // Get the stash commit
+    let oid = Oid::from_str(&stash_id).map_err(|e| e.to_string())?;
+    let stash_commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+
+    // Get the parent commit (what you were on when stashing)
+    let parent = stash_commit.parent(0).map_err(|e| e.to_string())?;
+
+    // Set up diff options to focus on this specific file
+    let mut diff_opts = DiffOptions::new();
+    diff_opts.pathspec(file_path);
+
+    // Create the diff between parent and stash
+    let diff = repo
+        .diff_tree_to_tree(
+            Some(&parent.tree().map_err(|e| e.to_string())?),
+            Some(&stash_commit.tree().map_err(|e| e.to_string())?),
+            Some(&mut diff_opts),
+        )
+        .map_err(|e| e.to_string())?;
+
+    let diff_text = get_diff_content(diff)?;
+
+    Ok(diff_text)
+}
+
+/// Converts diff to text format
+fn get_diff_content(diff: Diff<'_>) -> Result<String, String> {
+    let mut diff_html = String::from("<div class=\"diff\">");
+    let mut in_hunk = false;
+
+    diff.print(git2::DiffFormat::Patch, |delta, _hunk, line| {
+        if let Ok(content) = std::str::from_utf8(line.content()) {
+            // Start a new file section
+            if content.starts_with("diff --git") {
+                if in_hunk {
+                    diff_html.push_str("</pre>");
+                    in_hunk = false;
+                }
+                let file_name = delta
+                    .new_file()
+                    .path()
+                    .or_else(|| delta.old_file().path())
+                    .map_or("Unknown file", |p| p.to_str().unwrap_or("Unknown file"));
+
+                diff_html.push_str(&format!(
+                    "<div class=\"file-header\">{}</div>",
+                    html_escape(file_name)
+                ));
+                return true;
+            }
+
+            // Format hunk header
+            if line.origin() == 'H' {
+                if in_hunk {
+                    diff_html.push_str("</pre>");
+                }
+                diff_html.push_str("<pre class=\"hunk\">");
+                diff_html.push_str(&format!(
+                    "<span class=\"hunk-header\">{}</span>",
+                    html_escape(content)
+                ));
+                in_hunk = true;
+                return true;
+            }
+
+            // Ensure we're in a hunk
+            if !in_hunk {
+                diff_html.push_str("<pre class=\"hunk\">");
+                in_hunk = true;
+            }
+
+            // Format line based on type
+            let (class, prefix) = match line.origin() {
+                '+' => ("addition", "+"),
+                '-' => ("deletion", "-"),
+                'B' => ("context", " "),
+                _ => ("context", " "),
+            };
+
+            diff_html.push_str(&format!(
+                "<span class=\"{}\">{}{}&#8203;</span>\n",
+                class,
+                prefix,
+                html_escape(content)
+            ));
+        }
+        true
+    })
+    .map_err(|e| e.to_string())?;
+
+    if in_hunk {
+        diff_html.push_str("</pre>");
+    }
+    diff_html.push_str("</div>");
+
+    Ok(diff_html)
+}
+
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
 }
 
 #[command]

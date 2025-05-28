@@ -13,7 +13,8 @@ interface MainContextType {
   repoStatus: RepoStatus | null;
   repoStashes: Stash[] | null;
 
-  selectedFile: string;
+  selectedChange: { name: string, status: FileStatusState } | null;
+  fileDiff: string;
 
   commitInfo: CommitLog | null;
   selectedCommit: string;
@@ -28,7 +29,8 @@ interface MainContextType {
   setRepoStatus: React.Dispatch<React.SetStateAction<RepoStatus | null>>;
   setRepoStashes: React.Dispatch<React.SetStateAction<Stash[] | null>>;
 
-  setSelectedFile: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedChange: React.Dispatch<React.SetStateAction<{ name: string, status: FileStatusState } | null>>;
+  setFileDiff: React.Dispatch<React.SetStateAction<string>>;
 
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
@@ -69,7 +71,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);
 
-  const [selectedFile, setSelectedFile] = useState<string>("");
+  const [selectedChange, setSelectedChange] = useState<{ name: string, status: FileStatusState } | null>(null);
+  const [fileDiff, setFileDiff] = useState<string>("");
 
   const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
@@ -165,7 +168,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       repoStatus, setRepoStatus,
       repoStashes, setRepoStashes,
 
-      selectedFile, setSelectedFile,
+      selectedChange, setSelectedChange,
+      fileDiff, setFileDiff,
 
       commitInfo, setCommitInfo,
       selectedCommit, setSelectedCommit,
