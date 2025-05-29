@@ -19,7 +19,6 @@ export interface FileItem {
 const LocalChanges: React.FC = () => {
   const {
     currentAppTab,
-    repoInfo,
     repoStatus,
     inChangesTab, setInChangesTab,
     statusEvent, headEvent,
@@ -30,25 +29,24 @@ const LocalChanges: React.FC = () => {
     getStashedChanges
   } = useMainContext();
 
-  // Listens to repository stauts changes and gets current status
+  // Starts listening to repository stauts and head changes and gets initial information about the repository
   useEffect(() => {
-    if (!repoInfo) return;
-
-    const infoGatherFunctions = () => {
+    const infoGatherFunctions = (o: string) => {
+      console.log("-----------------------")
+      console.log("GATHER - ", Date.now() + " | " + o)
       getRepoStatus();
       getStashedChanges();
     }
+    infoGatherFunctions("INIT");
 
-    const statusUnlisten = listen<string>(statusEvent, infoGatherFunctions);
-    const headUnlisten = listen<string>(headEvent, infoGatherFunctions);
-
-    infoGatherFunctions();
+    const statusUnlisten = listen<string>(statusEvent, () => infoGatherFunctions("status"));
+    const headUnlisten = listen<string>(headEvent, () => infoGatherFunctions("head"));
 
     return () => {
-      statusUnlisten.then((unlisten) => unlisten);
-      headUnlisten.then((unlisten) => unlisten);
+      statusUnlisten.then((unlisten) => unlisten());
+      headUnlisten.then((unlisten) => unlisten());
     };
-  }, [repoInfo]);
+  }, []);
 
   const stagedFileSectionProps: ChangesSectionProps = {
     status: "staged",
