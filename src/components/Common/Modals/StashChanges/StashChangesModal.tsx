@@ -5,12 +5,7 @@ import BaseModal from "../BaseModal";
 import baseStyle from "../BaseModal.module.css";
 import { useMainContext } from "../../../../context/MainContext";
 
-interface StashChangesModal {
-  files: string[],
-  fileStatus: FileStatusState,
-}
-
-const StashChangesModal: React.FC<StashChangesModal> = () => {
+const StashChangesModal: React.FC = () => {
   const { setActiveModal } = useAppContext();
   const { stashChanges } = useMainContext();
 

@@ -189,9 +189,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const statusUpdatePromiseRef = useRef<Promise<any> | null>(null);
 
   const getRepoStatus = () => {
-    console.log("getRepoStatus");
     statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
-      .then((s) => { setRepoStatus(s); console.log("done status: ", s) })
+      .then(setRepoStatus)
       .catch(e => {
         console.error(e);
         setNotification(e);
@@ -199,9 +198,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   };
 
   const getStashedChanges = () => {
-    console.log("getStashedChanges");
     statusUpdatePromiseRef.current = invoke<Stash[]>("get_stashed_changes", { repoPath })
-      .then((s) => { setRepoStashes(s); console.log("done stashed: ", s) })
+      .then(setRepoStashes)
       .catch(e => {
         console.error(e);
         setNotification(e);

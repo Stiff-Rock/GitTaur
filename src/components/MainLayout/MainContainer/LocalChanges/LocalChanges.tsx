@@ -1,5 +1,5 @@
 import styles from './LocalChanges.module.css';
-import { useEffect, useRef } from "react";
+import { useEffect, } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { useMainContext } from "../../../../context/MainContext";
 import { DiffModifiedIcon, CheckboxIcon } from '@primer/octicons-react'
@@ -31,31 +31,22 @@ const LocalChanges: React.FC = () => {
   } = useMainContext();
 
   // Listens to repository stauts changes and gets current status
-  //TODO: MAYBE STASHED CHANGES IS NOT GETTING UPDATED
-  const hasLoaded = useRef(false);
   useEffect(() => {
     if (!repoInfo) return;
 
-    if (import.meta.env.DEV && hasLoaded.current) return;
-
-    if (import.meta.env.DEV) {
-      hasLoaded.current = true;
-    }
-
     const infoGatherFunctions = () => {
-      console.log("infoGatherFunctions");
       getRepoStatus();
       getStashedChanges();
     }
 
-    const statusUnlistenPromise = listen<string>(statusEvent, infoGatherFunctions);
-    const headUnlistenPromise = listen<string>(headEvent, infoGatherFunctions);
+    const statusUnlisten = listen<string>(statusEvent, infoGatherFunctions);
+    const headUnlisten = listen<string>(headEvent, infoGatherFunctions);
 
     infoGatherFunctions();
 
     return () => {
-      statusUnlistenPromise.then(unlisten => unlisten());
-      headUnlistenPromise.then(unlisten => unlisten());
+      statusUnlisten.then((unlisten) => unlisten);
+      headUnlisten.then((unlisten) => unlisten);
     };
   }, [repoInfo]);
 
