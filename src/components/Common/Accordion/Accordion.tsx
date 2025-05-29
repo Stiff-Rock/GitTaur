@@ -16,7 +16,7 @@ const Accordion: React.FC<AccordionProps> = (props) => {
   const { containerClassName, headerClassName, childrenContainerClassName, title, icon, children } = props;
 
   return (
-    <div className={`${containerClassName} ${styles.accordion}`}>
+    <div className={`${styles.accordion} ${containerClassName}`}>
       <Collapsible
         trigger={
           <div className={`${headerClassName} ${styles.accordionHeader}`}>

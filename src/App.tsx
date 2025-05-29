@@ -10,7 +10,6 @@ import { ToastContainer, toast, Zoom } from "react-toastify";
 import { invoke } from "@tauri-apps/api/core";
 import ConfigPage from "./components/ConfigurationPage/ConfigPage";
 
-//BUG: Failed to open repository while restoring session with incorrect workspace/non existen paths
 //TODO: FRONTEND LOGS?
 function App() {
   const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
@@ -57,7 +56,6 @@ function App() {
       <WelcomePage />
       <ConfigPage />
 
-      {/*TODO: THE MOUNT UNMOUNT HAPPENS ONLY WHEN ACTUALLY OPENING A REPO TAB, NOT NECCESARILY ON STARTUP*/}
       {workspace &&
         <PanelSyncProvider>
           {[...workspace.tabs].map(([key, _]) => (

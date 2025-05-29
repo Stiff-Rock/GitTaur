@@ -8,13 +8,13 @@ import UnstageAllButton from './ActionButtons/UnstageAllButton';
 import ChangesSection, { ChangesSectionProps } from './ChangesSection/ChangesSection';
 import StashesSection from './StashesSection/StashesSection';
 
-//TODO: STASH AND POP
-
 export interface FileItem {
   fileName: string;
   changeType: ChangeType;
   status: FileStatusState;
 }
+
+//TODO: ALSO ADD STASH BADGE
 
 const LocalChanges: React.FC = () => {
   const {

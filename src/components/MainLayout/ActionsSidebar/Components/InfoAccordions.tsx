@@ -1,11 +1,19 @@
-import React, { useEffect, useState } from 'react';
 import styles from '../ActionSidebar.module.css';
+import React, { useEffect, useState } from 'react';
 import Accordion from '../../../Common/Accordion/Accordion';
 import { CloudIcon, DeviceDesktopIcon, TagIcon, GitBranchIcon, DatabaseIcon, FeedTagIcon, PlusIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../../../context/MainContext';
 import ActiveIndicator from '../../../Common/ActiveIndicator';
+import { useAppContext } from '../../../../context/AppContext';
+
+//TODO: { CONTEXT MENU ACTIONS:
+// branches: checkout, rename, delete, tag & push and rebase???
+// remote: fecth, delete, copy url
+// tags: delete, opy tag name, copy tag commit msg, push
+// }
 
 const InfoAccordions: React.FC = () => {
+  const { setActiveModal } = useAppContext();
   const { repoInfo } = useMainContext();
 
   const [sortedRemotes, setSortedRemotes] = useState<Map<string, string[]>>();
@@ -24,6 +32,7 @@ const InfoAccordions: React.FC = () => {
 
   return (
     <>
+      {/*Local brances*/}
       <Accordion containerClassName={styles.accordion} title="Local" icon={<DeviceDesktopIcon />} >
         {repoInfo &&
           <ul>
@@ -43,8 +52,9 @@ const InfoAccordions: React.FC = () => {
         }
       </Accordion>
 
-      <div>
-        <Accordion containerClassName={styles.accordion} childrenContainerClassName={styles.remoteEntries} title="Remotes" icon={<CloudIcon />}>
+      {/*Remotes and its branches*/}
+      <div className={styles.remotesContainer}>
+        <Accordion containerClassName={`${styles.accordion} ${styles.remotesAccordion}`} childrenContainerClassName={styles.remoteEntries} title="Remotes" icon={<CloudIcon />}>
           {repoInfo && (
             <>
               {sortedRemotes && [...sortedRemotes].map(([remoteName, branches], index) => (
@@ -69,12 +79,16 @@ const InfoAccordions: React.FC = () => {
           )}
         </Accordion >
         {/*TODO: ADD BUTTON TO ADD REMOTE*/}
-        <div style={{ display: 'none' }}>
+        <button
+          className={`actionButton ${styles.remotesButton}`}
+          title='Add remote'
+          onClick={() => setActiveModal("addRemote")}
+        >
           <PlusIcon />
-        </div>
+        </button>
       </div>
 
-
+      {/*Tags*/}
       <Accordion containerClassName={styles.accordion} title="Tags" icon={<TagIcon />}>
         {repoInfo &&
           <ul>
@@ -89,7 +103,6 @@ const InfoAccordions: React.FC = () => {
           </ul>
         }
       </Accordion>
-
     </>
   );
 };

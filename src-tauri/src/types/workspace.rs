@@ -1,3 +1,8 @@
+use std::{
+    fs::write,
+    path::{Path, PathBuf},
+};
+
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
@@ -29,6 +34,29 @@ impl Workspace {
             tabs: self.tabs.clone().into_iter().collect(),
             active_tab: self.active_tab.clone(),
         }
+    }
+
+    pub fn validate(&mut self) {
+        let active_tab_path = Path::new(&self.active_tab);
+
+        if !active_tab_path.exists() || !active_tab_path.is_dir() {
+            self.active_tab = String::new();
+        }
+
+        let tabs = self.tabs.clone();
+        for (tab_key, _) in tabs {
+            let tab_path = Path::new(&tab_key);
+            if !tab_path.exists() || !tab_path.is_dir() {
+                self.tabs.shift_remove(&tab_key);
+            }
+        }
+    }
+
+    pub fn save(&self, path: PathBuf) -> Result<(), String> {
+        let json_data = serde_json::to_string_pretty(self)
+            .map_err(|e| format!("Error while saving workspace: {e}"))?;
+        write(path, json_data).map_err(|e| format!("Error while saving workspace: {e}"))?;
+        Ok(())
     }
 }
 

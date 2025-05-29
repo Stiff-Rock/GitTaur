@@ -1,7 +1,7 @@
 use crate::{repo_manager::is_repo, types::workspace::*};
-use log::{error, trace};
+use log::{error, trace, warn};
 use std::{
-    fs::{self, metadata, File},
+    fs::{metadata, File},
     io::{Read, Write},
     path::{Path, PathBuf},
     sync::{LazyLock, Mutex, MutexGuard, OnceLock},
@@ -17,9 +17,8 @@ pub fn save_workspace(workspace_dto: WorkspaceDTO) -> Result<(), String> {
     let mut workspace = workspace();
     *workspace = workspace_dto.into_workspace();
 
-    let json_data = serde_json::to_string_pretty(&*workspace).map_err(|e| e.to_string())?;
-    fs::write(WORKSPACE_PATH.get().unwrap(), json_data)
-        .map_err(|e| format!("Failed to save: {}", e))?;
+    let workspace_path = WORKSPACE_PATH.get().unwrap();
+    workspace.save(workspace_path.to_path_buf())?;
 
     Ok(())
 }
@@ -72,6 +71,12 @@ pub fn restore_workspace() -> String {
             .expect("Error reading workspace file contents");
 
         *workspace = serde_json::from_str(&workspace_json).expect("Failed to load workspace info");
+    }
+
+    workspace.validate();
+    match workspace.save(path.to_path_buf()) {
+        Ok(_) => {}
+        Err(e) => warn!("{e}"),
     }
 
     serde_json::to_string(&workspace.to_dto()).unwrap_or_else(|e| {

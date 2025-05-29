@@ -19,9 +19,6 @@ use types::config::Theme;
 #[cfg(debug_assertions)]
 use crate::types::repo_guard;
 
-//TODO: Credit libraries in readme, specially auth-git2 which I forked and git2json and gitgraphjs
-//TODO: CHECK OUT tools like cargo-license or license-checker for JS).
-
 //TODO: FUTURE:: Try to debug libssh2-rs to see why so many keys don't work or implement ssh-agent
 
 //TODO: Terminal personalization

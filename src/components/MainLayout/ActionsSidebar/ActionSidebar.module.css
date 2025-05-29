@@ -2,6 +2,36 @@
   margin-bottom: 10px;
 }
 
+.remotesContainer {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.remotesAccordion {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.remotesButton {
+  min-width: 25px;
+  min-height: 25px;
+  margin: 3px 16px 0 16px;
+  width: fit-content;
+  height: auto;
+  border-radius: 5px;
+  transition: 0.1s ease;
+}
+
+.remotesButton svg {
+  width: var(--icon-primary-size);
+  height: var(--icon-primary-size);
+}
+
+.remotesButton:hover {
+  background-color: var(--lighter-bg);
+}
+
 .actionSidebar {
   display: flex;
   flex-direction: column;

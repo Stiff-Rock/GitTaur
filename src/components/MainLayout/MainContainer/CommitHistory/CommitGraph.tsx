@@ -14,6 +14,7 @@ import ScrollBar from "../../../Common/ScrollBar/ScrollBar.tsx";
 //TODO: ADD AUTHOR ICON
 //TODO: Add a visual indicator of unpushed changes
 //WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
+//TODO: CONTEXXT MENU, TAGS, AMMEND, REVERT AND CHECKOUT, COPY SHA
 //NOTE: cant handle render of big repos
 
 BranchLabel.paddingX = 6;
