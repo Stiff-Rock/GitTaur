@@ -34,6 +34,8 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   //TODO: STASH
   //BUG: TOGGLE AFTER SHIFT SELECT IS BUGGED AS HELL
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
+    event.preventDefault();
+
     const currentSelectedFiles = selectedFiles.some(f => f.fileName === fileName)
       ? selectedFiles
       : [file];

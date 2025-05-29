@@ -9,12 +9,12 @@ use crate::{
 use auth_git2_pem::GitAuthenticator;
 use git2::{
     build::CheckoutBuilder, AnnotatedCommit, BranchType, Commit, Delta, Diff, DiffOptions,
-    FetchOptions, IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature, StashFlags,
-    Status, StatusOptions,
+    FetchOptions, IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature,
+    StashApplyOptions, StashFlags, StashSaveOptions, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use log::{error, info};
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, num::TryFromIntError, path::Path};
 use tauri::{command, AppHandle};
 use tauri_plugin_shell::{self, ShellExt};
 
@@ -302,15 +302,15 @@ pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String
 
     let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    let mut stash_entries: Vec<(String, Oid)> = vec![];
-    repo.stash_foreach(|_index, name, stash_id| {
-        stash_entries.push((name.to_string(), *stash_id));
+    let mut stash_entries: Vec<(String, usize, Oid)> = vec![];
+    repo.stash_foreach(|index, name, stash_id| {
+        stash_entries.push((name.to_string(), index, *stash_id));
         true
     })
     .map_err(|e| format!("Error iterating through repo stashes: {e}"))?;
 
     let mut stashes: Vec<Stash> = vec![];
-    for (name, oid) in stash_entries {
+    for (name, index, oid) in stash_entries {
         let stash_commit = repo
             .find_commit(oid)
             .map_err(|e| format!("Failed to obtain stash info for {name}-{oid}: {e}"))?;
@@ -322,8 +322,13 @@ pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String
 
         let id = oid.to_string();
 
+        let index = index
+            .try_into()
+            .map_err(|e: TryFromIntError| e.to_string())?;
+
         stashes.push(Stash {
             id,
+            index,
             name,
             timestamp,
             contents,
@@ -707,29 +712,88 @@ pub async fn stash_changes(
     info!("Stashing changes in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let signature = repo.signature().map_err(|e| e.to_string())?;
+
+    let mut opts = StashSaveOptions::new(signature);
+    opts.flags(Some(StashFlags::DEFAULT));
+    for file in &files {
+        opts.pathspec(file);
+    }
+
+    let stash_oid = repo
+        .stash_save_ext(Some(&mut opts))
+        .map_err(|e| e.to_string())?;
+
+    if !stash_msg.is_empty() {
+        let stash_commit = repo.find_commit(stash_oid).map_err(|e| e.to_string())?;
+
+        stash_commit
+            .amend(
+                Some("refs/stash"),
+                Some(&stash_commit.author()),
+                Some(&stash_commit.committer()),
+                stash_commit.message_encoding(),
+                Some(stash_msg.as_str()),
+                Some(&stash_commit.tree().map_err(|e| e.to_string())?),
+            )
+            .map_err(|e| e.to_string())?;
+
+        info!("Amended stash commit with message: {stash_msg}");
+    }
 
     Ok(())
 }
 
-//TODO: APPLY
 #[command]
-pub async fn apply_stash(repo_path: String, stash_id: String) -> Result<(), String> {
-    info!("Applying stash {stash_id} in repo {repo_path}");
+pub async fn apply_stash(repo_path: String, index: i64) -> Result<(), String> {
+    info!("Applying stash with index {index} in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let index = index
+        .try_into()
+        .map_err(|e: TryFromIntError| e.to_string())?;
+
+    let mut opts = StashApplyOptions::new();
+    repo.stash_apply(index, Some(&mut opts))
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-//TODO: DROP
 #[command]
-pub async fn drop_stash(repo_path: String, stash_id: String) -> Result<(), String> {
-    info!("Dropping stash {stash_id} in repo {repo_path}");
+pub async fn drop_stash(repo_path: String, index: i64) -> Result<(), String> {
+    info!("Dropping stash with index {index} in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let index = index
+        .try_into()
+        .map_err(|e: TryFromIntError| e.to_string())?;
+
+    repo.stash_drop(index).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn pop_stash(repo_path: String, index: i64) -> Result<(), String> {
+    info!("Popping stash with index {index} in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let index = index
+        .try_into()
+        .map_err(|e: TryFromIntError| e.to_string())?;
+
+    let mut opts = StashApplyOptions::new();
+    repo.stash_pop(index, Some(&mut opts))
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }

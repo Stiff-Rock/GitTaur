@@ -16,6 +16,11 @@ const StashChangesModal: React.FC<StashChangesModal> = () => {
 
   const [stashMsg, setStashMsg] = useState("");
 
+  const handleStashChanges = async () => {
+    await stashChanges(stashMsg);
+    setActiveModal("");
+  }
+
   return (
     <BaseModal title="Stash Changes">
       <InputField
@@ -27,7 +32,7 @@ const StashChangesModal: React.FC<StashChangesModal> = () => {
       />
 
       <div className={baseStyle.buttonsContainer}>
-        <button className='appButton' onClick={() => stashChanges(stashMsg)}>Stash</button>
+        <button className='appButton' onClick={handleStashChanges}>Stash</button>
         <button className='appButton' onClick={() => setActiveModal("")}>Cancel</button>
       </div>
     </BaseModal>

@@ -46,6 +46,7 @@ interface RepoInfo {
 
 interface Stash {
   id: string,
+  index: number,
   name: string,
   timestamp: number,
   contents: FileChanges[],

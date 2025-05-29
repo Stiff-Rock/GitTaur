@@ -55,6 +55,12 @@ pub async fn setup_watchers(
     let dynamic_paths: Vec<(PathBuf, bool, RecursiveMode)> = vec![
         (git_path.join("FETCH_HEAD"), true, NonRecursive),
         (git_path.join("refs").join("remotes"), true, Recursive),
+        (git_path.join("refs").join("stash"), true, NonRecursive),
+        (
+            git_path.join("logs").join("refs").join("stash"),
+            true,
+            NonRecursive,
+        ),
     ];
 
     for entry in &dynamic_paths {
@@ -84,6 +90,11 @@ pub async fn setup_watchers(
                     } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
                         trace!("--FETCH EVENT--");
                         tx.send(("fetch", ())).ok();
+                    } else if path_str.contains("/refs/stash")
+                        || path_str.contains("/logs/refs/stash")
+                    {
+                        trace!("--STASH EVENT--");
+                        tx.send(("status", ())).ok();
                     } else if path.ends_with("index")
                         || path.ends_with("index.lock")
                         || (path_str.contains(&repo_path_str) && !path_str.contains("/.git/"))
@@ -130,7 +141,7 @@ pub async fn setup_watchers(
                 //TODO: CHECK IF THIS MECHANISM REALLY WORKS
                 ".git" => {
                     if now.duration_since(last_general_emit) > debounce_interval {
-                        setup_unwatched_dirs(&repo_path);
+                        try_setup_unwatched_dirs(&repo_path);
                         last_general_emit = now;
                     }
                 }
@@ -160,7 +171,7 @@ pub async fn setup_watchers(
     Ok(())
 }
 
-fn setup_unwatched_dirs(repo_path: &String) {
+fn try_setup_unwatched_dirs(repo_path: &String) {
     let mut unwatched_dirs_map = UNWATCHED_DIRS_MAP.lock().unwrap();
     let entries = unwatched_dirs_map.get_mut(repo_path).unwrap();
 

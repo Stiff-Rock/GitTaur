@@ -61,10 +61,13 @@ interface MainContextType {
   getRepoStatus: () => void;
   getStashedChanges: () => void;
 
-  addToStagingArea: (files: string[]) => void;
-  removeFromStagingArea: (files: string[]) => void;
-  discardChanges: (files: string[]) => void;
-  stashChanges: (stashMsg: String) => void;
+  addToStagingArea: (files: string[]) => Promise<void>;
+  removeFromStagingArea: (files: string[]) => Promise<void>;
+  discardChanges: (files: string[]) => Promise<void>;
+  stashChanges: (stashMsg: String) => Promise<void>;
+  applyStash: (index: number) => Promise<void>;
+  dropStash: (index: number) => Promise<void>;
+  popStash: (index: number) => Promise<void>;
 }
 
 const MainContext = createContext<MainContextType | undefined>(undefined);
@@ -282,6 +285,45 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     }).finally(() => loadingIndicatorState(false));
   };
 
+  const applyStash = async (index: number) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsStashLoading(true);
+
+    statusUpdatePromiseRef.current = invoke("apply_stash", { repoPath, index }).catch((e) => {
+      console.error("Error applying stash: ", e);
+      setNotification("Error applying stash: " + e);
+    }).finally(() => setIsStashLoading(false));
+  };
+
+  const dropStash = async (index: number) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsStashLoading(true);
+
+    statusUpdatePromiseRef.current = invoke("drop_stash", { repoPath, index }).catch((e) => {
+      console.error("Error dropping stash: ", e);
+      setNotification("Error dropping stash: " + e);
+    }).finally(() => setIsStashLoading(false));
+  };
+
+  const popStash = async (index: number) => {
+    if (statusUpdatePromiseRef.current) {
+      await statusUpdatePromiseRef.current.catch(() => { });
+    }
+
+    setIsStashLoading(true);
+
+    statusUpdatePromiseRef.current = invoke("pop_stash", { repoPath, index }).catch((e) => {
+      console.error("Error popping stash: ", e);
+      setNotification("Error popping stash: " + e);
+    }).finally(() => setIsStashLoading(false));
+  };
+
   return (
     <MainContext.Provider value={{
       repoPath,
@@ -320,6 +362,9 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       removeFromStagingArea,
       discardChanges,
       stashChanges,
+      applyStash,
+      dropStash,
+      popStash
     }}>
       {children}
     </MainContext.Provider>

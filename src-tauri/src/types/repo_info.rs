@@ -26,6 +26,7 @@ pub struct RepoStatus {
 #[serde(rename_all = "camelCase")]
 pub struct Stash {
     pub id: String,
+    pub index: i64,
     pub name: String,
     pub timestamp: i64,
     pub contents: Vec<FileChanges>,
