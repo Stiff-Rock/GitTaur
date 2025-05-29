@@ -31,16 +31,14 @@ const LocalChanges: React.FC = () => {
 
   // Starts listening to repository stauts and head changes and gets initial information about the repository
   useEffect(() => {
-    const infoGatherFunctions = (o: string) => {
-      console.log("-----------------------")
-      console.log("GATHER - ", Date.now() + " | " + o)
+    const infoGatherFunctions = () => {
       getRepoStatus();
       getStashedChanges();
     }
-    infoGatherFunctions("INIT");
+    infoGatherFunctions();
 
-    const statusUnlisten = listen<string>(statusEvent, () => infoGatherFunctions("status"));
-    const headUnlisten = listen<string>(headEvent, () => infoGatherFunctions("head"));
+    const statusUnlisten = listen<string>(statusEvent, infoGatherFunctions);
+    const headUnlisten = listen<string>(headEvent, infoGatherFunctions);
 
     return () => {
       statusUnlisten.then((unlisten) => unlisten());
