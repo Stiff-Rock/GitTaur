@@ -43,6 +43,7 @@ const LocalChanges: React.FC = () => {
     }
 
     const infoGatherFunctions = () => {
+      console.log("infoGatherFunctions");
       getRepoStatus();
       getStashedChanges();
     }

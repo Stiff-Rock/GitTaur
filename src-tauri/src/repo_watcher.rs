@@ -11,9 +11,11 @@ use std::{
 use tauri::{command, AppHandle, Emitter};
 use RecursiveMode::{NonRecursive, Recursive};
 
+/// Stores each repo watcher in a HashMap
 static WATCHER_STORE: LazyLock<Arc<Mutex<HashMap<String, RecommendedWatcher>>>> =
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
+/// Stores the yet unwatched dynamic directories of each currently watched repo
 static UNWATCHED_DIRS_MAP: LazyLock<
     Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, RecursiveMode)>>>>,
 > = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
@@ -172,18 +174,37 @@ pub async fn setup_watchers(
 }
 
 fn try_setup_unwatched_dirs(repo_path: &String) {
-    let mut unwatched_dirs_map = UNWATCHED_DIRS_MAP.lock().unwrap();
-    let entries = unwatched_dirs_map.get_mut(repo_path).unwrap();
+    let mut unwatched_dirs_map = match UNWATCHED_DIRS_MAP.lock() {
+        Ok(guard) => guard,
+        Err(e) => {
+            error!("Error obtaining UNWATCHED_DIRS_MAP lock: Mutex is poisoned - {e}");
+            return;
+        }
+    };
+    let entries = match unwatched_dirs_map.get_mut(repo_path) {
+        Some(e) => e,
+        None => return,
+    };
 
-    let mut watcher_store = WATCHER_STORE.lock().unwrap();
-    let watcher = watcher_store.get_mut(repo_path).unwrap();
+    let mut watcher_store = match WATCHER_STORE.lock() {
+        Ok(guard) => guard,
+        Err(e) => {
+            error!("Error obtaining WATCHER_STORE lock: Mutex is poisoned - {e}");
+            return;
+        }
+    };
+
+    let watcher = match watcher_store.get_mut(repo_path) {
+        Some(w) => w,
+        None => return,
+    };
 
     let count = entries.len();
     for i in (0..count).rev() {
         let (path, _, recursive_mode) = &entries[i];
 
         if let Err(e) = watcher.watch(path, *recursive_mode) {
-            error!("Failed to watch path {}: {}", path.display(), e);
+            warn!("Failed to watch dynamic path {}: {}", path.display(), e);
             continue;
         }
 
@@ -194,7 +215,7 @@ fn try_setup_unwatched_dirs(repo_path: &String) {
         let git_path = PathBuf::from(repo_path).join(".git");
 
         if let Err(e) = watcher.unwatch(&git_path) {
-            error!("Failed to unwatch .git directory: {}", e);
+            warn!("Failed to unwatch .git directory: {}", e);
             return;
         }
 

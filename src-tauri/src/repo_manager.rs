@@ -218,6 +218,8 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
 
 #[command]
 pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
+    info!("Getting repo status");
+
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -298,6 +300,8 @@ fn determine_change_type(status: Status, deleted_flag: Status, new_flag: Status)
 
 #[command]
 pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String> {
+    info!("Getting repo stashed changes");
+
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
