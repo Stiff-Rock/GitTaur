@@ -1,14 +1,13 @@
 use log::{error, trace, warn};
-use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     path::PathBuf,
     sync::{mpsc::channel, Arc, LazyLock, Mutex},
-    thread::spawn,
     time::{Duration, Instant},
 };
-use tauri::{command, AppHandle, Emitter};
+use tauri::{async_runtime::spawn_blocking, command, AppHandle, Emitter};
 use RecursiveMode::{NonRecursive, Recursive};
 
 /// Stores each repo watcher in a HashMap
@@ -16,7 +15,7 @@ static WATCHER_STORE: LazyLock<Arc<Mutex<HashMap<String, RecommendedWatcher>>>> 
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 /// Stores the yet unwatched dynamic directories of each currently watched repo
-static UNWATCHED_DIRS_MAP: LazyLock<
+static DYNAMIC_DIRS_MAP: LazyLock<
     Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, RecursiveMode)>>>>,
 > = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
@@ -34,7 +33,15 @@ pub async fn setup_watchers(
     repo_path: String,
     repo_events: RepoEvents,
 ) -> Result<(), String> {
-    let mut watchers = WATCHER_STORE.lock().unwrap();
+    let mut watchers = match WATCHER_STORE.lock() {
+        Ok(guard) => guard,
+        Err(e) => {
+            let msg = format!("Error obtaining WATCHER_STORE lock: Mutex is poisoned - {e}");
+            error!("{msg}");
+            return Err(msg);
+        }
+    };
+
     if watchers.contains_key(&repo_path) {
         return Ok(());
     }
@@ -47,7 +54,15 @@ pub async fn setup_watchers(
         (git_path.join("index"), false, NonRecursive),
     ];
 
-    let mut unwatched_dirs_map = UNWATCHED_DIRS_MAP.lock().unwrap();
+    let mut unwatched_dirs_map = match DYNAMIC_DIRS_MAP.lock() {
+        Ok(guard) => guard,
+        Err(e) => {
+            let err = format!("Error obtaining UNWATCHED_DIRS_MAP lock: Mutex is poisoned - {e}");
+            error!("{err}");
+            return Err(err);
+        }
+    };
+
     let unwatched_dirs = unwatched_dirs_map
         .entry(repo_path.clone())
         .or_insert_with(Vec::new);
@@ -86,26 +101,30 @@ pub async fn setup_watchers(
                 if let Some(path) = event.paths.first() {
                     let path_str = path.to_string_lossy().replace('\\', "/");
 
+                    let is_create = matches!(event.kind, EventKind::Create(_));
+
+                    if has_unwatched_dirs
+                        && is_create
+                        && path_str.contains("/.git/")
+                        && (path_str.contains("FETCH_HEAD")
+                            || path_str.contains("refs")
+                            || path_str.contains("stash"))
+                    {
+                        tx.send((".git", ())).ok();
+                    }
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
-                        trace!("--HEAD EVENT--");
                         tx.send(("head", ())).ok();
                     } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
-                        trace!("--FETCH EVENT--");
                         tx.send(("fetch", ())).ok();
                     } else if path_str.contains("/refs/stash")
                         || path_str.contains("/logs/refs/stash")
                     {
-                        trace!("--STASH EVENT--");
                         tx.send(("status", ())).ok();
                     } else if path.ends_with("index")
                         || path.ends_with("index.lock")
                         || (path_str.contains(&repo_path_str) && !path_str.contains("/.git/"))
                     {
-                        trace!("--INDEX EVENT--");
                         tx.send(("status", ())).ok();
-                    } else if has_unwatched_dirs && path_str.contains("/.git/") {
-                        trace!("--GIT EVENT--");
-                        tx.send((".git", ())).ok();
                     }
                 }
             }
@@ -128,44 +147,42 @@ pub async fn setup_watchers(
         status_event,
     } = repo_events;
 
-    spawn(move || {
-        let last_emit = Instant::now() - Duration::from_secs(3);
-        let mut last_general_emit = last_emit;
-        let mut last_head_emit = last_emit;
-        let mut last_fetch_emit = last_emit;
-        let mut last_status_emit = last_emit;
-
+    spawn_blocking(move || {
         while let Ok((event_type, ())) = rx.recv() {
-            let now = Instant::now();
+            let mut events = HashSet::new();
+            events.insert(event_type);
 
-            let debounce_interval = Duration::from_millis(500);
-            match event_type {
-                //TODO: CHECK IF THIS MECHANISM REALLY WORKS
-                ".git" => {
-                    if now.duration_since(last_general_emit) > debounce_interval {
-                        try_setup_unwatched_dirs(&repo_path);
-                        last_general_emit = now;
+            let collection_end = Instant::now() + Duration::from_millis(50);
+
+            while Instant::now() < collection_end {
+                match rx.recv_timeout(collection_end - Instant::now()) {
+                    Ok((more_event_type, ())) => {
+                        events.insert(more_event_type);
                     }
+                    Err(_) => break,
                 }
-                "head" => {
-                    if now.duration_since(last_head_emit) > debounce_interval {
+            }
+
+            for unique_event in events {
+                match unique_event {
+                    ".git" => {
+                        trace!("--.git event--");
+                        handle_dynamic_dirs(&repo_path);
+                    }
+                    "head" => {
+                        trace!("--Head event--");
                         event_app_handle.emit(&head_event, ()).ok();
-                        last_head_emit = now;
                     }
-                }
-                "fetch" => {
-                    if now.duration_since(last_fetch_emit) > debounce_interval {
+                    "fetch" => {
+                        trace!("--Fetch event--");
                         event_app_handle.emit(&fetch_event, ()).ok();
-                        last_fetch_emit = now;
                     }
-                }
-                "status" => {
-                    if now.duration_since(last_status_emit) > debounce_interval {
+                    "status" => {
+                        trace!("--Status event--");
                         event_app_handle.emit(&status_event, ()).ok();
-                        last_status_emit = now;
                     }
+                    _ => {}
                 }
-                _ => {}
             }
         }
     });
@@ -173,8 +190,9 @@ pub async fn setup_watchers(
     Ok(())
 }
 
-fn try_setup_unwatched_dirs(repo_path: &String) {
-    let mut unwatched_dirs_map = match UNWATCHED_DIRS_MAP.lock() {
+//TODO: IMPROVE IN THE FUTURE WITH BETTER DYNAMIC PATHS HANDLING
+fn handle_dynamic_dirs(repo_path: &String) {
+    let mut unwatched_dirs_map = match DYNAMIC_DIRS_MAP.lock() {
         Ok(guard) => guard,
         Err(e) => {
             error!("Error obtaining UNWATCHED_DIRS_MAP lock: Mutex is poisoned - {e}");
@@ -208,10 +226,10 @@ fn try_setup_unwatched_dirs(repo_path: &String) {
             continue;
         }
 
-        entries.remove(i);
+        //entries.remove(i);
     }
 
-    if entries.is_empty() {
+    /*if entries.is_empty() {
         let git_path = PathBuf::from(repo_path).join(".git");
 
         if let Err(e) = watcher.unwatch(&git_path) {
@@ -220,15 +238,35 @@ fn try_setup_unwatched_dirs(repo_path: &String) {
         }
 
         unwatched_dirs_map.remove(repo_path);
-    }
+    }*/
 }
 
 #[command]
 pub async fn stop_git_watcher(repo_path: String) -> Result<(), String> {
-    let removed = WATCHER_STORE.lock().unwrap().remove(&repo_path);
+    let watcher_removed = match WATCHER_STORE.lock() {
+        Ok(mut guard) => guard.remove(&repo_path),
+        Err(e) => {
+            let err = format!("Error obtaining WATCHER_STORE lock: Mutex is poisoned - {e}");
+            error!("{err}");
+            return Err(err);
+        }
+    };
 
-    if !removed.is_some() {
+    let dynamic_entries_removed = match DYNAMIC_DIRS_MAP.lock() {
+        Ok(mut guard) => guard.remove(&repo_path),
+        Err(e) => {
+            let err = format!("Error obtaining UNWATCHED_DIRS_MAP lock: Mutex is poisoned - {e}");
+            error!("{err}");
+            return Err(err);
+        }
+    };
+
+    if watcher_removed.is_none() {
         warn!("No watcher found for {}", repo_path);
+    }
+
+    if !dynamic_entries_removed.is_none() {
+        warn!("No dynamic directories entry found for {}", repo_path);
     }
 
     Ok(())

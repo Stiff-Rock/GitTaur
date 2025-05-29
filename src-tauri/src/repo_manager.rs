@@ -14,7 +14,7 @@ use git2::{
 };
 use indexmap::IndexMap;
 use log::{error, info};
-use std::{collections::HashMap, ffi::CString, num::TryFromIntError, path::Path};
+use std::{collections::HashMap, num::TryFromIntError, path::Path};
 use tauri::{command, AppHandle};
 use tauri_plugin_shell::{self, ShellExt};
 
@@ -428,8 +428,6 @@ pub async fn get_file_diff(
 }
 
 fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
-    info!("Obtaining file diff from unstaged file");
-
     // Set up diff options for this file
     let mut diff_opts = DiffOptions::new();
     diff_opts.pathspec(file_path);
@@ -447,8 +445,6 @@ fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String,
 }
 
 fn get_staged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
-    info!("Obtaining file diff from staged file");
-
     // Get HEAD commit
     let head = repo.head().map_err(|e| e.to_string())?;
     let head_commit = repo
@@ -476,7 +472,6 @@ pub async fn get_file_diff_from_stash(
     stash_id: String,
     file_path: String,
 ) -> Result<String, String> {
-    info!("Obtaining file diff from stash file");
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
     let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
@@ -706,75 +701,53 @@ pub async fn discard_changes(repo_path: String, files: Vec<String>) -> Result<()
     Ok(())
 }
 
-//TODO: STASH
+//TODO: STASH WITH GIT COMMANDS
 #[command]
 pub async fn stash_changes(
     repo_path: String,
     stash_msg: String,
     files: Vec<String>,
 ) -> Result<(), String> {
-    info!("Stashing changes in repo {repo_path}");
+    info!("Stashing changes in repo {repo_path} with msg {stash_msg}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    // Store the original repository state and file statuses
-    let statuses = repo.statuses(None).map_err(|e| e.to_string())?;
+    let signature = repo.signature().map_err(|e| e.to_string())?;
 
-    // Clean the index
-    repo.reset_default(None, None::<CString>)
+    let mut opts = git2::StashSaveOptions::new(signature);
+    opts.flags(Some(StashFlags::INCLUDE_UNTRACKED));
+    for file in &files {
+        opts.pathspec(file);
+    }
+
+    let _stash_oid = repo
+        .stash_save_ext(Some(&mut opts))
         .map_err(|e| e.to_string())?;
 
-    // Add to index selected files
-    let mut index = repo.index().map_err(|e| e.to_string())?;
-    for file in &files {
-        let path = std::path::Path::new(file);
-        index
-            .add_path(path)
-            .map_err(|e| format!("Failed to add {} to index: {}", file, e))?;
-    }
-    index.write().map_err(|e| e.to_string())?;
+    /*
+        if !stash_msg.is_empty() {
+            let stash_commit = repo.find_commit(stash_oid).map_err(|e| e.to_string())?;
 
-    // Perform the stash
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-    let signature = repo.signature().map_err(|e| e.to_string())?;
-    repo.stash_save2(
-        &signature,
-        Some(stash_msg.as_str()),
-        Some(StashFlags::DEFAULT),
-    )
-    .map_err(|e| e.to_string())?;
+            stash_commit
+                .amend(
+                    Some("refs/stash"),
+                    Some(&stash_commit.author()),
+                    Some(&stash_commit.committer()),
+                    stash_commit.message_encoding(),
+                    Some(stash_msg.as_str()),
+                    Some(&stash_commit.tree().map_err(|e| e.to_string())?),
+                )
+                .map_err(|e| e.to_string())?;
 
-    let stashed_files: std::collections::HashSet<String> = files.into_iter().collect();
-    for entry in statuses.iter() {
-        let path = entry.path().unwrap_or("");
-
-        // Skip files we've stashed
-        if stashed_files.contains(path) {
-            continue;
+            info!("Amended stash commit with message: {stash_msg}");
         }
-
-        // Only restore modified tracked files
-        let status = entry.status();
-        if status.is_index_modified()
-            || status.is_index_new()
-            || status.is_wt_modified()
-            || status.is_wt_new()
-        {
-            // If it was in the index, add it back to the index
-            if status.is_index_modified() || status.is_index_new() {
-                let path_obj = std::path::Path::new(path);
-                index
-                    .add_path(path_obj)
-                    .map_err(|e| format!("Failed to restore {} to index: {}", path, e))?;
-            }
-        }
-    }
-    index.write().map_err(|e| e.to_string())?;
+    */
 
     Ok(())
 }
 
+//TODO: APPLY WITH GIT COMMANDS
 #[command]
 pub async fn apply_stash(repo_path: String, index: i64) -> Result<(), String> {
     info!("Applying stash with index {index} in repo {repo_path}");
@@ -809,6 +782,7 @@ pub async fn drop_stash(repo_path: String, index: i64) -> Result<(), String> {
     Ok(())
 }
 
+//TODO: POP WITH GIT COMMANDS
 #[command]
 pub async fn pop_stash(repo_path: String, index: i64) -> Result<(), String> {
     info!("Popping stash with index {index} in repo {repo_path}");

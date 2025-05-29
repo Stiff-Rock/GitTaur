@@ -172,6 +172,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     if is_dev {
         Dispatch::new()
             .level(LevelFilter::Trace)
+            .level_for("notify", LevelFilter::Info)
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}] {}",

@@ -17,6 +17,7 @@ const CommitButton: React.FC<CommitButtonProps> = (props) => {
   const { repoPath, } = useMainContext();
 
   const commitChanges = () => {
+    //TODO: AFTER COMMITNG, CHANGES DONT UPDATE DONT KNOW WHY, CHECK THE BACKEND TOO
     invoke("commit", { repoPath, commitSummary, commitBody }).then(() => {
       setCommitSummary("");
       setCommitBody("");
