@@ -10,11 +10,11 @@ use auth_git2_pem::GitAuthenticator;
 use git2::{
     build::CheckoutBuilder, AnnotatedCommit, BranchType, Commit, Delta, Diff, DiffOptions,
     FetchOptions, IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature,
-    StashApplyOptions, StashFlags, StashSaveOptions, Status, StatusOptions,
+    StashApplyOptions, StashFlags, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use log::{error, info};
-use std::{collections::HashMap, num::TryFromIntError, path::Path};
+use std::{collections::HashMap, ffi::CString, num::TryFromIntError, path::Path};
 use tauri::{command, AppHandle};
 use tauri_plugin_shell::{self, ShellExt};
 
@@ -716,36 +716,61 @@ pub async fn stash_changes(
     info!("Stashing changes in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    let signature = repo.signature().map_err(|e| e.to_string())?;
+    // Store the original repository state and file statuses
+    let statuses = repo.statuses(None).map_err(|e| e.to_string())?;
 
-    let mut opts = StashSaveOptions::new(signature);
-    opts.flags(Some(StashFlags::DEFAULT));
-    for file in &files {
-        opts.pathspec(file);
-    }
-
-    let stash_oid = repo
-        .stash_save_ext(Some(&mut opts))
+    // Clean the index
+    repo.reset_default(None, None::<CString>)
         .map_err(|e| e.to_string())?;
 
-    if !stash_msg.is_empty() {
-        let stash_commit = repo.find_commit(stash_oid).map_err(|e| e.to_string())?;
-
-        stash_commit
-            .amend(
-                Some("refs/stash"),
-                Some(&stash_commit.author()),
-                Some(&stash_commit.committer()),
-                stash_commit.message_encoding(),
-                Some(stash_msg.as_str()),
-                Some(&stash_commit.tree().map_err(|e| e.to_string())?),
-            )
-            .map_err(|e| e.to_string())?;
-
-        info!("Amended stash commit with message: {stash_msg}");
+    // Add to index selected files
+    let mut index = repo.index().map_err(|e| e.to_string())?;
+    for file in &files {
+        let path = std::path::Path::new(file);
+        index
+            .add_path(path)
+            .map_err(|e| format!("Failed to add {} to index: {}", file, e))?;
     }
+    index.write().map_err(|e| e.to_string())?;
+
+    // Perform the stash
+    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let signature = repo.signature().map_err(|e| e.to_string())?;
+    repo.stash_save2(
+        &signature,
+        Some(stash_msg.as_str()),
+        Some(StashFlags::DEFAULT),
+    )
+    .map_err(|e| e.to_string())?;
+
+    let stashed_files: std::collections::HashSet<String> = files.into_iter().collect();
+    for entry in statuses.iter() {
+        let path = entry.path().unwrap_or("");
+
+        // Skip files we've stashed
+        if stashed_files.contains(path) {
+            continue;
+        }
+
+        // Only restore modified tracked files
+        let status = entry.status();
+        if status.is_index_modified()
+            || status.is_index_new()
+            || status.is_wt_modified()
+            || status.is_wt_new()
+        {
+            // If it was in the index, add it back to the index
+            if status.is_index_modified() || status.is_index_new() {
+                let path_obj = std::path::Path::new(path);
+                index
+                    .add_path(path_obj)
+                    .map_err(|e| format!("Failed to restore {} to index: {}", path, e))?;
+            }
+        }
+    }
+    index.write().map_err(|e| e.to_string())?;
 
     Ok(())
 }
