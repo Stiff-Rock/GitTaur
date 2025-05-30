@@ -18,16 +18,17 @@ const PushRemoteModal: React.FC = () => {
   useLayoutEffect(() => {
     if (!activeRepoInfo) return;
 
-    const remotesArray = Object.keys(activeRepoInfo.remotes);
+    const remotesNames = Object.keys(activeRepoInfo.remotes);
+    const remotesArray = Object.values(activeRepoInfo.remotes);
 
-    const defaultRemote = remotesArray.includes("origin") ? "origin" : remotesArray[0];
+    const defaultRemote = remotesNames.includes("origin") ? "origin" : remotesArray[0].name;
     setRemote(defaultRemote);
 
     const currentBranch = activeRepoInfo.currentBranch;
     setLocalBranch(currentBranch);
 
-    const remoteBranches = activeRepoInfo.remotes[defaultRemote];
-    const remoteBranch = remoteBranches.includes(currentBranch) ? currentBranch : activeRepoInfo.remotes[remote][0];
+    const remoteBranches = activeRepoInfo.remotes[defaultRemote].branches;
+    const remoteBranch = remoteBranches.includes(currentBranch) ? currentBranch : activeRepoInfo.remotes[remote].branches[0];
     setRemoteBranch(remoteBranch);
   }, [activeRepoInfo]);
 
@@ -80,7 +81,7 @@ const PushRemoteModal: React.FC = () => {
             title="Remote branch"
             onItemSelected={setRemoteBranch}
             value={remoteBranch}
-            optionsArray={activeRepoInfo.remotes[remote] ?? []}
+            optionsArray={activeRepoInfo.remotes[remote].branches ?? []}
           />
         </>
       }

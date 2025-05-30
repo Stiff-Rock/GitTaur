@@ -45,6 +45,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
     showInfoSidebar,
     setShowInfoSidebar,
     setRepoInfo, repoInfo,
+    setCommitHistory,
     headEvent, fetchEvent, statusEvent
   } = useMainContext();
 
@@ -69,7 +70,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
   const getRepoInfo = async () => {
     if (!workspace) return;
     invoke<RepoInfo>("get_repo_info", { repoPath })
-      .then((data) => setRepoInfo(data))
+      .then(setRepoInfo)
+      .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
+  }
+
+  const getCommitHistory = async () => {
+    if (!workspace) return;
+    invoke<Record<string, CommitLog>>("get_commit_history", { repoPath })
+      .then(setCommitHistory)
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
   }
 
@@ -82,6 +90,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       !import.meta.env.DEV ||
       (import.meta.env.DEV && !hasLoaded.current);
 
+    const getRepoInfoAndHistory = () => {
+      getRepoInfo();
+      getCommitHistory();
+    };
+
     if (shouldSetupWatchers) {
       if (import.meta.env.DEV) {
         hasLoaded.current = true;
@@ -91,16 +104,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       invoke("setup_watchers", { repoPath, repoEvents })
         .catch(e => console.error("Error starting git watcher:", e));
 
-      getRepoInfo();
+      getRepoInfoAndHistory();
     }
 
     // Set up listeners for watcher events
-    const headUnlistenPromise = listen<string>(headEvent, getRepoInfo);
-    const fetchUnlistenPromise = listen<string>(fetchEvent, getRepoInfo);
+    const headUnlistenPromise = listen<string>(headEvent, getRepoInfoAndHistory);
+    const fetchUnlistenPromise = listen<string>(fetchEvent, getRepoInfoAndHistory);
+    const statusUnlistenPromise = listen<string>(statusEvent, getRepoInfo);
 
     return () => {
       headUnlistenPromise.then(unlisten => unlisten());
       fetchUnlistenPromise.then(unlisten => unlisten());
+      statusUnlistenPromise.then(unlisten => unlisten());
     };
   }, []);
 

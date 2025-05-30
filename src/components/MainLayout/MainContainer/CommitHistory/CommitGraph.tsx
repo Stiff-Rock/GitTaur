@@ -58,18 +58,18 @@ const graphCommitOptions: GraphCommitOptions = {
 }
 
 const CommitGraph: React.FC = () => {
-  const { scrollbarRef, repoInfo, currentAppTab } = useMainContext();
+  const { scrollbarRef, commitHistory, currentAppTab } = useMainContext();
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
   useLayoutEffect(() => {
-    if (!repoInfo) return;
+    if (!commitHistory) return;
 
-    if (repoInfo.commitHistory) {
-      const commitLogs = Object.values(repoInfo.commitHistory);
+    if (commitHistory) {
+      const commitLogs = Object.values(commitHistory);
       setCommitLogs(commitLogs);
     }
-  }, [repoInfo]);
+  }, [commitHistory]);
 
   //TODO: MAKE GRAPH CUSTOMIZATION
   //TODO: MAKE GRAPHS STRAIGHT

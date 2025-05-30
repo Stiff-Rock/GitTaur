@@ -1,5 +1,4 @@
-use crate::git2json::{CommitLog, FileChanges};
-use indexmap::IndexMap;
+use crate::git2json::FileChanges;
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -10,9 +9,8 @@ pub struct RepoInfo {
     pub main_branch: String,
     pub current_branch: String,
     pub local_branches: Vec<String>,
-    pub remotes: HashMap<Remote, Vec<String>>,
+    pub remotes: HashMap<String, Remote>,
     pub tags: Vec<String>,
-    pub commit_history: IndexMap<String, CommitLog>,
 }
 
 #[derive(Serialize, Debug)]
@@ -20,6 +18,7 @@ pub struct RepoInfo {
 pub struct Remote {
     pub name: String,
     pub url: String,
+    pub branches: Vec<String>,
 }
 
 #[derive(Serialize, Debug)]

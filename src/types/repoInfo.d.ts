@@ -37,6 +37,7 @@ interface CommitLog {
 interface Remote {
   name: string,
   url: string,
+  branches: string[]
 }
 
 interface RepoInfo {
@@ -44,9 +45,8 @@ interface RepoInfo {
   mainBranch: string;
   currentBranch: string;
   localBranches: string[];
-  remotes: Record<Remote, string[]>;
+  remotes: Record<string, Remote>;
   tags: string[];
-  commitHistory: Record<string, CommitLog>;
 }
 
 interface Stash {

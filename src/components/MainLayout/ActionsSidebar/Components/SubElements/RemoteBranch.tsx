@@ -44,7 +44,7 @@ const RemoteBranchElement: React.FC<{ branchName: string }> = ({ branchName }) =
   }
 
   return (
-    <div style={{ marginLeft: 0 }} onContextMenu={() => console.log(2)}>
+    <div style={{ marginLeft: 0 }} onContextMenu={remoteBranchContextMenu}>
       <GitBranchIcon />
       {branchName}
     </div>

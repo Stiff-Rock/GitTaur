@@ -18,18 +18,20 @@ const PullRemoteModal: React.FC = () => {
   useLayoutEffect(() => {
     if (!activeRepoInfo) return;
 
-    const remoteNames = Object.keys(activeRepoInfo.remotes);
+    const remote_names = Object.keys(activeRepoInfo.remotes);
+    const remotes = Object.values(activeRepoInfo.remotes);
+
     let remoteText = remotePlaceHolder;
-    if (remoteNames.length > 0) {
-      remoteText = remoteNames.includes("origin")
+    if (remotes.length > 0) {
+      remoteText = remote_names.includes('origin')
         ? "origin"
-        : remoteNames[0];
+        : remote_names[0];
     }
     setRemote(remoteText);
 
     let branchText = branchPlaceHolder;
     if (!remoteText.includes(remotePlaceHolder)) {
-      branchText = activeRepoInfo.remotes[remoteText][0]
+      branchText = activeRepoInfo.remotes[remoteText].branches[0];
     }
     setBranch(branchText)
   }, [activeRepoInfo]);
@@ -41,7 +43,7 @@ const PullRemoteModal: React.FC = () => {
     if (branch && !branch.includes(remotePlaceHolder)) {
       const repoPath = workspace.activeTab;
 
-      const branches: Array<string> = pullAll ? activeRepoInfo!.remotes[remoteName] : new Array(branch);
+      const branches: Array<string> = pullAll ? activeRepoInfo!.remotes[remoteName].branches : new Array(branch);
 
       invoke<string>("pull_remote", { repoPath, remoteName, branches }).then((msg) => {
         setActiveModal("");
@@ -71,7 +73,7 @@ const PullRemoteModal: React.FC = () => {
         disableCondition={pullAll}
         onItemSelected={setBranch}
         value={branch}
-        optionsArray={activeRepoInfo?.remotes[remoteName] ?? []}
+        optionsArray={activeRepoInfo?.remotes[remoteName].branches ?? []}
       />
 
       <Checkbox

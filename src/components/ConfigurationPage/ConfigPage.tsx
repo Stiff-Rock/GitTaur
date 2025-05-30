@@ -13,7 +13,7 @@ type ConfigTabs = "general" | "git" | "ui";
 
 const ConfigPage: React.FC = () => {
   const { checkPageType, workspace, config, setConfig, setNotification } = useAppContext();
-  const { selectFileDialog, selectDirectoryDialog } = useDialog();
+  const { selectDirectoryDialog } = useDialog();
 
   const [newConfig, setNewConfig] = useState<Configuration | null>(null);
   const [configTab, setConfigTab] = useState<ConfigTabs>("general");

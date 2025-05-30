@@ -17,18 +17,16 @@ const InfoAccordions: React.FC = () => {
   const { setActiveModal } = useAppContext();
   const { repoInfo } = useMainContext();
 
-  const [sortedRemotes, setSortedRemotes] = useState<Map<string, string[]>>();
+  const [sortedRemotes, setSortedRemotes] = useState<Map<string, Remote>>();
 
   useEffect(() => {
     if (!repoInfo) return;
 
-    if (repoInfo.remotes) {
-      const sortedMap = new Map(
-        [...Object.entries(repoInfo.remotes)]
-          .sort(([a], [b]) => a.localeCompare(b))
-      );
-      setSortedRemotes(sortedMap);
-    }
+    const sortedMap = new Map(
+      [...Object.entries(repoInfo.remotes)]
+        .sort(([a], [b]) => a.localeCompare(b))
+    );
+    setSortedRemotes(sortedMap);
   }, [repoInfo])
 
   return (
@@ -60,13 +58,13 @@ const InfoAccordions: React.FC = () => {
         >
           {repoInfo && (
             <>
-              {sortedRemotes && [...sortedRemotes].map(([remoteName, branches], index) => (
+              {sortedRemotes && [...sortedRemotes].map(([remoteName, remote], index) => (
                 <RemoteAccordion
                   key={index}
                   containerClassName={`${styles.accordion} ${styles.remoteAccordion}`}
                   headerClassName={styles.remoteAccHeader}
                   remoteName={remoteName}
-                  branches={branches}
+                  branches={remote.branches}
                 />
               ))}
             </>

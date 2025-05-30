@@ -110,6 +110,8 @@ fn get_current_branch(repo: &Repository) -> String {
 
 #[command]
 pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
+    info!("Getting info of repo {}", repo_path);
+
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     if !is_repo(&repo_path, true)? {
@@ -150,14 +152,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         .filter_map(|t| t.map(|s| s.to_string()))
         .collect::<Vec<String>>();
 
-    let commit_history: IndexMap<String, CommitLog> = git2json::get_repo_json(&repo_path)
-        .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
-        .into_iter()
-        .enumerate()
-        .map(|(_, v)| (v.hash.clone(), v))
-        .collect();
-
-    let remotes: HashMap<Remote, Vec<String>> = get_remote_branches(&repo)?;
+    let remotes: HashMap<String, Remote> = get_remote_branches(&repo)?;
 
     //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS IF BRANCH LABEL IS PRESENT AND VICEVERSA
     let repo = RepoInfo {
@@ -167,7 +162,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         local_branches,
         remotes,
         tags,
-        commit_history,
     };
 
     //debug!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
@@ -175,54 +169,58 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     Ok(repo)
 }
 
-fn get_remote_branches(repo: &Repository) -> Result<HashMap<Remote, Vec<String>>, String> {
-    let remote_branches = repo
-        .branches(Some(BranchType::Remote))
-        .map_err(|e| e.to_string())?;
+#[command]
+pub async fn get_commit_history(repo_path: String) -> Result<IndexMap<String, CommitLog>, String> {
+    info!("Getting commit history of repo {}", repo_path);
 
-    let mut remote_branches_map: HashMap<Remote, Vec<String>> = HashMap::new();
-    for branch_entry in remote_branches {
-        let (branch, _branch_type) = branch_entry.map_err(|e| e.to_string())?;
-        let branch_full_name = branch
-            .name()
-            .map_err(|e| e.to_string())?
-            .unwrap_or_else(|| {
-                error!("Invalid branch name in entry {:?}", branch.name_bytes());
-                "##invalid##"
-            });
+    let commit_history = git2json::get_repo_json(&repo_path)
+        .map_err(|e| format!("Error while processing commit history - {}", e.to_string()))?
+        .into_iter()
+        .enumerate()
+        .map(|(_, v)| (v.hash.clone(), v))
+        .collect();
 
-        let info: Vec<&str> = branch_full_name.split('/').collect();
+    Ok(commit_history)
+}
 
-        if info.len() == 2 {
-            let remote_name = info.first().copied().unwrap_or("Unknown remote");
-            let remote = repo
-                .find_remote(remote_name)
-                .map_err(|e| format!("Failed to obtain remote with name {remote_name}"))?;
-            let remote_url = remote
-                .url()
-                .unwrap_or("Unkown Url, please report this issue")
-                .to_string();
-            let remote_branch_name = info.last().copied().unwrap_or("Unknown branch");
+fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Remote>, String> {
+    let mut remote_branches_map: HashMap<String, Remote> = HashMap::new();
 
-            if remote_branch_name == "HEAD" {
-                continue;
+    let remote_names = repo
+        .remotes()
+        .map_err(|e| format!("Falied to get repo remotes {e}"))?;
+
+    for i in 0..remote_names.len() {
+        let remote_name = remote_names.get(i).expect("Remote name should exist");
+        let remote_ref = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
+        let remote_url = remote_ref
+            .url()
+            .unwrap_or("Unkown Url: Please report this issue");
+        let branches = repo
+            .branches(Some(BranchType::Remote))
+            .map_err(|e| e.to_string())?;
+
+        let mut remote_branches: Vec<String> = vec![];
+        for branch_result in branches {
+            let (branch, _) = branch_result.map_err(|e| e.to_string())?;
+            let branch_name = branch
+                .name()
+                .map_err(|e| e.to_string())?
+                .unwrap_or("[unknown]");
+
+            if branch_name.starts_with(&format!("{}/", remote_name)) {
+                let clean_branch_name = &branch_name[remote_name.len() + 1..];
+                remote_branches.push(clean_branch_name.to_string());
             }
-
-            let remote_obj = Remote {
-                name: remote_name.to_string(),
-                url: remote_url.to_string(),
-            };
-
-            remote_branches_map
-                .entry(remote_obj)
-                .or_default()
-                .push(remote_branch_name.to_string());
-        } else {
-            error!(
-                "Branch name split - Expected two tokens but instead got more: {}",
-                branch_full_name
-            )
         }
+
+        let remote_obj = Remote {
+            name: remote_name.to_string(),
+            url: remote_url.to_string(),
+            branches: remote_branches,
+        };
+
+        remote_branches_map.insert(remote_name.to_string(), remote_obj);
     }
 
     Ok(remote_branches_map)

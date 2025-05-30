@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// @ts-expect-error 
-const host = process.env.TAURI_DEV_HOST;
+const host = process.env.TAURI_DEV_HOST as string | undefined;
 
 export default defineConfig(async () => ({
   plugins: [react()],

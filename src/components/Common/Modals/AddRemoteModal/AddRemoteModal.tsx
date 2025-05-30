@@ -27,7 +27,7 @@ const AddRemoteModal: React.FC = () => {
     const repoPath = workspace.activeTab;
 
     invoke("add_remote", { repoPath, remoteName, remoteUrl })
-      .then(() => setActiveModal("")).catch((e) => {
+      .then(() => { setActiveModal(""); setNotification("Remote added succesfully"); }).catch((e) => {
         const msg = `Error adding remote: ${e}`;
         console.error(msg)
         setNotification(msg);

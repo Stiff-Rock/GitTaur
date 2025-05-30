@@ -3,7 +3,7 @@ import ScrollBar from "../../../../Common/ScrollBar/ScrollBar";
 import Throbber from '../../../../Common/Throbber/Throbber';
 import { useMainContext } from '../../../../../context/MainContext';
 import { ArchiveIcon, FileDiffIcon } from '@primer/octicons-react'
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import FileChangeItem from '../../../../Common/FileItems/FileChangeItem';
 import { invoke } from '@tauri-apps/api/core';
 import { useAppContext } from '../../../../../context/AppContext';

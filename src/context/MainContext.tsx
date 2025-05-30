@@ -13,6 +13,7 @@ interface MainContextType {
   repoPath: string;
 
   repoInfo: RepoInfo | null;
+  commitHistory: Record<string, CommitLog> | null;
   repoStatus: RepoStatus | null;
   repoStashes: Stash[] | null;
 
@@ -43,6 +44,7 @@ interface MainContextType {
   setFileDiff: React.Dispatch<React.SetStateAction<string>>;
 
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
+  setCommitHistory: React.Dispatch<React.SetStateAction<Record<string, CommitLog> | null>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
@@ -91,6 +93,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [inChangesTab, setInChangesTab] = useState(true);
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
+  const [commitHistory, setCommitHistory] = useState<Record<string, CommitLog> | null>(null);
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);
 
@@ -127,8 +130,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   }, [showInfoSidebar]);
 
   useEffect(() => {
-    if (repoInfo && selectedCommit) {
-      const commitLog = repoInfo.commitHistory[selectedCommit];
+    if (commitHistory && selectedCommit) {
+      const commitLog = commitHistory[selectedCommit];
       setCommitInfo(commitLog);
     }
   }, [selectedCommit]);
@@ -332,6 +335,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       inChangesTab, setInChangesTab,
 
       repoInfo, setRepoInfo,
+      commitHistory, setCommitHistory,
       repoStatus, setRepoStatus,
       repoStashes, setRepoStashes,
 

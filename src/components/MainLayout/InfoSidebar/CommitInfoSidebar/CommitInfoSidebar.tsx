@@ -10,12 +10,12 @@ import { formatTimestamp } from '../../../../utils/dateParser';
 
 const CommitInfoSidebar: React.FC = () => {
   const { config } = useAppContext();
-  const { currentAppTab, commitInfo, repoInfo, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
+  const { currentAppTab, commitInfo, commitHistory, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
 
   const goToParent = (sha: string) => {
-    if (!repoInfo) return;
+    if (!commitHistory) return;
 
-    const commit = repoInfo.commitHistory[sha];
+    const commit = commitHistory[sha];
     if (!commit) {
       console.error("Could not find commit by the following sha: ", sha);
       return;

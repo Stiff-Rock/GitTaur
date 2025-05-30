@@ -44,7 +44,7 @@ const TagElement: React.FC<{ tag: string }> = ({ tag }) => {
   }
 
   return (
-    <div onContextMenu={() => console.log(3)}>
+    <div onContextMenu={tagContextMenu}>
       <FeedTagIcon />
       {tag}
     </div>
