@@ -58,12 +58,12 @@ const InfoAccordions: React.FC = () => {
         >
           {repoInfo && (
             <>
-              {sortedRemotes && [...sortedRemotes].map(([remoteName, remote], index) => (
+              {sortedRemotes && [...sortedRemotes].map(([_, remote], index) => (
                 <RemoteAccordion
                   key={index}
                   containerClassName={`${styles.accordion} ${styles.remoteAccordion}`}
                   headerClassName={styles.remoteAccHeader}
-                  remoteName={remoteName}
+                  remote={remote}
                   branches={remote.branches}
                 />
               ))}

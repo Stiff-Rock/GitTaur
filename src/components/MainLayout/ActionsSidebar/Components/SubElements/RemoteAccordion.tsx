@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 interface RemoteAccordionProps {
   containerClassName: string,
   headerClassName: string,
-  remoteName: string,
+  remote: Remote,
   branches: string[]
 }
 
@@ -16,13 +16,12 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
   const {
     containerClassName,
     headerClassName,
-    remoteName,
+    remote,
     branches
   } = props;
 
   const { workspace, setNotification, openContextMenu } = useAppContext();
 
-  //TODO: fecth, delete, copy url
   const remoteContextMenu = async (event: React.MouseEvent) => {
     event.preventDefault();
 
@@ -40,7 +39,7 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
           id: "fetchRemote",
           text: "Fetch",
           action: () => {
-            const remotes: string[] = [remoteName];
+            const remotes: string[] = [remote.name];
             invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
               setNotification(msg);
             }).catch((e) => {
@@ -55,7 +54,7 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
           id: "deleteRemote",
           text: "Delete",
           action: () => {
-            invoke("delete_remote", { repoPath, remoteName }).catch((e) => {
+            invoke("delete_remote", { repoPath, remoteName: remote.name }).catch((e) => {
               console.error(e);
               setNotification(e);
             });;
@@ -65,10 +64,9 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
           id: "copyUrl",
           text: "Copy Url",
           action: () => {
-            //TODO: IN THE BACKEND, ASLO SEND THE REMOTE URL NOT JUST THE NAME (make remote interface)
-            navigator.clipboard.writeText(remoteName).catch(e => {
-              console.error("Failed to copy remote URL:", e);
-            });
+            navigator.clipboard.writeText(remote.url).catch(e =>
+              console.error("Failed to copy remote URL:", e)
+            );
           },
         },
       ],
@@ -81,13 +79,13 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
     <Accordion
       containerClassName={containerClassName}
       headerClassName={headerClassName}
-      title={remoteName}
+      title={remote.name}
       icon={<DatabaseIcon />}
       onContextMenu={remoteContextMenu}
     >
       <ul>
         {branches.map((branchName, branchIndex) => (
-          <li key={`${remoteName}-${branchName}-${branchIndex}`}>
+          <li key={`${remote.name}-${branchName}-${branchIndex}`}>
             <RemoteBranchElement branchName={branchName} />
           </li>
         ))}
