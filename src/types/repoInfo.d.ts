@@ -34,12 +34,17 @@ interface CommitLog {
   changes: FileChanges[];
 }
 
+interface Remote {
+  name: string,
+  url: string,
+}
+
 interface RepoInfo {
   name: string;
   mainBranch: string;
   currentBranch: string;
   localBranches: string[];
-  remotes: Record<string, string[]>;
+  remotes: Record<Remote, string[]>;
   tags: string[];
   commitHistory: Record<string, CommitLog>;
 }

@@ -10,9 +10,16 @@ pub struct RepoInfo {
     pub main_branch: String,
     pub current_branch: String,
     pub local_branches: Vec<String>,
-    pub remotes: HashMap<String, Vec<String>>,
+    pub remotes: HashMap<Remote, Vec<String>>,
     pub tags: Vec<String>,
     pub commit_history: IndexMap<String, CommitLog>,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Remote {
+    pub name: String,
+    pub url: String,
 }
 
 #[derive(Serialize, Debug)]

@@ -3,7 +3,7 @@ use crate::{
     git2json::{self, ChangeType, CommitLog, FileChanges},
     types::{
         repo_guard::RepoGuard,
-        repo_info::{RepoInfo, RepoStatus, Stash},
+        repo_info::{Remote, RepoInfo, RepoStatus, Stash},
     },
 };
 use auth_git2_pem::GitAuthenticator;
@@ -157,7 +157,7 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         .map(|(_, v)| (v.hash.clone(), v))
         .collect();
 
-    let remotes: HashMap<String, Vec<String>> = get_remote_branches(&repo)?;
+    let remotes: HashMap<Remote, Vec<String>> = get_remote_branches(&repo)?;
 
     //TODO: TAGS ARE NOT DISPLAYED ON GRAPHS IF BRANCH LABEL IS PRESENT AND VICEVERSA
     let repo = RepoInfo {
@@ -175,12 +175,12 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     Ok(repo)
 }
 
-fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>, String> {
+fn get_remote_branches(repo: &Repository) -> Result<HashMap<Remote, Vec<String>>, String> {
     let remote_branches = repo
         .branches(Some(BranchType::Remote))
         .map_err(|e| e.to_string())?;
 
-    let mut remote_branches_map: HashMap<String, Vec<String>> = HashMap::new();
+    let mut remote_branches_map: HashMap<Remote, Vec<String>> = HashMap::new();
     for branch_entry in remote_branches {
         let (branch, _branch_type) = branch_entry.map_err(|e| e.to_string())?;
         let branch_full_name = branch
@@ -194,17 +194,29 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Vec<String>>
         let info: Vec<&str> = branch_full_name.split('/').collect();
 
         if info.len() == 2 {
-            let remote = info.first().copied().unwrap_or("Unknown remote");
-            let name = info.last().copied().unwrap_or("Unknown branch");
+            let remote_name = info.first().copied().unwrap_or("Unknown remote");
+            let remote = repo
+                .find_remote(remote_name)
+                .map_err(|e| format!("Failed to obtain remote with name {remote_name}"))?;
+            let remote_url = remote
+                .url()
+                .unwrap_or("Unkown Url, please report this issue")
+                .to_string();
+            let remote_branch_name = info.last().copied().unwrap_or("Unknown branch");
 
-            if name == "HEAD" {
+            if remote_branch_name == "HEAD" {
                 continue;
             }
 
+            let remote_obj = Remote {
+                name: remote_name.to_string(),
+                url: remote_url.to_string(),
+            };
+
             remote_branches_map
-                .entry(remote.to_string())
+                .entry(remote_obj)
                 .or_default()
-                .push(name.to_string());
+                .push(remote_branch_name.to_string());
         } else {
             error!(
                 "Branch name split - Expected two tokens but instead got more: {}",

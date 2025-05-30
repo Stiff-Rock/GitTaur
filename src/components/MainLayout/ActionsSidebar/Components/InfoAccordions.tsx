@@ -1,9 +1,8 @@
 import styles from '../ActionSidebar.module.css';
 import React, { useEffect, useState } from 'react';
 import Accordion from '../../../Common/Accordion/Accordion';
-import { CloudIcon, DeviceDesktopIcon, TagIcon, GitBranchIcon, DatabaseIcon, FeedTagIcon, PlusIcon } from "@primer/octicons-react";
+import { CloudIcon, DeviceDesktopIcon, TagIcon, PlusIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../../../context/MainContext';
-import ActiveIndicator from '../../../Common/ActiveIndicator';
 import { useAppContext } from '../../../../context/AppContext';
 import LocalBranchElement from './SubElements/LocalBranchElement';
 import RemoteAccordion from './SubElements/RemoteAccordion';

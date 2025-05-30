@@ -3,6 +3,7 @@ import Accordion from "../../../../Common/Accordion/Accordion";
 import RemoteBranchElement from "./RemoteBranch";
 import { useAppContext } from "../../../../../context/AppContext";
 import { Menu } from "@tauri-apps/api/menu";
+import { invoke } from "@tauri-apps/api/core";
 
 interface RemoteAccordionProps {
   containerClassName: string,
@@ -31,27 +32,43 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
       return;
     }
 
+    const repoPath = workspace.activeTab;
+
     let contextMenu = await Menu.new({
       items: [
         {
-          id: "asdad",
-          text: "ASDASD",
+          id: "fetchRemote",
+          text: "Fetch",
           action: () => {
-
+            const remotes: string[] = [remoteName];
+            invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
+              setNotification(msg);
+            }).catch((e) => {
+              if (e) {
+                console.error(e);
+                setNotification(e);
+              }
+            });
           },
         },
         {
-          id: "asdad",
-          text: "ASDASD",
+          id: "deleteRemote",
+          text: "Delete",
           action: () => {
-
+            invoke("delete_remote", { repoPath, remoteName }).catch((e) => {
+              console.error(e);
+              setNotification(e);
+            });;
           },
         },
         {
-          id: "asdad",
-          text: "ASDASD",
+          id: "copyUrl",
+          text: "Copy Url",
           action: () => {
-
+            //TODO: IN THE BACKEND, ASLO SEND THE REMOTE URL NOT JUST THE NAME (make remote interface)
+            navigator.clipboard.writeText(remoteName).catch(e => {
+              console.error("Failed to copy remote URL:", e);
+            });
           },
         },
       ],
