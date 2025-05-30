@@ -241,6 +241,8 @@ pub fn run() {
             repo_manager::apply_stash,
             repo_manager::drop_stash,
             repo_manager::pop_stash,
+            repo_manager::delete_remote,
+            repo_manager::add_remote,
             repo_manager::fetch_remote,
             repo_manager::pull_remote,
             repo_manager::push_remote,

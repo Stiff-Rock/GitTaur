@@ -801,6 +801,34 @@ pub async fn pop_stash(repo_path: String, index: i64) -> Result<(), String> {
     Ok(())
 }
 
+#[command]
+pub async fn add_remote(
+    repo_path: String,
+    remote_name: String,
+    remote_url: String,
+) -> Result<(), String> {
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    repo.remote(&remote_name, &remote_url)
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn delete_remote(repo_path: String, remote_name: String) -> Result<(), String> {
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    repo.remote_delete(&remote_name)
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 //TODO: Live loading feedback
 #[command]
 pub async fn fetch_remote(

@@ -5,10 +5,12 @@ import { CloudIcon, DeviceDesktopIcon, TagIcon, GitBranchIcon, DatabaseIcon, Fee
 import { useMainContext } from '../../../../context/MainContext';
 import ActiveIndicator from '../../../Common/ActiveIndicator';
 import { useAppContext } from '../../../../context/AppContext';
+import LocalBranchElement from './SubElements/LocalBranchElement';
+import RemoteAccordion from './SubElements/RemoteAccordion';
+import TagElement from './SubElements/TagElement';
 
 //TODO: { CONTEXT MENU ACTIONS:
 // branches: checkout, rename, delete, tag & push and rebase???
-// remote: fecth, delete, copy url
 // tags: delete, opy tag name, copy tag commit msg, push
 // }
 
@@ -32,20 +34,17 @@ const InfoAccordions: React.FC = () => {
 
   return (
     <>
-      {/*Local brances*/}
-      <Accordion containerClassName={styles.accordion} title="Local" icon={<DeviceDesktopIcon />} >
+      {/*Local branches*/}
+      <Accordion
+        containerClassName={styles.accordion}
+        title="Local"
+        icon={<DeviceDesktopIcon />}
+      >
         {repoInfo &&
           <ul>
-            {repoInfo.localBranches.map((item, index) => (
+            {repoInfo.localBranches.map((branchName, index) => (
               <li key={index}>
-                <div>
-                  <GitBranchIcon />
-                  {item}
-                  <ActiveIndicator
-                    style={repoInfo.currentBranch === item ? {} : { display: 'none' }}
-                    className={`${styles.activeIndicator}`}
-                  />
-                </div>
+                <LocalBranchElement branchName={branchName} className={styles.activeIndicator} />
               </li>
             ))}
           </ul>
@@ -54,31 +53,26 @@ const InfoAccordions: React.FC = () => {
 
       {/*Remotes and its branches*/}
       <div className={styles.remotesContainer}>
-        <Accordion containerClassName={`${styles.accordion} ${styles.remotesAccordion}`} childrenContainerClassName={styles.remoteEntries} title="Remotes" icon={<CloudIcon />}>
+        <Accordion
+          containerClassName={`${styles.accordion} ${styles.remotesAccordion}`}
+          childrenContainerClassName={styles.remoteEntries}
+          title="Remotes"
+          icon={<CloudIcon />}
+        >
           {repoInfo && (
             <>
               {sortedRemotes && [...sortedRemotes].map(([remoteName, branches], index) => (
-                <Accordion
+                <RemoteAccordion
                   key={index}
                   containerClassName={`${styles.accordion} ${styles.remoteAccordion}`}
                   headerClassName={styles.remoteAccHeader}
-                  title={remoteName}
-                  icon={<DatabaseIcon />}
-                >
-                  <ul>
-                    {branches.map((branch, branchIndex) => (
-                      <li key={`${remoteName}-${branch}-${branchIndex}`}>
-                        <GitBranchIcon />
-                        {branch}
-                      </li>
-                    ))}
-                  </ul>
-                </Accordion>
+                  remoteName={remoteName}
+                  branches={branches}
+                />
               ))}
             </>
           )}
         </Accordion >
-        {/*TODO: ADD BUTTON TO ADD REMOTE*/}
         <button
           className={`actionButton ${styles.remotesButton}`}
           title='Add remote'
@@ -86,23 +80,24 @@ const InfoAccordions: React.FC = () => {
         >
           <PlusIcon />
         </button>
-      </div>
+      </div >
 
       {/*Tags*/}
-      <Accordion containerClassName={styles.accordion} title="Tags" icon={<TagIcon />}>
+      < Accordion
+        containerClassName={styles.accordion}
+        title="Tags"
+        icon={< TagIcon />}
+      >
         {repoInfo &&
           <ul>
-            {repoInfo.tags.map((item, index) => (
+            {repoInfo.tags.map((tag, index) => (
               <li key={index}>
-                <div>
-                  <FeedTagIcon />
-                  {item}
-                </div>
+                <TagElement tag={tag} />
               </li>
             ))}
           </ul>
         }
-      </Accordion>
+      </Accordion >
     </>
   );
 };

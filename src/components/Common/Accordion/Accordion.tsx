@@ -9,14 +9,23 @@ interface AccordionProps {
   childrenContainerClassName?: string;
   title: string;
   icon: ReactNode
+  onContextMenu?: (event: React.MouseEvent) => void;
   children: ReactNode;
 }
 
 const Accordion: React.FC<AccordionProps> = (props) => {
-  const { containerClassName, headerClassName, childrenContainerClassName, title, icon, children } = props;
+  const {
+    containerClassName,
+    headerClassName,
+    childrenContainerClassName,
+    title,
+    icon,
+    onContextMenu,
+    children
+  } = props;
 
   return (
-    <div className={`${styles.accordion} ${containerClassName}`}>
+    <div className={`${styles.accordion} ${containerClassName}`} onContextMenu={onContextMenu}>
       <Collapsible
         trigger={
           <div className={`${headerClassName} ${styles.accordionHeader}`}>
