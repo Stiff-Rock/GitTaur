@@ -20,6 +20,7 @@ import { useAppContext } from "../../../../context/AppContext.tsx";
 //TODO: CURRENT CHCKOUT POSITION INDICATOR
 
 //BUG: TAGS ARE NOT ALWAYS DISPLAYED, SPECIALLY IF BRANCH TIP
+//TODO: HEAD DETACHED INDICATOR
 
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;

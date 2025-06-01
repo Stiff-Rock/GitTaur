@@ -689,22 +689,56 @@ pub async fn delete_tag(repo_path: String, tag_name: String) -> Result<(), Strin
 }
 
 #[command]
-pub async fn checkout_commit(repo_path: String, commit_oid: String) -> Result<(), String> {
+pub async fn checkout_commit(
+    app_handle: AppHandle,
+    repo_path: String,
+    commit_oid: String,
+) -> Result<(), String> {
     info!("Checking out to commit in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let shell = app_handle.shell();
 
-    let oid = Oid::from_str(commit_oid.as_str()).map_err(|e| e.to_string())?;
-    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-    let object = commit.as_object();
+    let output = shell
+        .command("git")
+        .args(["stash"])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git stash command: {}", e))?;
 
-    let mut checkout_builder = CheckoutBuilder::new();
-    repo.checkout_tree(&object, Some(&mut checkout_builder))
-        .map_err(|e| e.to_string())?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Error creating stash before checkout - {}", stderr));
+    }
 
-    repo.set_head_detached(oid).map_err(|e| e.to_string())?;
+    {
+        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+        let oid = Oid::from_str(commit_oid.as_str()).map_err(|e| e.to_string())?;
+        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+        let object = commit.as_object();
+
+        let mut checkout_builder = CheckoutBuilder::new();
+        repo.checkout_tree(&object, Some(&mut checkout_builder))
+            .map_err(|e| e.to_string())?;
+
+        repo.set_head_detached(oid).map_err(|e| e.to_string())?;
+    }
+
+    let output = shell
+        .command("git")
+        .args(["stash", "pop"])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git stash pop command: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Error doing stash pop after checkout - {}", stderr));
+    }
 
     Ok(())
 }
@@ -1350,47 +1384,41 @@ pub async fn commit(
 }
 
 #[command]
-pub async fn revert_commit(repo_path: String, commit_oid: String) -> Result<(), String> {
+pub async fn revert_commit(
+    app_handle: AppHandle,
+    repo_path: String,
+    commit_oid: String,
+) -> Result<(), String> {
     info!("Reverting commit in repository at {}", repo_path);
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let shell = app_handle.shell();
 
-    let oid = git2::Oid::from_str(&commit_oid).map_err(|e| e.to_string())?;
+    let output = shell
+        .command("git")
+        .args(["revert", &commit_oid])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git revert command: {}", e))?;
 
-    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
 
-    let head = repo.head().map_err(|e| e.to_string())?;
-    let head_commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+    if !output.status.success()
+        || stdout.contains("nothing to commit")
+        || stdout.contains("detached HEAD")
+        || stderr.contains("error:")
+    {
+        let error_message = if stderr.is_empty() {
+            format!("Revert failed: {}", stdout.trim())
+        } else {
+            format!("Error reverting: {}", stderr.trim())
+        };
 
-    repo.revert(&commit, None).map_err(|e| e.to_string())?;
-
-    let mut index = repo.index().map_err(|e| e.to_string())?;
-    if index.has_conflicts() {
-        repo.cleanup_state().map_err(|e| e.to_string())?;
-        return Err("Revert resulted in conflicts. Please resolve them manually.".to_string());
+        return Err(error_message);
     }
-
-    let tree_id = index.write_tree().map_err(|e| e.to_string())?;
-    let tree = repo.find_tree(tree_id).map_err(|e| e.to_string())?;
-
-    let signature = repo.signature().map_err(|e| e.to_string())?;
-
-    repo.commit(
-        Some("HEAD"),
-        &signature,
-        &signature,
-        &format!(
-            "Revert \"{}\"",
-            commit.summary().unwrap_or("Unknown commit message")
-        ),
-        &tree,
-        &[&head_commit],
-    )
-    .map_err(|e| e.to_string())?;
-
-    repo.cleanup_state().map_err(|e| e.to_string())?;
 
     Ok(())
 }

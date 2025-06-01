@@ -83,7 +83,7 @@ const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
       action: () => {
         openConfirmationModal({
           onConfirmed: () => {
-            invoke("revert_commit", { repoPath, commitOid: commit.message }).catch((e) => {
+            invoke("revert_commit", { repoPath, commitOid: commit.hash }).catch((e) => {
               console.error(e);
               setNotification(e);
             });
