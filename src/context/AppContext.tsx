@@ -4,6 +4,13 @@ import { useDialog } from '../hooks/useDialog';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
 import { Menu } from '@tauri-apps/api/menu';
 import { getCurrentWindow, PhysicalPosition, Window } from '@tauri-apps/api/window';
+import { ConfirmationModalProps } from '../components/Common/Modals/ConfirmationModal/ConfirmationModal';
+import { RenameBranchModalProps } from '../components/Common/Modals/RenameBranchModal/RenameBranchModal';
+import { CreateTagModalProps as CreateTagModalProps } from '../components/Common/Modals/CreateTagModal/CreateTagModal';
+import { PushModalProps } from '../components/Common/Modals/PushRemote/PushRemoteModal';
+import { RebaseBranchModalProps } from '../components/Common/Modals/RebaseBranchModal/RebaseBranchModal';
+import { MergeBranchModalProps } from '../components/Common/Modals/MergeBranchModal/MergeBranchModal';
+import { PullModalProps } from '../components/Common/Modals/PullRemote/PullRemoteModal';
 
 interface AppContextType {
   // State 
@@ -31,6 +38,28 @@ interface AppContextType {
   openWelcomePage: () => void;
   openConfigPage: () => void;
   checkPageType: (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => boolean;
+
+  // Modal states and functions
+  confirmationModalProps: ConfirmationModalProps;
+  openConfirmationModal: (props: ConfirmationModalProps) => void;
+
+  renameBranchModalProps: RenameBranchModalProps;
+  openRenameBranchModal: (props: RenameBranchModalProps) => void;
+
+  createTagModalProps: CreateTagModalProps;
+  openCreateTagModal: (props: CreateTagModalProps) => void;
+
+  pushModalProps: PushModalProps;
+  openPushModal: (props: PushModalProps) => void;
+
+  pullModalProps: PullModalProps;
+  openPullModal: (props: PullModalProps) => void;
+
+  mergeBranchModalProps: MergeBranchModalProps;
+  openMergeBranchModal: (props: MergeBranchModalProps) => void;
+
+  rebaseBranchModalProps: RebaseBranchModalProps;
+  openRebaseBranchModal: (props: RebaseBranchModalProps) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -62,6 +91,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
 
   const { selectDirectoryDialog } = useDialog();
+
+  const [confirmationModalProps, setConfirmationModalProps] = useState<ConfirmationModalProps>({
+    title: "",
+    subTitle: "",
+    onConfirmed: () => { },
+  });
+  const openConfirmationModal = (props: ConfirmationModalProps) => {
+    setConfirmationModalProps(props);
+    setActiveModal("confirmation");
+  };
+
+  const [renameBranchModalProps, setRenameBranchModalProps] = useState<RenameBranchModalProps>({
+    oldBranchName: "",
+  });
+  const openRenameBranchModal = (props: RenameBranchModalProps) => {
+    setRenameBranchModalProps(props);
+    setActiveModal("renameBranch");
+  };
+
+  const [createTagModalProps, setCreateTagModalProps] = useState<CreateTagModalProps>({
+    commitOid: "",
+    branchName: "",
+  });
+  const openCreateTagModal = (props: CreateTagModalProps) => {
+    setCreateTagModalProps(props);
+    setActiveModal("createTag");
+  };
+
+  const [pushModalProps, setPushModalProps] = useState<PushModalProps>({
+    seletedLocalBranch: "",
+  });
+  const openPushModal = (props: PushModalProps) => {
+    setPushModalProps(props);
+    setActiveModal("push");
+  };
+
+  const [pullModalProps, setPullModalProps] = useState<PullModalProps>({
+    selectedRemoteBranch: "",
+  })
+  const openPullModal = (props: PullModalProps) => {
+    setPullModalProps(props);
+    setActiveModal("pull");
+  };
+
+  const [mergeBranchModalProps, setMergeBranchModalProps] = useState<MergeBranchModalProps>({
+    sourceBranch: "",
+  });
+  const openMergeBranchModal = (props: MergeBranchModalProps) => {
+    setMergeBranchModalProps(props);
+    setActiveModal("merge");
+  };
+
+  const [rebaseBranchModalProps, setRebaseBranchProps] = useState<RebaseBranchModalProps>({
+    sourceBranch: "",
+  });
+  const openRebaseBranchModal = (props: RebaseBranchModalProps) => {
+    setRebaseBranchProps(props);
+    setActiveModal("rebase");
+  };
 
   useLayoutEffect(() => {
     setMainWindow(getCurrentWindow());
@@ -276,7 +364,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActiveTab,
       openWelcomePage,
       openConfigPage,
-      checkPageType
+      checkPageType,
+
+      // Modal states and functions
+      confirmationModalProps,
+      openConfirmationModal,
+
+      renameBranchModalProps,
+      openRenameBranchModal,
+
+      createTagModalProps,
+      openCreateTagModal,
+
+      pushModalProps,
+      openPushModal,
+
+      pullModalProps,
+      openPullModal,
+
+      mergeBranchModalProps,
+      openMergeBranchModal,
+
+      rebaseBranchModalProps,
+      openRebaseBranchModal,
     }}>
       {children}
     </AppContext.Provider>

@@ -17,6 +17,9 @@ import ScrollBar from "../../../Common/ScrollBar/ScrollBar.tsx";
 //TODO: CONTEXXT MENU, TAGS, AMMEND, REVERT AND CHECKOUT, COPY SHA
 //NOTE: cant handle render of big repos
 
+
+//BUG: TAGS ARE NOT ALWAYS DISPLAYED
+
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;
 const scale = 0.8;

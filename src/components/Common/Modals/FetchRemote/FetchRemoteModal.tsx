@@ -1,5 +1,5 @@
-import React, { useLayoutEffect, useState } from "react";
 import baseStyle from "../BaseModal.module.css";
+import React, { useLayoutEffect, useState } from "react";
 import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";

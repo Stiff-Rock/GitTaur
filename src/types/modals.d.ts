@@ -7,4 +7,9 @@ type AppModals =
   | "push"
   | "branch"
   | "stash"
-  | "addRemote";
+  | "addRemote"
+  | "renameBranch"
+  | "createTag"
+  | "merge"
+  | "rebase"
+  | "confirmation";

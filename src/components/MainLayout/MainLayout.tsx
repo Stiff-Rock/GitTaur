@@ -20,6 +20,11 @@ import { listen } from '@tauri-apps/api/event';
 import CreateBranchModal from '../Common/Modals/CreateBranch/CreateBranchModal';
 import StashChangesModal from '../Common/Modals/StashChanges/StashChangesModal';
 import AddRemoteModal from '../Common/Modals/AddRemoteModal/AddRemoteModal';
+import ConfirmationModal from '../Common/Modals/ConfirmationModal/ConfirmationModal';
+import RenameBranchModal from '../Common/Modals/RenameBranchModal/RenameBranchModal';
+import TagBranchModal from '../Common/Modals/CreateTagModal/CreateTagModal';
+import MergeBranchModal from '../Common/Modals/MergeBranchModal/MergeBranchModal';
+import RebaseBranchModal from '../Common/Modals/RebaseBranchModal/RebaseBranchModal';
 
 //TODO: CONTEXT MENUS -> {
 //  Status: STASH
@@ -122,7 +127,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
 
   useEffect(() => {
     if (isActive) setActiveRepoInfo(repoInfo);
-  }, [repoInfo]);
+  }, [isActive, repoInfo]);
 
   // Panel resizing synchronization
   useEffect(() => {
@@ -219,6 +224,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       {activeModal === "branch" && <CreateBranchModal />}
       {activeModal === "stash" && <StashChangesModal />}
       {activeModal === "addRemote" && <AddRemoteModal />}
+      {activeModal === "renameBranch" && <RenameBranchModal />}
+      {activeModal === "createTag" && <TagBranchModal />}
+      {activeModal === "merge" && <MergeBranchModal />}
+      {activeModal === "rebase" && <RebaseBranchModal />}
+
+      {activeModal === "confirmation" && <ConfirmationModal />}
     </div>
   );
 };

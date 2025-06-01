@@ -8,11 +8,6 @@ import LocalBranchElement from './SubElements/LocalBranchElement';
 import RemoteAccordion from './SubElements/RemoteAccordion';
 import TagElement from './SubElements/TagElement';
 
-//TODO: { CONTEXT MENU ACTIONS:
-// branches: checkout, rename, delete, tag & push and rebase???
-// tags: delete, opy tag name, copy tag commit msg, push
-// }
-
 const InfoAccordions: React.FC = () => {
   const { setActiveModal } = useAppContext();
   const { repoInfo } = useMainContext();
@@ -89,7 +84,7 @@ const InfoAccordions: React.FC = () => {
           <ul>
             {repoInfo.tags.map((tag, index) => (
               <li key={index}>
-                <TagElement tag={tag} />
+                <TagElement tagName={tag} />
               </li>
             ))}
           </ul>

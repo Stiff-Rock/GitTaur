@@ -1,9 +1,16 @@
 import { FeedTagIcon } from "@primer/octicons-react";
 import { useAppContext } from "../../../../../context/AppContext";
 import { Menu } from "@tauri-apps/api/menu";
+import { invoke } from "@tauri-apps/api/core";
 
-const TagElement: React.FC<{ tag: string }> = ({ tag }) => {
-  const { workspace, setNotification, openContextMenu } = useAppContext();
+const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
+  const {
+    workspace,
+    setNotification,
+    openContextMenu,
+    openConfirmationModal,
+    setActiveModal
+  } = useAppContext();
 
   const tagContextMenu = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -17,24 +24,28 @@ const TagElement: React.FC<{ tag: string }> = ({ tag }) => {
     let contextMenu = await Menu.new({
       items: [
         {
-          id: "asdad",
-          text: "ASDASD",
+          id: "copyTag",
+          text: "Copy tag name",
           action: () => {
-
+            navigator.clipboard.writeText(tagName).catch(e =>
+              console.error("Failed to copy tag name:", e)
+            );
           },
         },
         {
-          id: "asdad",
-          text: "ASDASD",
+          id: "deleteTag",
+          text: "Delete",
           action: () => {
-
-          },
-        },
-        {
-          id: "asdad",
-          text: "ASDASD",
-          action: () => {
-
+            openConfirmationModal({
+              onConfirmed: () => {
+                invoke("delete_tag", { tagName }).catch((e) => {
+                  console.error(e);
+                  setNotification(e);
+                }).finally(() => setActiveModal(""))
+              },
+              title: "Delete Tag",
+              subTitle: "Target: " + tagName,
+            });
           },
         },
       ],
@@ -46,7 +57,7 @@ const TagElement: React.FC<{ tag: string }> = ({ tag }) => {
   return (
     <div onContextMenu={tagContextMenu}>
       <FeedTagIcon />
-      {tag}
+      {tagName}
     </div>
   );
 };

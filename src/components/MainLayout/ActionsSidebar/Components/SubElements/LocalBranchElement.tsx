@@ -2,7 +2,8 @@ import { GitBranchIcon } from "@primer/octicons-react";
 import ActiveIndicator from "../../../../Common/ActiveIndicator";
 import { useMainContext } from "../../../../../context/MainContext";
 import { useAppContext } from "../../../../../context/AppContext";
-import { Menu } from "@tauri-apps/api/menu";
+import { Menu, MenuItemOptions } from "@tauri-apps/api/menu";
+import { invoke } from "@tauri-apps/api/core";
 
 interface LocalBranchElementProps {
   branchName: string,
@@ -12,7 +13,19 @@ interface LocalBranchElementProps {
 const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
   const { branchName, className } = props;
 
-  const { workspace, setNotification, openContextMenu } = useAppContext();
+  const {
+    workspace,
+    setNotification,
+    openContextMenu,
+    setActiveModal,
+    openConfirmationModal,
+    openRenameBranchModal,
+    openCreateTagModal,
+    openPushModal,
+    openMergeBranchModal,
+    openRebaseBranchModal
+  } = useAppContext();
+
   const { repoInfo } = useMainContext();
 
   const localBranchContextMenu = async (event: React.MouseEvent) => {
@@ -24,37 +37,110 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
       return;
     }
 
-    let contextMenu = await Menu.new({
-      items: [
-        {
-          id: "asdad",
-          text: "ASDASD",
-          action: () => {
+    if (!repoInfo) {
+      console.error("Error opening context menu: Unexpected null repoInfo");
+      setNotification("An internal error has occurred, please report this issue");
+      return;
+    }
 
-          },
-        },
-        {
-          id: "asdad",
-          text: "ASDASD",
-          action: () => {
+    const repoPath = workspace.activeTab;
 
-          },
-        },
-        {
-          id: "asdad",
-          text: "ASDASD",
-          action: () => {
+    let menuItems: MenuItemOptions[] = [];
 
-          },
-        },
-      ],
+    menuItems.push({
+      id: "pushBranch",
+      text: "Push",
+      action: () => {
+        openPushModal({ seletedLocalBranch: branchName });
+      },
     });
 
-    openContextMenu(contextMenu, event);
+    menuItems.push({
+      id: "tagBranch",
+      text: "Tag",
+      action: () => {
+        openCreateTagModal({ branchName, isLocal: true });
+      },
+    });
+
+    menuItems.push({
+      id: "renameBranch",
+      text: "Rename",
+      action: () => {
+        openRenameBranchModal({
+          oldBranchName: branchName
+        });
+      },
+    });
+
+    if (repoInfo.currentBranch !== branchName) {
+      menuItems.push({
+        id: "checkoutBranch",
+        text: "Checkout " + branchName,
+        action: () => {
+          openConfirmationModal({
+            onConfirmed() {
+              invoke("checkout_branch", { repoPath, branchName }).catch((e) => {
+                console.error(e);
+                setNotification(e);
+              }).finally(() => setActiveModal(""));
+            },
+            title: "Checkout to branch",
+            subTitle: "Target: " + branchName,
+          });
+        },
+      });
+
+      menuItems.push({
+        id: "deleteBranch",
+        text: "Delete",
+        action: () => {
+          openConfirmationModal({
+            onConfirmed() {
+              invoke("delete_branch", { repoPath, branchName, isLocal: true }).catch((e) => {
+                console.error(e);
+                setNotification(e);
+              }).finally(() => setActiveModal(""));
+            },
+            title: "Delete branch",
+            subTitle: "Target: " + branchName,
+          });
+        },
+      });
+
+      //TODO: MERGE AND REBASE
+      menuItems.push({
+        id: "mergeBranch",
+        text: "Merge",
+        action: () => {
+          openMergeBranchModal({ sourceBranch: branchName });
+        },
+      });
+
+      menuItems.push({
+        id: "rebaseBranch",
+        text: "Rebase",
+        action: () => {
+          openRebaseBranchModal({ sourceBranch: branchName });
+        },
+      });
+    }
+
+    menuItems.push({
+      id: "copyLocalBranchName",
+      text: "Copy branch name",
+      action: () => {
+        navigator.clipboard.writeText(branchName).catch(e =>
+          console.error("Failed to copy remote URL:", e)
+        );
+      },
+    });
+
+    openContextMenu(await Menu.new({ items: menuItems }), event);
   }
 
   return (
-    <div onContextMenu={() => console.log(1)}>
+    <div onContextMenu={localBranchContextMenu}>
       <GitBranchIcon />
       {branchName}
       <ActiveIndicator

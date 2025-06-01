@@ -8,9 +8,8 @@ use crate::{
 };
 use auth_git2_pem::GitAuthenticator;
 use git2::{
-    build::CheckoutBuilder, AnnotatedCommit, BranchType, Commit, Delta, Diff, DiffOptions,
-    FetchOptions, IndexAddOption, MergeOptions, Oid, Reference, Repository, Signature,
-    StashApplyOptions, StashFlags, Status, StatusOptions,
+    build::CheckoutBuilder, BranchType, Commit, Delta, Diff, DiffOptions, IndexAddOption, Oid,
+    Repository, Signature, StashApplyOptions, StashFlags, Status, StatusOptions,
 };
 use indexmap::IndexMap;
 use log::{error, info};
@@ -210,7 +209,10 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Remote>, Str
 
             if branch_name.starts_with(&format!("{}/", remote_name)) {
                 let clean_branch_name = &branch_name[remote_name.len() + 1..];
-                remote_branches.push(clean_branch_name.to_string());
+
+                if clean_branch_name != "HEAD" {
+                    remote_branches.push(clean_branch_name.to_string());
+                }
             }
         }
 
@@ -593,6 +595,207 @@ fn html_escape(s: &str) -> String {
 }
 
 #[command]
+pub async fn tag_branch_tip(
+    repo_path: String,
+    branch_name: String,
+    tag_name: String,
+    tag_msg: String,
+    is_local: bool,
+) -> Result<(), String> {
+    info!("Creating tag {tag_name} for <{branch_name}> branch tip in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let branch_type = if is_local {
+        BranchType::Local
+    } else {
+        BranchType::Remote
+    };
+
+    let branch = repo
+        .find_branch(&branch_name, branch_type)
+        .map_err(|e| e.to_string())?;
+
+    let reference = branch.get();
+
+    let oid = reference
+        .target()
+        .ok_or_else(|| git2::Error::from_str("Branch has no target"))
+        .map_err(|e| e.to_string())?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    create_tag(repo, oid, tag_name, tag_msg)
+}
+
+#[command]
+pub async fn tag_commit(
+    repo_path: String,
+    commit_oid: String,
+    tag_name: String,
+    tag_msg: String,
+) -> Result<(), String> {
+    info!("Creating tag {tag_name} in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let oid = Oid::from_str(&commit_oid).map_err(|e| e.to_string())?;
+
+    create_tag(repo, oid, tag_name, tag_msg)
+}
+
+fn create_tag(
+    repo: Repository,
+    commit_oid: Oid,
+    tag_name: String,
+    tag_msg: String,
+) -> Result<(), String> {
+    let commit = repo.find_commit(commit_oid).map_err(|e| e.to_string())?;
+
+    let signature = repo.signature().map_err(|e| e.to_string())?;
+
+    if tag_msg.is_empty() {
+        repo.tag_lightweight(&tag_name, &commit.into_object(), false)
+            .map_err(|e| e.to_string())?;
+    } else {
+        repo.tag(
+            &tag_name,
+            &commit.into_object(),
+            &signature,
+            &tag_msg,
+            false,
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+#[command]
+pub async fn delete_tag(repo_path: String, tag_name: String) -> Result<(), String> {
+    info!("Deleting tag {} from repository at {}", tag_name, repo_path);
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    repo.tag_delete(&tag_name).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn checkout_commit(repo_path: String, commit_oid: String) -> Result<(), String> {
+    info!("Checking out to commit in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let oid = Oid::from_str(commit_oid.as_str()).map_err(|e| e.to_string())?;
+    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+    let object = commit.as_object();
+
+    let mut checkout_builder = CheckoutBuilder::new();
+    repo.checkout_tree(&object, Some(&mut checkout_builder))
+        .map_err(|e| e.to_string())?;
+
+    repo.set_head_detached(oid).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn checkout_branch(repo_path: String, branch_name: String) -> Result<(), String> {
+    info!("Checking out to branch in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let branch = repo
+        .find_branch(&branch_name, BranchType::Local)
+        .or_else(|_| repo.find_branch(&branch_name, git2::BranchType::Remote))
+        .map_err(|e| e.to_string())?;
+
+    let reference = branch.get();
+
+    let oid = reference
+        .target()
+        .ok_or_else(|| git2::Error::from_str("Branch has no target"))
+        .map_err(|e| e.to_string())?;
+
+    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+    let object = commit.as_object();
+
+    let mut checkout_builder = CheckoutBuilder::new();
+    repo.checkout_tree(&object, Some(&mut checkout_builder))
+        .map_err(|e| e.to_string())?;
+
+    let branch_ref_name = reference
+        .name()
+        .ok_or_else(|| "Invalid branch reference name".to_string())?;
+
+    repo.set_head(branch_ref_name).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn rename_branch(
+    repo_path: String,
+    old_branch_name: String,
+    new_branch_name: String,
+) -> Result<(), String> {
+    info!("Renaming branch from {old_branch_name} to {new_branch_name} in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut branch = repo
+        .find_branch(&old_branch_name, BranchType::Local)
+        .map_err(|e| e.to_string())?;
+
+    branch
+        .rename(&new_branch_name, false)
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn delete_branch(
+    repo_path: String,
+    branch_name: String,
+    is_local: bool,
+) -> Result<(), String> {
+    info!("Deleting branch {branch_name} in repo {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let branch_type = if is_local {
+        BranchType::Local
+    } else {
+        BranchType::Remote
+    };
+
+    let mut branch = repo
+        .find_branch(&branch_name, branch_type)
+        .map_err(|e| e.to_string())?;
+
+    branch.delete().map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
 pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Result<(), String> {
     info!("Staging {:#?} in repo {}", files, repo_path);
 
@@ -880,6 +1083,7 @@ pub async fn fetch_remote(
             let output = shell
                 .command("git")
                 .args(["fetch", remote_name])
+                .current_dir(&repo_path)
                 .output()
                 .await
                 .map_err(|e| format!("Failed to execute git fetch command: {}", e))?;
@@ -953,9 +1157,10 @@ fn find_updated_refs(
 //TODO: Live loading feedback
 #[command]
 pub async fn pull_remote(
+    app_handle: AppHandle,
     repo_path: String,
     remote_name: String,
-    branches: Vec<String>,
+    branch: String,
 ) -> Result<String, String> {
     info!(
         "Pulling from remote {} of repository at {}",
@@ -964,155 +1169,29 @@ pub async fn pull_remote(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let shell = app_handle.shell();
 
-    let mut fetch_options = FetchOptions::new();
-
-    let mut remote = repo
-        .find_remote(&remote_name)
-        .map_err(|e| format!("Couldn't find remote '{}': {}", remote_name, e))?;
-
-    // Get the current branch ref
-    let current_branch_name = get_current_branch(&repo);
-    let current_branch_ref = format!("refs/heads/{}", current_branch_name);
-
-    let mut has_updated_content: bool = false;
-    for branch_name in branches {
-        remote
-            .fetch(&[branch_name], Some(&mut fetch_options), None)
-            .map_err(|e| format!("Failed to fetch from '{}': {}", &remote_name, e))?;
-
-        // 2. Get the fetched commit to merge
-        let fetch_head = repo
-            .find_reference("FETCH_HEAD")
-            .map_err(|e| format!("Failed to find FETCH_HEAD: {}", e))?;
-
-        let fetch_commit = repo
-            .reference_to_annotated_commit(&fetch_head)
-            .map_err(|e| format!("Failed to get commit from FETCH_HEAD: {}", e))?;
-
-        let mut current_ref = repo
-            .find_reference(&current_branch_ref)
-            .map_err(|e| format!("Failed to find reference '{}': {}", current_branch_ref, e))?;
-
-        let current_commit = repo
-            .reference_to_annotated_commit(&current_ref)
-            .map_err(|e| format!("Failed to get commit from reference: {}", e))?;
-
-        // 4. Do the merge analysis
-        let (merge_analysis, _merge_preference) = repo
-            .merge_analysis(&[&fetch_commit])
-            .map_err(|e| format!("Failed to perform merge analysis: {}", e))?;
-
-        if merge_analysis.is_fast_forward() {
-            // Fast-forward merge
-            let res = fast_forward(&repo, &mut current_ref, &fetch_commit);
-
-            if res.is_err() {
-                return res;
-            }
-
-            has_updated_content = true;
-        } else if merge_analysis.is_normal() {
-            // Normal (non-fast-forward) merge
-            let res = normal_merge(&repo, &current_commit, &fetch_commit);
-
-            if res.is_err() {
-                return res;
-            }
-
-            has_updated_content = true;
-        }
-    }
-
-    let msg: String = if has_updated_content {
-        "Successfully pulled changes".to_string()
+    let args = if branch.is_empty() {
+        vec!["pull", &remote_name]
     } else {
-        "Already up-to-date".to_string()
+        vec!["pull", &remote_name, &branch]
     };
 
-    Ok(msg)
-}
+    let output = shell
+        .command("git")
+        .args(args)
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git pull command: {}", e))?;
 
-//TODO: REBASING
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
 
-// Handle a fast-forward merge
-fn fast_forward(
-    repo: &Repository,
-    reference: &mut Reference,
-    fetch_commit: &AnnotatedCommit,
-) -> Result<String, String> {
-    let commit_id = fetch_commit.id();
-    let name = reference.name().unwrap_or("unknown").to_string();
-
-    // Fast-forward the reference
-    reference
-        .set_target(
-            commit_id,
-            &format!("Fast-forward: Setting {} to id: {}", name, commit_id),
-        )
-        .map_err(|e| format!("Failed to fast-forward: {}", e))?;
-
-    // Update the working directory
-    repo.checkout_tree(
-        &repo.find_object(commit_id, None).unwrap(),
-        Some(git2::build::CheckoutBuilder::new().force()),
-    )
-    .map_err(|e| format!("Failed to update working directory: {}", e))?;
-
-    repo.set_head(&name)
-        .map_err(|e| format!("Failed to update HEAD: {}", e))?;
-
-    Ok(format!("Fast-forward merge successful to {}", commit_id))
-}
-
-fn normal_merge(
-    repo: &Repository,
-    local_commit: &AnnotatedCommit,
-    remote_commit: &AnnotatedCommit,
-) -> Result<String, String> {
-    // Set up merge options
-    let mut merge_options = MergeOptions::new();
-    merge_options.fail_on_conflict(false);
-
-    // Perform the merge
-    repo.merge(&[remote_commit], Some(&mut merge_options), None)
-        .map_err(|e| format!("Failed to merge: {}", e))?;
-
-    // Check for conflicts
-    if repo.index().map_err(|e| e.to_string())?.has_conflicts() {
-        repo.cleanup_state()
-            .map_err(|e| format!("Failed to clean up state: {}", e))?;
-        return Err("Merge conflicts detected. Please resolve them manually.".to_string());
+        return Err(format!("Error pulling - {}", stderr));
     }
 
-    // Create the merge commit
-    let sig = repo
-        .signature()
-        .map_err(|e| format!("Failed to get signature: {}", e))?;
-    let tree_id = repo.index().unwrap().write_tree().unwrap();
-    let tree = repo.find_tree(tree_id).unwrap();
-
-    // Get the parent commits
-    let local_commit_obj = repo.find_commit(local_commit.id()).unwrap();
-    let remote_commit_obj = repo.find_commit(remote_commit.id()).unwrap();
-
-    // Create the merge commit
-    repo.commit(
-        Some("HEAD"),
-        &sig,
-        &sig,
-        &format!("Merge: {} into {}", remote_commit.id(), local_commit.id()),
-        &tree,
-        &[&local_commit_obj, &remote_commit_obj],
-    )
-    .map_err(|e| format!("Failed to create merge commit: {}", e))?;
-
-    // Cleanup
-    repo.cleanup_state()
-        .map_err(|e| format!("Failed to clean up state: {}", e))?;
-
-    Ok("Merge successful".to_string())
+    Ok("Successfully pulled changes".to_string())
 }
 
 //TODO: Live loading feedback
@@ -1124,7 +1203,7 @@ pub async fn push_remote(
     local_branch: String,
     remote_branch: String,
     force_push: bool,
-) -> Result<(), String> {
+) -> Result<String, String> {
     info!(
         "Pushing changes to remote {} of repository at {}",
         remote_name, repo_path
@@ -1164,6 +1243,7 @@ pub async fn push_remote(
         let output = shell
             .command("git")
             .args(args)
+            .current_dir(&repo_path)
             .output()
             .await
             .map_err(|e| format!("Failed to execute git push command: {}", e))?;
@@ -1175,7 +1255,7 @@ pub async fn push_remote(
         }
     }
 
-    Ok(())
+    Ok("Successfully pushed changes".to_string())
 }
 
 #[command]
@@ -1267,4 +1347,68 @@ pub async fn commit(
     .map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+#[command]
+pub async fn merge_branch(
+    app_handle: AppHandle,
+    repo_path: String,
+    source_branch: String,
+    target_branch: String,
+) -> Result<String, String> {
+    info!("Merging branch {source_branch} into {target_branch} in repository at {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let shell = app_handle.shell();
+
+    let output = shell
+        .command("git")
+        .args(["merge", &source_branch])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git merge command: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+
+        return Err(format!("Error merging - {}", stderr));
+    }
+
+    Ok(format!(
+        "Successfully merged {source_branch} into {target_branch}"
+    ))
+}
+
+#[command]
+pub async fn rebase_branch(
+    app_handle: AppHandle,
+    repo_path: String,
+    source_branch: String,
+    target_branch: String,
+) -> Result<String, String> {
+    info!("Rebasing branch {source_branch} onto {target_branch} in repository at {repo_path}");
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let shell = app_handle.shell();
+
+    let output = shell
+        .command("git")
+        .args(["rebase", &source_branch])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git rebase command: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+
+        return Err(format!("Error rebasing - {}", stderr));
+    }
+
+    Ok(format!(
+        "Successfully rebased {source_branch} into {target_branch}"
+    ))
 }

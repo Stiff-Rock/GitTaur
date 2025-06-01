@@ -20,7 +20,7 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
     branches
   } = props;
 
-  const { workspace, setNotification, openContextMenu } = useAppContext();
+  const { workspace, setNotification, openContextMenu, openConfirmationModal, setActiveModal } = useAppContext();
 
   const remoteContextMenu = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -54,10 +54,16 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
           id: "deleteRemote",
           text: "Delete",
           action: () => {
-            invoke("delete_remote", { repoPath, remoteName: remote.name }).catch((e) => {
-              console.error(e);
-              setNotification(e);
-            });;
+            openConfirmationModal({
+              onConfirmed: () => {
+                invoke("delete_remote", { repoPath, remoteName: remote.name }).catch((e) => {
+                  console.error(e);
+                  setNotification(e);
+                }).finally(() => setActiveModal(""));
+              },
+              title: "Delete remote",
+              subTitle: "Target: " + remote.name
+            });
           },
         },
         {
