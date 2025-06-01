@@ -1350,6 +1350,52 @@ pub async fn commit(
 }
 
 #[command]
+pub async fn revert_commit(repo_path: String, commit_oid: String) -> Result<(), String> {
+    info!("Reverting commit in repository at {}", repo_path);
+
+    let _repo_lock = RepoGuard::new(&repo_path, false)?;
+
+    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let oid = git2::Oid::from_str(&commit_oid).map_err(|e| e.to_string())?;
+
+    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+
+    let head = repo.head().map_err(|e| e.to_string())?;
+    let head_commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+
+    repo.revert(&commit, None).map_err(|e| e.to_string())?;
+
+    let mut index = repo.index().map_err(|e| e.to_string())?;
+    if index.has_conflicts() {
+        repo.cleanup_state().map_err(|e| e.to_string())?;
+        return Err("Revert resulted in conflicts. Please resolve them manually.".to_string());
+    }
+
+    let tree_id = index.write_tree().map_err(|e| e.to_string())?;
+    let tree = repo.find_tree(tree_id).map_err(|e| e.to_string())?;
+
+    let signature = repo.signature().map_err(|e| e.to_string())?;
+
+    repo.commit(
+        Some("HEAD"),
+        &signature,
+        &signature,
+        &format!(
+            "Revert \"{}\"",
+            commit.summary().unwrap_or("Unknown commit message")
+        ),
+        &tree,
+        &[&head_commit],
+    )
+    .map_err(|e| e.to_string())?;
+
+    repo.cleanup_state().map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
 pub async fn merge_branch(
     app_handle: AppHandle,
     repo_path: String,

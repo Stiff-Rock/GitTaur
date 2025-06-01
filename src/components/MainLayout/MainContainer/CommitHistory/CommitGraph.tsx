@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
@@ -9,16 +9,17 @@ import { MergeStyle, Template } from "@gitgraph/core/lib/template";
 import { GitgraphOptions } from "@gitgraph/core";
 import { GraphCommitOptions } from "./Gitgraph/Commit.tsx";
 import ScrollBar from "../../../Common/ScrollBar/ScrollBar.tsx";
+import { useAppContext } from "../../../../context/AppContext.tsx";
 
 //TODO: apply config to graphs (such as the commit limit)
 //TODO: ADD AUTHOR ICON
 //TODO: Add a visual indicator of unpushed changes
-//WARNING: THIS GRAPH AND PROPABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
-//TODO: CONTEXXT MENU, TAGS, AMMEND, REVERT AND CHECKOUT, COPY SHA
+//WARNING: THIS GRAPH AND PROBABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
 //NOTE: cant handle render of big repos
 
+//TODO: CURRENT CHCKOUT POSITION INDICATOR
 
-//BUG: TAGS ARE NOT ALWAYS DISPLAYED
+//BUG: TAGS ARE NOT ALWAYS DISPLAYED, SPECIALLY IF BRANCH TIP
 
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;
@@ -60,8 +61,10 @@ const graphCommitOptions: GraphCommitOptions = {
   showMessageBody: false,
 }
 
-const CommitGraph: React.FC = () => {
+const CommitGraph: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const { scrollbarRef, commitHistory, currentAppTab } = useMainContext();
+
+  const { setActiveRepoHistory } = useAppContext();
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
@@ -74,10 +77,15 @@ const CommitGraph: React.FC = () => {
     }
   }, [commitHistory]);
 
+  useEffect(() => {
+    setActiveRepoHistory(commitLogs);
+  }, [isActive, commitLogs]);
+
   //TODO: MAKE GRAPH CUSTOMIZATION
   //TODO: MAKE GRAPHS STRAIGHT
   //TODO: FIX VERTICAL AND HORIZONTAL SCROLLBARS
-  //TODO: RECTS HAVE TO FIT ENTERILY AND SELECTED COMMTIS ARE BUGGER SOMEHOW
+
+  //TODO: RECTS HAVE TO FIT ENTIRELY AND SELECTED COMMTIS ARE BIGGER SOMEHOW
   return (
     <ScrollBar
       containerHeight={100}

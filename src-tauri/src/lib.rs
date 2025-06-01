@@ -256,6 +256,7 @@ pub fn run() {
             repo_manager::push_remote,
             repo_manager::create_branch,
             repo_manager::commit,
+            repo_manager::revert_commit,
             repo_manager::merge_branch,
             repo_manager::rebase_branch,
             // Repository Watcher commands

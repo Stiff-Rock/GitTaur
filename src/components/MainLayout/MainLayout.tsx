@@ -26,13 +26,6 @@ import TagBranchModal from '../Common/Modals/CreateTagModal/CreateTagModal';
 import MergeBranchModal from '../Common/Modals/MergeBranchModal/MergeBranchModal';
 import RebaseBranchModal from '../Common/Modals/RebaseBranchModal/RebaseBranchModal';
 
-//TODO: CONTEXT MENUS -> {
-//  Status: STASH
-//  Commits: CHECKOUT, REVERT, COPYSHA, TAG, BRANCH FROM THERE
-//  ACTIONPANEL: CHECKOUT BRANCH, FETCH REMOTE, COPY TAG NAME
-//  STASHES (when MODAL done, use localCHanges for stashes too): APPLY, DROP
-//}
-
 interface MainLayoutProps {
   isActive: boolean;
 }
@@ -174,7 +167,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
         <PanelResizeHandle className={styles.resizeHandle} disabled={!isActive} />
 
         <Panel id="center-panel" order={2}>
-          <CommitGraph />
+          <CommitGraph isActive={isActive} />
           <LocalChanges />
           <TodoPanel />
         </Panel>

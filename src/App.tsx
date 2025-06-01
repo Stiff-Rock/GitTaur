@@ -11,6 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 import ConfigPage from "./components/ConfigurationPage/ConfigPage";
 
 //TODO: FRONTEND LOGS?
+//TODO: PREVENT ANY DEFAULT CONTEXT MENU
 function App() {
   const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
 

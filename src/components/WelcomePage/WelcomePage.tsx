@@ -6,11 +6,12 @@ import styles from './WelcomePage.module.css';
 import ScrollBar from '../Common/ScrollBar/ScrollBar';
 
 function WelcomePage() {
-  const { activeModal, workspace, setActiveRepoInfo, checkPageType } = useAppContext();
+  const { activeModal, workspace, setActiveRepoInfo, setActiveRepoHistory, checkPageType } = useAppContext();
 
   useEffect(() => {
     if (!checkPageType("Repo")) {
       setActiveRepoInfo(null);
+      setActiveRepoHistory(null);
     }
   }, []);
 

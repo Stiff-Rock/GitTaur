@@ -19,7 +19,9 @@ interface AppContextType {
 
   activeModal: AppModals;
   notification: string;
+
   activeRepoInfo: RepoInfo | null;
+  activeRepoHistory: CommitLog[] | null;
 
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
@@ -27,7 +29,9 @@ interface AppContextType {
 
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
+
   setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
+  setActiveRepoHistory: React.Dispatch<React.SetStateAction<CommitLog[] | null>>;
 
   // Global Functions
   openContextMenu: (menu: Menu, event: React.MouseEvent) => void;
@@ -88,7 +92,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
+
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
+  const [activeRepoHistory, setActiveRepoHistory] = useState<CommitLog[] | null>(null);
 
   const { selectDirectoryDialog } = useDialog();
 
@@ -354,7 +360,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       activeModal, setActiveModal,
       notification, setNotification,
+
       activeRepoInfo, setActiveRepoInfo,
+      activeRepoHistory, setActiveRepoHistory,
 
       // Global Functions
       openContextMenu,
