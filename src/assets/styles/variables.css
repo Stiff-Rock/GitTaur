@@ -20,6 +20,8 @@
 
   --tertiary-text: #404040;
 
+  --contrast-text: #121212;
+
   /*TODO: MAKE A BEAUTIFUL THEME AS DEFAULT*/
 
 
@@ -58,6 +60,9 @@
   --icon-secondary-size: 15px;
 
   --icon-badge-size: 12px;
+
+  /* OTHER */
+  --app-font: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
 }
 
 [data-theme="dark"] {
@@ -69,6 +74,7 @@
   --primary-text: #d1d5db;
   --secondary-text: #868e96;
   --tertiary-text: #404040;
+  --contrast-text: #121212;
 }
 
 /*TODO: THE TEXT AND WINDOW ACTION ICONS ARE NOT VISIBLE ENOUGH*/
@@ -82,4 +88,5 @@
   --primary-text: #333333;
   --secondary-text: #555555;
   --tertiary-text: #666666;
+  --contrast-text: #ffffff;
 }

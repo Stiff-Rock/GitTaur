@@ -113,9 +113,11 @@ const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
       id: "copyCommitSha",
       text: "Copy commit SHA",
       action: () => {
-        navigator.clipboard.writeText(commit.hash).catch(e =>
-          console.error("Failed to copy remote URL:", e)
-        );
+        navigator.clipboard.writeText(commit.hash).catch(e => {
+          const msg = `Failed to copy commit SHA: ${e}`;
+          setNotification(msg);
+          console.error(msg);
+        });
       },
     });
 

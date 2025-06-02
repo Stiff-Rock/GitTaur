@@ -9,7 +9,6 @@ import { usePanelSync } from '../../context/PanelSyncContext';
 import LocalChanges from './MainContainer/LocalChanges/LocalChanges';
 import TodoPanel from './MainContainer/TodoPanel/TodoPanel';
 import LocalChangesInfoSidebar from './InfoSidebar/LocalChanges/LocalChangesInfoSidebar';
-import TodoPanelInfoSidebar from './InfoSidebar/TodoPanel/TodoPanelInfoSidebar';
 import CommitGraph from './MainContainer/CommitHistory/CommitGraph';
 import { invoke } from '@tauri-apps/api/core';
 import { useAppContext } from '../../context/AppContext';
@@ -20,15 +19,10 @@ import { listen } from '@tauri-apps/api/event';
 import CreateBranchModal from '../Common/Modals/CreateBranch/CreateBranchModal';
 import StashChangesModal from '../Common/Modals/StashChanges/StashChangesModal';
 import AddRemoteModal from '../Common/Modals/AddRemoteModal/AddRemoteModal';
-import ConfirmationModal from '../Common/Modals/ConfirmationModal/ConfirmationModal';
 import RenameBranchModal from '../Common/Modals/RenameBranchModal/RenameBranchModal';
 import TagBranchModal from '../Common/Modals/CreateTagModal/CreateTagModal';
 import MergeBranchModal from '../Common/Modals/MergeBranchModal/MergeBranchModal';
 import RebaseBranchModal from '../Common/Modals/RebaseBranchModal/RebaseBranchModal';
-
-interface MainLayoutProps {
-  isActive: boolean;
-}
 
 interface RepoEvents {
   headEvent: string,
@@ -36,7 +30,7 @@ interface RepoEvents {
   statusEvent: string,
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
+const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const {
     repoPath,
     currentAppTab,
@@ -169,7 +163,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
         <Panel id="center-panel" order={2}>
           <CommitGraph isActive={isActive} />
           <LocalChanges />
-          <TodoPanel />
+          <TodoPanel isAcitve={isActive} />
         </Panel>
 
         {showInfoSidebar ? (
@@ -198,11 +192,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
               </button>
 
               <CommitInfoSidebar />
-
               <LocalChangesInfoSidebar />
-
-              <TodoPanelInfoSidebar />
-
             </Panel>
           </>
         ) : (
@@ -221,8 +211,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isActive }) => {
       {activeModal === "createTag" && <TagBranchModal />}
       {activeModal === "merge" && <MergeBranchModal />}
       {activeModal === "rebase" && <RebaseBranchModal />}
-
-      {activeModal === "confirmation" && <ConfirmationModal />}
     </div>
   );
 };

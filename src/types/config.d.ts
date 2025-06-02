@@ -8,6 +8,7 @@ interface Configuration {
   dateFormat: string,
   maxCommits: number,
   terminalApp: string,
+  createTodo: boolean,
   // Git configs
   username: string,
   email: string,

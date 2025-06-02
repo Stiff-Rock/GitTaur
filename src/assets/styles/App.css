@@ -7,7 +7,7 @@
 }
 
 html {
-  font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
+  font-family: var(--app-font);
   color: var(--primary-text);
 }
 
@@ -16,7 +16,7 @@ button,
 select,
 option,
 textarea {
-  font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
+  font-family: var(--app-font);
   color: var(--primary-text);
 }
 
@@ -69,7 +69,7 @@ textarea {
 .appButton {
   background-color: var(--secondary-bg);
   color: var(--primary-text);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--lighter-bg);
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
@@ -173,11 +173,39 @@ input[type="number"]::-webkit-outer-spin-button {
   width: 100%;
   height: fit-content;
   line-height: 1;
-  font-family: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
+  font-family: var(--app-font);
   font-size: var(--font-size-small);
 }
 
 .context {
   display: none;
   visibility: hidden;
+}
+
+/* Markdown Editor */
+.w-md-editor {
+  color: var(--primary-text) !important;
+  font-family: var(--app-font) !important;
+  --md-editor-font-family: var(--app-font) !important;
+  --md-editor-background-color: var(--primary-bg) !important;
+  box-shadow: 0 0 0 1px var(--lighter-bg), 0 0 0 var(--lighter-bg), 0 1px 1px var(--lighter-bg) !important;
+  border-radius: 0 !important;
+  background-color: var(--primary-bg) !important;
+}
+
+.w-md-editor-toolbar {
+  border-bottom: 1px solid var(--lighter-bg) !important;
+  background-color: var(--primary-bg) !important;
+}
+
+
+.w-md-editor-preview,
+.wmde-markdown {
+  background-color: var(--primary-bg) !important;
+  font-family: var(--app-font) !important;
+  box-shadow: none !important;
+}
+
+.w-md-editor-preview {
+  border-left: solid 1px var(--lighter-bg) !important;
 }

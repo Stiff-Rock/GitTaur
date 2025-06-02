@@ -14,6 +14,8 @@ export interface FileItem {
   status: FileStatusState;
 }
 
+//TODO: ALSO ADD STASH BADGE
+
 const LocalChanges: React.FC = () => {
   const {
     currentAppTab,
@@ -82,10 +84,12 @@ const LocalChanges: React.FC = () => {
         </button>
       </div>
 
-      <ChangesSection {...unstagedFileSectionProps} />
-      <ChangesSection {...stagedFileSectionProps} />
+      <div className={styles.content}>
+        <ChangesSection {...unstagedFileSectionProps} />
+        <ChangesSection {...stagedFileSectionProps} />
 
-      <StashesSection isLoading={isStashLoading} />
+        <StashesSection isLoading={isStashLoading} />
+      </div>
     </div >
   );
 };

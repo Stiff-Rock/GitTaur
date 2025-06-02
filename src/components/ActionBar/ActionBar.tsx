@@ -13,25 +13,25 @@ import PushRepositoryButton from './Actions/GitActions/PushRepositoryButton';
 import GitBranchButton from './Actions/GitActions/CreateBranchButton';
 
 const ActionBar: React.FC = () => {
-  const { checkPageType } = useAppContext();
+  const { isType } = useAppContext();
 
   return (
     <div className={`${styles.actionBar}`}>
       <div className={`${styles.actions} ${styles.leftActions}`}>
-        {checkPageType("Welcome") ?
+        {isType("Welcome") ?
           (
             <>
               <OpenRepositoryButton />
               <CloneRepositoryButton />
               <CreateRepositoryButton />
             </>
-          ) : checkPageType("Config") ? (<></>) : (
+          ) : isType("Config") ? (<></>) : (
             <OpenRepoDirButton />
           )}
         <OpenTerminalDirButton />
       </div>
 
-      {!checkPageType("Welcome") && !checkPageType("Config") && (
+      {!isType("Welcome") && !isType("Config") && (
         <div className={`${styles.actions} ${styles.centerActions}`}>
           <FetchRepositoryButton />
 

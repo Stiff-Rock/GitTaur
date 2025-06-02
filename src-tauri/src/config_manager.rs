@@ -20,8 +20,13 @@ pub fn save_config(new_config: Configuration) -> Result<(), String> {
     *config = new_config;
 
     let json_data = serde_json::to_string_pretty(&*config).map_err(|e| e.to_string())?;
-    fs::write(CONFIG_PATH.get().unwrap(), json_data)
-        .map_err(|e| format!("Failed to save: {}", e))?;
+    fs::write(
+        CONFIG_PATH
+            .get()
+            .expect("Unable to obtain config path during saving"),
+        json_data,
+    )
+    .map_err(|e| format!("Failed to save: {}", e))?;
 
     Ok(())
 }
@@ -32,11 +37,16 @@ pub fn get_config() -> Configuration {
 }
 
 pub fn config() -> MutexGuard<'static, Configuration> {
-    CONFIGUTARION.lock().unwrap()
+    CONFIGUTARION
+        .lock()
+        .expect("Could not obtain configuraion lock")
 }
 
 pub fn load_config() -> String {
-    let path = Path::new(CONFIG_PATH.get().unwrap());
+    let config_path = CONFIG_PATH
+        .get()
+        .expect("Could not obtain config path during load");
+    let path = Path::new(config_path);
 
     // If the configuration file is empty, craete a new empty one, if not, load it
     let mut config = config();
@@ -47,8 +57,7 @@ pub fn load_config() -> String {
             .map_err(|e| e.to_string())
             .expect("Failed to serialize configuration");
 
-        let mut file =
-            File::create(CONFIG_PATH.get().unwrap()).expect("Failed to create configuration.json");
+        let mut file = File::create(config_path).expect("Failed to create configuration.json");
         file.write_all(config_json.as_bytes())
             .expect("Failed to write default configuration JSON content");
 

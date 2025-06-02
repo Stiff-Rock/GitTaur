@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CopyIcon } from "@primer/octicons-react";
 import styles from "./CommitInfoSidebar.module.css";
+import { useAppContext } from "../../../../context/AppContext";
 
 interface CopyShaButtonProps {
   sha: string;
@@ -9,14 +10,18 @@ interface CopyShaButtonProps {
 const CopyShaButton: React.FC<CopyShaButtonProps> = ({ sha }) => {
   const [copied, setCopied] = useState(false);
 
+  const { setNotification } = useAppContext();
+
   const copySha = () => {
     navigator.clipboard.writeText(sha)
       .then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000); // Hide after 2 seconds
       })
-      .catch(err => {
-        console.error("Failed to copy SHA:", err);
+      .catch(e => {
+        const msg = `Falied to copy SHA: ${e}`;
+        setNotification(msg);
+        console.error(msg);
       });
   };
 

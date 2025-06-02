@@ -7,26 +7,131 @@ mod workspace_manager;
 use chrono::Local;
 use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
-use log::{info, LevelFilter};
-use std::error::Error;
-use std::fs::create_dir_all;
-use tauri::AppHandle;
-use tauri::{command, path::BaseDirectory, App, Manager, Theme as TauriTheme};
-use tauri_plugin_shell::process::Command;
-use tauri_plugin_shell::ShellExt;
+use log::{error, info, LevelFilter};
+use repo_manager::is_repo;
+use std::fs::{read_to_string, OpenOptions};
+use std::{
+    error::Error,
+    fs::{create_dir_all, File},
+    io::{BufRead, BufReader, Write},
+    path::Path,
+};
+use tauri::{command, path::BaseDirectory, App, AppHandle, Manager, Theme as TauriTheme};
+use tauri_plugin_shell::{process::Command, ShellExt};
 use types::config::Theme;
 
 #[cfg(debug_assertions)]
 use crate::types::repo_guard;
 
-//TODO: FUTURE:: Try to debug libssh2-rs to see why so many keys don't work or implement ssh-agent
-
-//TODO: Terminal personalization
-
 //TODO: PROPER ERRORS, INSTEAD OF SO MUCH .map_err
 
+const TODO_FILE_NAME: &str = "gittaur-todo-list.md";
+
 #[command]
-fn open_terminal(mut path: String, app_handle: AppHandle) -> Result<(), String> {
+async fn create_todo_file(repo_path: String) -> Result<String, String> {
+    let path = Path::new(&repo_path);
+
+    if !path.exists() || !path.is_dir() {
+        let msg = format!("Error creating todo-list file, the selected path to store is not a valid directory ({repo_path})");
+        error!("{}", msg);
+        return Err(msg);
+    }
+
+    let file_path = path.join(TODO_FILE_NAME);
+
+    if file_path.exists() {
+        let content = read_to_string(&file_path).map_err(|e| e.to_string())?;
+        return Ok(content);
+    }
+
+    // Add Todo MD file to .gitignore if the directory
+    if !is_repo(&repo_path, false)? {
+        let msg = "The target directory is not a repository".to_string();
+        error!("{msg}");
+        return Err(msg);
+    }
+
+    info!("Creating todo-list file at location {repo_path}");
+    File::create(file_path).map_err(|e| e.to_string())?;
+
+    let gitignore_path = Path::new(&repo_path).join(".gitignore");
+    if gitignore_path.exists() {
+        let file = File::open(&gitignore_path).map_err(|e| e.to_string())?;
+        let reader = BufReader::new(file);
+        let mut pattern_exists = false;
+
+        for line in reader.lines() {
+            let line = line.map_err(|e| e.to_string())?;
+            if line.trim() == TODO_FILE_NAME {
+                pattern_exists = true;
+                break;
+            }
+        }
+
+        if !pattern_exists {
+            info!("Adding .gitignore entry for todo-list file");
+
+            let mut file = OpenOptions::new()
+                .append(true)
+                .open(&gitignore_path)
+                .map_err(|e| e.to_string())?;
+
+            let content = read_to_string(&gitignore_path).map_err(|e| e.to_string())?;
+
+            if !content.is_empty() && !content.ends_with('\n') {
+                writeln!(file).map_err(|e| e.to_string())?;
+            }
+
+            writeln!(file, "{}", TODO_FILE_NAME).map_err(|e| e.to_string())?;
+        }
+    } else {
+        info!("Creating .gitignore file to add a todo-list file entry");
+
+        let mut file = File::create(gitignore_path).map_err(|e| e.to_string())?;
+        writeln!(file, "{}", TODO_FILE_NAME).map_err(|e| e.to_string())?;
+    }
+
+    Ok("".to_string())
+}
+
+#[command]
+async fn save_todo_file(repo_path: String, todo_text: String) -> Result<(), String> {
+    let path = Path::new(&repo_path);
+
+    if !path.exists() || !path.is_dir() {
+        let msg = format!(
+            "Error saving todo-list file, the path to store is not a valid directory ({repo_path})"
+        );
+        error!("{}", msg);
+        return Err(msg);
+    }
+
+    let file_path = path.join(TODO_FILE_NAME);
+
+    if !file_path.exists() {
+        create_todo_file(repo_path.clone()).await?;
+    }
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(&file_path)
+        .map_err(|e| e.to_string())?;
+
+    info!("Saving todo-list file located at {repo_path}");
+
+    file.write_all(todo_text.as_bytes())
+        .map_err(|e| e.to_string())?;
+
+    file.flush().map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+async fn open_terminal(mut path: String, app_handle: AppHandle) -> Result<(), String> {
+    info!("Opening terminal in {path}");
+
     if path.is_empty() {
         path = dirs::home_dir()
             .ok_or_else(|| "Could not determine home directory".to_string())?
@@ -217,6 +322,8 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .invoke_handler(tauri::generate_handler![
             // General app commands
+            create_todo_file,
+            save_todo_file,
             open_terminal,
             // Workspace commands
             workspace_manager::open_repo,

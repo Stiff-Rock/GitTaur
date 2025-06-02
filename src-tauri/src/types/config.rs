@@ -60,11 +60,12 @@ pub struct Configuration {
     pub date_format: String,
     pub max_commits: u32,
     pub terminal_app: String,
+    pub create_todo: bool,
 
     // Git configs
     pub username: String,
     pub email: String,
-    pub clone_path: String, //TODO:
+    pub clone_path: String,
 
     // UI Customization
     #[serde(default)]
@@ -98,7 +99,7 @@ impl Configuration {
         path.to_string_lossy().into_owned()
     }
 
-    fn get_dafault_terminal() -> String {
+    fn get_default_terminal() -> String {
         #[cfg(target_os = "windows")]
         {
             "cmd.exe".to_string()
@@ -122,7 +123,8 @@ impl Configuration {
             lang: Language::from_system_locale(),
             date_format: "YYYY-MM-DD".to_string(),
             max_commits: 1000,
-            terminal_app: "".to_string(),
+            terminal_app: Self::get_default_terminal(),
+            create_todo: true,
             username: git_username,
             email: git_email,
             clone_path: Self::get_default_clone_path(),
@@ -144,7 +146,7 @@ impl Configuration {
         }
 
         if self.terminal_app.is_empty() {
-            self.terminal_app = Self::get_dafault_terminal();
+            self.terminal_app = Self::get_default_terminal();
         }
 
         let (git_username, git_email) = Self::get_git_user_info();
