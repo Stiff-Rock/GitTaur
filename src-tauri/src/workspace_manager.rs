@@ -100,11 +100,11 @@ pub fn restore_workspace() -> Result<String, String> {
             );
                 Workspace::new()
             };
-    }
 
-    match workspace.save(path.to_path_buf()) {
-        Ok(_) => {}
-        Err(e) => error!("{e}"),
+        match workspace.save(path.to_path_buf()) {
+            Ok(_) => {}
+            Err(e) => error!("{e}"),
+        }
     }
 
     Ok(serde_json::to_string(&workspace.to_dto())
