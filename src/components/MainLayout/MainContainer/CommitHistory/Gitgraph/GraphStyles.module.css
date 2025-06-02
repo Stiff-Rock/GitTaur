@@ -13,3 +13,8 @@
 .commitInfo {
   user-select: none;
 }
+
+.graphSvg {
+  min-width: 100%;
+  overflow: hidden;
+}

@@ -26,7 +26,6 @@ const CommitInfoSidebar: React.FC = () => {
     scrollToCommit();
   }
 
-  //TODO: AVATARS https://avatars.githubusercontent.com/{matchGithubUser.Groups[2].Value https://www.gravatar.com/avatar/{md5}?d=404
   return (
     <div className={`${styles.infoSidebar} ${currentAppTab === "commit-history" ? '' : 'inactive'}`}>
       {commitInfo ? (

@@ -1,3 +1,4 @@
+import styles from './GraphStyles.module.css';
 import * as React from "react";
 import {
   GitgraphCore,
@@ -153,8 +154,8 @@ class Gitgraph extends React.Component<GitgraphProps, GitgraphState> {
     });
 
     return (
-      <GraphProvider>
-        <svg ref={this.$graph}>
+      <GraphProvider graphSvgRef={this.$graph}>
+        <svg ref={this.$graph} className={styles.graphSvg}>
           {/* Translate graph left => left-most branch label is not cropped (horizontal) */}
           {/* Translate graph down => top-most commit tooltip is not cropped */}
           <g transform={`translate(${BranchLabel.paddingX}, ${Tooltip.padding})`}>

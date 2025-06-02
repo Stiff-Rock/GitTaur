@@ -12,7 +12,6 @@ const WindowTabs: React.FC = () => {
   return (
     <div className={`${barStyles.windowTabs} ${styles.tabs}`}>
       <SettingsButton />
-      {/*TODO: <WorkspaceButton /> */}
 
       {workspace?.tabs && [...workspace.tabs.entries()].map(([key, tab]) => (
         <Tab

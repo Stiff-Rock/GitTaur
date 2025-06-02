@@ -151,7 +151,7 @@ export const Commit = (props: CommitsProps) => {
       setMessageX(translateX);
     }
 
-    if (commitElRef.current) {
+    if (setBboxMap && commitElRef.current) {
       const bbox = commitElRef.current.getBBox();
       const bboxDims: RectDims = { x, y, width: bbox.width, height: bbox.height }
       setBboxMap(prevMap => {
@@ -206,7 +206,6 @@ export const Commit = (props: CommitsProps) => {
             showBody={showMessageBody}
           />
         )}
-        {/*BUG: TAGS AND BRANCLABLES ARE NOT CO-EXISTING*/}
         {branchLabels}
         {tags}
       </g>

@@ -31,6 +31,7 @@ const ScrollBar = forwardRef<Scrollbars, ScrollBarProps>((props, ref) => {
       autoHide={autoHide}
       autoHideTimeout={autoHideTimeout}
       autoHideDuration={autoHideDuration}
+
       renderThumbVertical={({ style, ...props }) => (
         <div
           {...props}
@@ -50,6 +51,38 @@ const ScrollBar = forwardRef<Scrollbars, ScrollBarProps>((props, ref) => {
           className={styles.renderTrackVertical}
         />
       )}
+
+
+      renderThumbHorizontal={({ style, ...props }) => (
+        <div
+          {...props}
+          style={{
+            ...style,
+            position: "relative",
+            display: "block",
+            height: "100%",
+            cursor: "pointer",
+            borderRadius: "inherit",
+            backgroundColor: "var(--lighter-bg)"
+          }}
+        />
+      )}
+      renderTrackHorizontal={({ style, ...props }) => (
+        <div
+          {...props}
+          style={{
+            ...style,
+            position: "absolute",
+            height: `${width - 4}px`,
+            right: "2px",
+            bottom: "2px",
+            left: "2px",
+            borderRadius: "3px"
+          }}
+        />
+      )}
+
+
       ref={ref}
       className={className}
     >

@@ -34,8 +34,6 @@ const LocalChangesInfoSidebar: React.FC = () => {
       });
   }, [lastSelectedChange])
 
-  //TODO: MAYBE USE https://www.npmjs.com/package/react-diff-viewer 
-
   return (
     <div className={`${styles.mainContainer} ${currentAppTab === "local-changes" ? '' : 'inactive'}`}>
       <div

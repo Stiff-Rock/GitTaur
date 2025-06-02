@@ -2,7 +2,6 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import styles from "../MainContainer.module.css";
 import graphStyles from "./CommitGraph.module.css";
 import { useMainContext } from "../../../../context/MainContext.tsx";
-import { GraphProvider } from "../../../../context/GraphContext.tsx";
 import { BranchLabel } from "./Gitgraph/BranchLabel.tsx";
 import { Gitgraph, templateExtend, TemplateName } from "./Gitgraph";
 import { MergeStyle, Template } from "@gitgraph/core/lib/template";
@@ -11,16 +10,15 @@ import { GraphCommitOptions } from "./Gitgraph/Commit.tsx";
 import ScrollBar from "../../../Common/ScrollBar/ScrollBar.tsx";
 import { useAppContext } from "../../../../context/AppContext.tsx";
 
-//TODO: apply config to graphs (such as the commit limit)
-//TODO: ADD AUTHOR ICON
-//TODO: Add a visual indicator of unpushed changes
 //WARNING: THIS GRAPH AND PROBABLY GIT2JSON TOO ARE NOT PREPARED TO DISPLAY FETCHED DATA, ONLY LOCAL PULLED DATA
-//NOTE: cant handle render of big repos
-
-//TODO: CURRENT CHCKOUT POSITION INDICATOR
+//TODO: ADD AUTHOR ICON
+//NOTE: Cant handle render of big repos
 
 //BUG: TAGS ARE NOT ALWAYS DISPLAYED, SPECIALLY IF BRANCH TIP
 //TODO: HEAD DETACHED INDICATOR
+//TODO: Add a visual indicator of unpushed changes
+//TODO: CURRENT CHCKOUT POSITION INDICATOR
+//TODO: SCROLL TO SELECTED COMMIT
 
 BranchLabel.paddingX = 6;
 BranchLabel.paddingY = 4;
@@ -28,8 +26,7 @@ const scale = 0.8;
 const font = `normal ${12 * scale}pt CaskaydiaMonoNerdFont`;
 
 const customTemplate: Template = templateExtend(TemplateName.Metro, {
-  //TODO: GENERATE COLORSHCEME, LET USER CUSTOMIZE
-  colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9"],
+  colors: ["#1CA085", "#C0392B", "#8E44AD", "#F39C12", "#2980B9", "#F1C40F", "#34495E", "#D35400", "#7F8C8D"],
   branch: {
     lineWidth: 4 * scale,
     spacing: 35 * scale,
@@ -65,7 +62,7 @@ const graphCommitOptions: GraphCommitOptions = {
 const CommitGraph: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const { scrollbarRef, commitHistory, currentAppTab } = useMainContext();
 
-  const { setActiveRepoHistory } = useAppContext();
+  const { setActiveRepoHistory, config } = useAppContext();
 
   const [commitLogs, setCommitLogs] = useState<CommitLog[] | null>(null);
 
@@ -82,29 +79,31 @@ const CommitGraph: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     setActiveRepoHistory(commitLogs);
   }, [isActive, commitLogs]);
 
-  //TODO: MAKE GRAPH CUSTOMIZATION
-  //TODO: MAKE GRAPHS STRAIGHT
-  //TODO: FIX VERTICAL AND HORIZONTAL SCROLLBARS
-
-  //TODO: RECTS HAVE TO FIT ENTIRELY AND SELECTED COMMTIS ARE BIGGER SOMEHOW
   return (
     <ScrollBar
       containerHeight={100}
       autoHide={true}
-      offset={2}
+      offset={5}
       className={currentAppTab === "commit-history" ? '' : 'inactive'}
       ref={scrollbarRef}
     >
       <div className={`${styles.container} ${graphStyles.graph}`}>
-        {commitLogs ? (
-          <GraphProvider key={commitLogs!.length}>
-            <Gitgraph options={options} graphCommitOptions={graphCommitOptions}>
-              {(gitgraph) => {
-                gitgraph.clear();
-                gitgraph.import(commitLogs);
-              }}
-            </Gitgraph>
-          </GraphProvider>
+        {commitLogs && config ? (
+          <Gitgraph
+            key={`${commitLogs.length}-${config.maxCommits}`}
+            options={options} graphCommitOptions={graphCommitOptions}
+          >
+            {(gitgraph) => {
+              gitgraph.clear();
+
+              const maxCommits = config.maxCommits;
+              let commits = commitLogs;
+              if (commits.length > maxCommits) {
+                commits = commits.slice(0, maxCommits);
+              }
+              gitgraph.import(commits);
+            }}
+          </Gitgraph>
         ) : (
           //TODO: REPLACE WITH LOADING ANIMATION
           <p>Loading repository info...</p>

@@ -16,33 +16,38 @@ interface CommitRectProps {
 
 const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
   const { commit } = props;
-  const { bboxMap } = useGraphContext();
+  const { bboxMap, graphSvgRef } = useGraphContext();
   const { selectedCommit, setSelectedCommit } = useMainContext();
-  const { workspace, openContextMenu, openCreateTagModal, setNotification, openConfirmationModal } = useAppContext();
+  const {
+    workspace,
+    openContextMenu,
+    openCreateTagModal,
+    setNotification,
+    openConfirmationModal,
+    setActiveModal
+  } = useAppContext();
 
   const [isMouseOver, setIsMouseOver] = React.useState<boolean>(false);
 
   const [commitRectDimensions, setCommitRectDimensions] = React.useState<RectDims>({ width: 0, height: 0, x: 0, y: 0 });
 
-  const rectXPadding = 10;
-
   //NOTE: PADDING FUCKS EVERYTHING UP
-  const rectHeight = 35;
-  const rectYPadding = 0;
-
-  const commonEndLimit = 500;
+  const rectHeight = 32;
 
   useEffect(() => {
+    if (!bboxMap || !graphSvgRef.current) return;
+
     const bboxDims = bboxMap.get(commit.hash);
     if (bboxDims) {
       const dotR = commit.style.dot.size;
-      const minWidth = bboxDims.width + rectXPadding;
+      const minWidth = bboxDims.width;
+      const graphWidth = graphSvgRef.current.getBoundingClientRect().width;
 
-      const x = bboxDims.x - (rectXPadding / 2);
-      const y = (bboxDims.y + dotR) - (rectHeight / 2)
+      const x = -10;
+      const y = (bboxDims.y + dotR) - (rectHeight / 2);
 
-      const width = minWidth + (commonEndLimit - minWidth);
-      const height = rectHeight + rectYPadding;
+      const width = minWidth + (x + graphWidth - minWidth);
+      const height = rectHeight;
 
       const dims: RectDims = {
         x,
@@ -53,7 +58,7 @@ const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
 
       setCommitRectDimensions(dims);
     }
-  }, [bboxMap]);
+  }, [bboxMap, graphSvgRef]);
 
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -86,7 +91,7 @@ const CommitRect: React.FC<CommitRectProps> = (props: CommitRectProps) => {
             invoke("revert_commit", { repoPath, commitOid: commit.hash }).catch((e) => {
               console.error(e);
               setNotification(e);
-            });
+            }).finally(() => setActiveModal(""));
           },
           title: "Revert commit",
           subTitle: "Target: <" + commit.message + ">",

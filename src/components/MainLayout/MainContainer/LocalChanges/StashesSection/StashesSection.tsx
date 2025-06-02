@@ -17,8 +17,6 @@ const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
   const [selectedStash, setSelectedStash] = useState<Stash | null>(null);
   const [selectedFileChange, setSelectedFileChange] = useState<string>("");
 
-
-  //TODO: SELECT STASH ON OPENCONTEXTMENU AND USELECT WHEN CALLING A FN
   const handleOpenContextMenu = async (event: React.MouseEvent, stash: Stash) => {
     event.preventDefault();
 
@@ -103,7 +101,6 @@ const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
           </div>
         </div>
 
-        {/*TODO: APPLY & DROP*/}
         <ScrollBar containerHeight={85} autoHide={true} offset={5}>
           <div className={styles.sectionContent}>
             {repoStashes && repoStashes.map((stash, index) => (
