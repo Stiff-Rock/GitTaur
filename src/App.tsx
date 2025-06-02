@@ -45,7 +45,7 @@ function App() {
       if (!(target instanceof HTMLAnchorElement)) return;
 
       const href = target.href;
-      if (href.startsWith('http')) {
+      if (href) {
         e.preventDefault();
         await openUrl(href);
       }

@@ -2,7 +2,7 @@ use crate::types::config::*;
 use git2::Config;
 use log::error;
 use std::{
-    fs::{self, metadata, File},
+    fs::{metadata, write, File},
     io::{Read, Write},
     path::{Path, PathBuf},
     sync::{LazyLock, Mutex, MutexGuard, OnceLock},
@@ -20,74 +20,85 @@ pub fn save_config(new_config: Configuration) -> Result<(), String> {
     *config = new_config;
 
     let json_data = serde_json::to_string_pretty(&*config).map_err(|e| e.to_string())?;
-    fs::write(
-        CONFIG_PATH
-            .get()
-            .expect("Unable to obtain config path during saving"),
-        json_data,
-    )
-    .map_err(|e| format!("Failed to save: {}", e))?;
+    let config_path = if let Some(path) = CONFIG_PATH.get() {
+        path
+    } else {
+        return Err(format!("Unable to obtain config path during saving"));
+    };
+
+    write(config_path, json_data).map_err(|e| format!("Failed to save: {}", e))?;
 
     Ok(())
 }
 
 #[command]
-pub fn get_config() -> Configuration {
-    config().to_owned()
+pub fn get_config() -> Result<Configuration, String> {
+    Ok(config()?.to_owned())
 }
 
-pub fn config() -> MutexGuard<'static, Configuration> {
-    CONFIGUTARION
+pub fn config() -> Result<MutexGuard<'static, Configuration>, String> {
+    Ok(CONFIGUTARION
         .lock()
-        .expect("Could not obtain configuraion lock")
+        .map_err(|e| format!("Could not obtain configuraion lock: {e}"))?)
 }
 
-pub fn load_config() -> String {
-    let config_path = CONFIG_PATH
-        .get()
-        .expect("Could not obtain config path during load");
+pub fn load_config() -> Result<String, String> {
+    let config_path = if let Some(path) = CONFIG_PATH.get() {
+        path
+    } else {
+        return Err(format!("Unable to obtain config path during load"));
+    };
+
     let path = Path::new(config_path);
 
     // If the configuration file is empty, craete a new empty one, if not, load it
-    let mut config = config();
+    let mut config = config()?;
     if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
         // Config file doesn't exists
 
         let config_json: String = serde_json::to_string_pretty(&*config)
-            .map_err(|e| e.to_string())
-            .expect("Failed to serialize configuration");
+            .map_err(|e| format!("Failed to serialize configuration: {e}"))?;
 
-        let mut file = File::create(config_path).expect("Failed to create configuration.json");
+        let mut file = File::create(config_path)
+            .map_err(|e| format!("Failed to create configuration.json: {e}"))?;
         file.write_all(config_json.as_bytes())
-            .expect("Failed to write default configuration JSON content");
+            .map_err(|e| format!("Failed to write default configuration JSON content: {e}"))?;
 
         *config = Configuration::default();
     } else {
         // Config file exists
 
-        let mut file = File::open(path).expect("Error while reading configuration file");
+        let mut file =
+            File::open(path).map_err(|e| format!("Error while reading configuration file: {e}"))?;
 
         let mut config_json: String = String::new();
         file.read_to_string(&mut config_json)
-            .expect("Error reading configuration file contents");
+            .map_err(|e| format!("Error reading configuration file contents: {e}"))?;
 
-        *config = serde_json::from_str(&config_json).expect("Failed to load configuration info");
+        *config = serde_json::from_str(&config_json)
+            .map_err(|e| format!("Failed to load configuration info: {e}"))?;
 
         config.verify_config();
     }
 
-    serde_json::to_string(&*config).unwrap_or_else(|e| {
-        error!("Error during setup config serialization - {}", e);
-        String::from("{}")
-    })
+    Ok(serde_json::to_string(&*config)
+        .map_err(|e| format!("Error during setup config serialization - {e}"))?)
 }
 
 #[command]
 pub async fn set_global_git_user_id(username: String, email: String) -> Result<(), String> {
     let mut global_config = Config::open_default()
-        .expect("Error while opening git config")
+        .map_err(|e| {
+            let msg = format!("Error while opening git config: {e}");
+            error!("{msg}");
+            msg
+        })?
         .open_global()
-        .expect("Error while opening global git config");
+        .map_err(|e| {
+            let msg = format!("Error while opening global git config: {e}");
+            error!("{msg}");
+            msg
+        })?;
 
     if !username.is_empty() {
         global_config

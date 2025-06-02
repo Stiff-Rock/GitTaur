@@ -43,6 +43,7 @@ tokio="1.45.1"
 
 log = "0.4.27"
 fern = { version = "0.7.1", features = ["colored"] }
+tinyfiledialogs = "3.9.1"
 
 [target.'cfg(unix)'.dependencies.git2]
 version = "0.20.0"

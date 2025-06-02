@@ -163,8 +163,6 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
         tags,
     };
 
-    //debug!("\n--{}--\n", serde_json::to_string_pretty(&repo).unwrap());
-
     Ok(repo)
 }
 
@@ -190,7 +188,13 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Remote>, Str
         .map_err(|e| format!("Falied to get repo remotes {e}"))?;
 
     for i in 0..remote_names.len() {
-        let remote_name = remote_names.get(i).expect("Remote name should exist");
+        let remote_name = if let Some(name) = remote_names.get(i) {
+            name
+        } else {
+            return Err(
+                "Unexpectedly encountered None value while getting remote branches".to_string(),
+            );
+        };
         let remote_ref = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
         let remote_url = remote_ref
             .url()
@@ -459,9 +463,13 @@ fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String,
 fn get_staged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
     // Get HEAD commit
     let head = repo.head().map_err(|e| e.to_string())?;
-    let head_commit = repo
-        .find_commit(head.target().unwrap())
-        .map_err(|e| e.to_string())?;
+    let head_target = if let Some(target) = head.target() {
+        target
+    } else {
+        return Err("Unable to obtain head target".to_string());
+    };
+
+    let head_commit = repo.find_commit(head_target).map_err(|e| e.to_string())?;
     let head_tree = head_commit.tree().map_err(|e| e.to_string())?;
 
     // Set up diff options
@@ -1345,7 +1353,7 @@ pub async fn commit(
 
     let mut index = repo.index().map_err(|e| e.to_string())?;
 
-    let config = config();
+    let config = config()?;
     let signature = Signature::now(&config.username, &config.email).map_err(|e| e.to_string())?;
 
     let message = if commit_body.trim().is_empty() {

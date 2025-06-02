@@ -205,25 +205,36 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
 
 // Set workspace global variable
 fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
-    let workspace_json: String = workspace_manager::restore_workspace();
-    let config_json: String = config_manager::load_config();
+    let workspace_json: String = workspace_manager::restore_workspace()?;
+    let config_json: String = config_manager::load_config()?;
 
     let eval_command = &format!(
         "window.__WORKSPACE_DTO__ = {}; window.__APP_CONFIG__ = {};",
         workspace_json, config_json
     );
-    app.get_webview_window("main").unwrap().eval(eval_command)?;
+
+    if let Some(webview) = app.get_webview_window("main") {
+        webview.eval(eval_command)?;
+    } else {
+        return Err("Unable to obtain webview window setting up app globals".into());
+    }
 
     Ok(())
 }
 
 fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
-    let mut config = config_manager::get_config();
+    let mut config = config_manager::get_config()?;
 
     let theme_config: Theme = config.theme_config;
+
+    let window = if let Some(webview) = app.get_webview_window("main") {
+        webview
+    } else {
+        return Err("Unable to obtain webview window setting up app theme".into());
+    };
+
     match theme_config {
         Theme::System => {
-            let window = app.get_webview_window("main").unwrap();
             let system_theme = match window.theme() {
                 Ok(TauriTheme::Dark) => Theme::Dark,
                 Ok(TauriTheme::Light) => Theme::Light,
@@ -256,7 +267,8 @@ fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
     ",
         theme_str, config.accent_color
     );
-    app.get_webview_window("main").unwrap().eval(eval_command)?;
+
+    window.eval(eval_command)?;
 
     Ok(())
 }
@@ -315,7 +327,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let run_result = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
@@ -380,6 +392,15 @@ pub fn run() {
             setup_app_theme(app)?;
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .run(tauri::generate_context!());
+
+    if let Err(e) = run_result {
+        let msg = format!("Error while running GitTaur: {e}");
+        error!("{msg}");
+        tinyfiledialogs::message_box_ok(
+            "GitTaur Error",
+            &msg,
+            tinyfiledialogs::MessageBoxIcon::Error,
+        );
+    }
 }

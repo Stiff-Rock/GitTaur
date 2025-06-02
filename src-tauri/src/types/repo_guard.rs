@@ -1,7 +1,11 @@
+#[cfg(debug_assertions)]
+use log::info;
 use std::{
     collections::HashSet,
     sync::{Condvar, LazyLock, Mutex},
 };
+#[cfg(debug_assertions)]
+use tauri::command;
 
 static ACTIVE_REPOS: LazyLock<(Mutex<HashSet<String>>, Condvar)> =
     LazyLock::new(|| (Mutex::new(HashSet::new()), Condvar::new()));
@@ -15,10 +19,9 @@ impl RepoGuard {
         let mut active_repos_set = match ACTIVE_REPOS.0.lock() {
             Ok(guard) => guard,
             Err(err) => {
-                let err_msg =
-                    format!("Error checking if repo is busy: HashSet mutex poisoned - {err}");
-                eprintln!("{}", err_msg);
-                return Err(err_msg);
+                let msg = format!("Error checking if repo is busy: HashSet mutex poisoned - {err}");
+                eprintln!("{msg}");
+                return Err(msg);
             }
         };
 
