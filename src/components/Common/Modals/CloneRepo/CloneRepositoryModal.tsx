@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import baseStyle from "../BaseModal.module.css";
 import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useDialog } from "../../../../hooks/useDialog";
@@ -14,7 +14,7 @@ const CloneRepositoryModal: React.FC = () => {
   const [path, setParentFolder] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!config || !config.clonePath) return;
     setParentFolder(config.clonePath);
   }, [config]);

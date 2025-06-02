@@ -130,9 +130,11 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
       id: "copyLocalBranchName",
       text: "Copy branch name",
       action: () => {
-        navigator.clipboard.writeText(branchName).catch(e =>
-          console.error("Failed to copy remote URL:", e)
-        );
+        navigator.clipboard.writeText(branchName).catch(e => {
+          const msg = `Failed to copy remote local branch name: ${e}`;
+          setNotification(msg);
+          console.error(msg);
+        });
       },
     });
 

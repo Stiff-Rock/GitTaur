@@ -35,13 +35,12 @@ interface AppContextType {
 
   // Global Functions
   openContextMenu: (menu: Menu, event: React.MouseEvent) => void;
-  isWelcomePage: (text: string) => boolean;
   openNewRepo: (path: string) => void;
   setActiveTab: (tabId: string) => void;
   closeWorkspaceTab: (tabKey: string) => void;
   openWelcomePage: () => void;
   openConfigPage: () => void;
-  checkPageType: (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => boolean;
+  isType: (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => boolean;
 
   // Modal states and functions
   confirmationModalProps: ConfirmationModalProps;
@@ -67,10 +66,6 @@ interface AppContextType {
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-const isWelcomePage = (text: string): boolean => {
-  return /^Welcome Page:\d+$/.test(text)
-}
 
 let initWorkspace: Workspace | null = null;
 let initConfig: Configuration | null = null;
@@ -161,8 +156,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMainWindow(getCurrentWindow());
   }, []);
 
-  //TODO: REVISE IF THIS ALSO NEEDS TO BE useLayoutEffect
-  useEffect(() => {
+  useLayoutEffect(() => {
     // If theres already a workspace loaded, do not make api call
     if (!initWorkspace) {
       invoke<WorkspaceDTO>("get_workspace")
@@ -185,14 +179,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     menu.popup(position, mainWindow);
   }
 
-  const checkPageType = (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => {
+  const isType = (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => {
     if (!workspace) return false;
 
     if (!tabKey) tabKey = workspace.activeTab;
 
     if (tabKey === "ConfigPage") {
       return desiredType === "Config";
-    } else if (isWelcomePage(tabKey)) {
+    } else if (/^Welcome Page:\d+$/.test(tabKey)) {
       return desiredType === "Welcome";
     } else {
       return desiredType === "Repo";
@@ -223,7 +217,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [config]);
 
   const setActiveTab = (tabKey: string) => {
-    checkPageType("Config", tabKey);
+    isType("Config", tabKey);
     setWorkspace(prev => {
       if (!prev) return prev;
       return { ...prev, activeTab: tabKey };
@@ -267,9 +261,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const tabs = new Map<string, Tab>(workspace.tabs);
 
     // If it is the only tab and it's a welcome page, don't close it
-    if (tabs.size === 1 && !checkPageType("Welcome", tabKey)) return;
+    if (tabs.size === 1 && !isType("Welcome", tabKey)) return;
 
-    if (checkPageType("Repo", tabKey)) {
+    if (isType("Repo", tabKey)) {
       invoke("stop_git_watcher", { repoPath: tabKey }).catch((e) => {
         const msg = `Error stopping status watcher - ${e}`;
         console.error(msg);
@@ -303,7 +297,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    const newWorkspace: Workspace = { tabs, activeTab }
+    const newWorkspace: Workspace = { tabs, activeTab, recentRepos: workspace.recentRepos }
 
     setWorkspace(newWorkspace);
   };
@@ -316,7 +310,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Adds the new tab. If it is a welcome page, just push it, otherwise replace the welcome tab with the new one
     const entries = [...workspace.tabs.entries()];
-    if (isWelcomePage(newTabKey) || newTabKey === "ConfigPage") {
+    if (!isType("Repo", newTabKey)) {
       entries.push([newTabKey, newTab]);
     } else {
       const index = [...workspace.tabs.keys()].indexOf(workspace.activeTab);
@@ -325,7 +319,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     tabs = new Map(entries);
 
-    setWorkspace({ activeTab: newTabKey, tabs });
+    let recentRepos = workspace.recentRepos;
+    if (recentRepos && !recentRepos.includes(newTabKey) && isType("Repo", newTabKey)) {
+      recentRepos.push(newTabKey)
+    }
+
+    setWorkspace({ activeTab: newTabKey, tabs, recentRepos });
   };
 
   const openWelcomePage = () => {
@@ -366,13 +365,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Global Functions
       openContextMenu,
-      isWelcomePage,
       openNewRepo,
       closeWorkspaceTab,
       setActiveTab,
       openWelcomePage,
       openConfigPage,
-      checkPageType,
+      isType,
 
       // Modal states and functions
       confirmationModalProps,

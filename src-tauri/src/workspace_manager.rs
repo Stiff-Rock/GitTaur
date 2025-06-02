@@ -17,7 +17,9 @@ pub fn save_workspace(workspace_dto: WorkspaceDTO) -> Result<(), String> {
     let mut workspace = workspace();
     *workspace = workspace_dto.into_workspace();
 
-    let workspace_path = WORKSPACE_PATH.get().unwrap();
+    let workspace_path = WORKSPACE_PATH
+        .get()
+        .expect("Unable to obtain workspace during saving");
     workspace.save(workspace_path.to_path_buf())?;
 
     Ok(())
@@ -29,7 +31,7 @@ pub fn get_workspace() -> WorkspaceDTO {
 }
 
 pub fn workspace() -> MutexGuard<'static, Workspace> {
-    WORKSPACE.lock().unwrap()
+    WORKSPACE.lock().expect("Could not obtain workspace lock")
 }
 
 //TODO: THIS DOES NOT ACTUALLY HAVE TO OPEN THE REPO IN GIT2, IT HAS TO REGISTER AND CACHE IT AS A RECENTLY OPENED ONE
@@ -48,7 +50,11 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
 }
 
 pub fn restore_workspace() -> String {
-    let path = Path::new(WORKSPACE_PATH.get().unwrap());
+    let workspace_path = WORKSPACE_PATH
+        .get()
+        .expect("Unable to obtain workspace during restoration");
+
+    let path = Path::new(&workspace_path);
 
     // If the workspace file is empty, craete a new empty one, if not, load it
     let mut workspace = workspace();
@@ -57,8 +63,7 @@ pub fn restore_workspace() -> String {
             .map_err(|e| e.to_string())
             .expect("Failed to serialize workspace");
 
-        let mut file =
-            File::create(WORKSPACE_PATH.get().unwrap()).expect("Failed to create workspace.json");
+        let mut file = File::create(workspace_path).expect("Failed to create workspace.json");
         file.write_all(workspace_json.as_bytes())
             .expect("Failed to write default workspace JSON content");
 

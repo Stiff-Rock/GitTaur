@@ -9,12 +9,15 @@ import { PanelSyncProvider } from "./context/PanelSyncContext";
 import { ToastContainer, toast, Zoom } from "react-toastify";
 import { invoke } from "@tauri-apps/api/core";
 import ConfigPage from "./components/ConfigurationPage/ConfigPage";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import ConfirmationModal from "./components/Common/Modals/ConfirmationModal/ConfirmationModal";
 
 //TODO: FRONTEND LOGS?
 //TODO: PREVENT ANY DEFAULT CONTEXT MENU
 function App() {
-  const { workspace, notification, setNotification, isWelcomePage } = useAppContext();
+  const { workspace, notification, setNotification, isType, activeModal } = useAppContext();
 
+  // NOTE: ESTO QUIZAS NO HAYA QUE QUITARLO
   // Debug effect and invoke
   if (import.meta.env.DEV) {
     const appLoaded = useRef<boolean>(false);
@@ -35,9 +38,22 @@ function App() {
 
   }, [notification]);
 
-  const isValidPage = (path: string): boolean => {
-    return path !== "ConfigPage" && !isWelcomePage(path);
-  }
+  // Click listener to avoid opening urls in the app's webview
+  useEffect(() => {
+    const handleClick = async (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!(target instanceof HTMLAnchorElement)) return;
+
+      const href = target.href;
+      if (href.startsWith('http')) {
+        e.preventDefault();
+        await openUrl(href);
+      }
+    };
+
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
 
   return (
     <main className="container">
@@ -60,7 +76,7 @@ function App() {
       {workspace &&
         <PanelSyncProvider>
           {[...workspace.tabs].map(([key, _]) => (
-            isValidPage(key) && (
+            isType("Repo", key) && (
               <MainProvider key={key} repoPath={key}>
                 <MainLayout
                   key={key}
@@ -71,6 +87,8 @@ function App() {
           )}
         </PanelSyncProvider>
       }
+
+      {activeModal === "confirmation" && <ConfirmationModal />}
     </main>
   );
 }

@@ -19,6 +19,7 @@ pub struct Workspace {
     #[serde(with = "indexmap::map::serde_seq")]
     pub tabs: IndexMap<String, Tab>,
     pub active_tab: String,
+    pub recent_repos: Vec<String>,
 }
 
 impl Workspace {
@@ -26,6 +27,7 @@ impl Workspace {
         Self {
             tabs: IndexMap::new(),
             active_tab: String::new(),
+            recent_repos: Vec::new(),
         }
     }
 
@@ -33,6 +35,7 @@ impl Workspace {
         WorkspaceDTO {
             tabs: self.tabs.clone().into_iter().collect(),
             active_tab: self.active_tab.clone(),
+            recent_repos: self.recent_repos.clone(),
         }
     }
 
@@ -65,6 +68,7 @@ impl Workspace {
 pub struct WorkspaceDTO {
     pub tabs: Vec<(String, Tab)>,
     pub active_tab: String,
+    pub recent_repos: Vec<String>,
 }
 
 impl WorkspaceDTO {
@@ -72,6 +76,7 @@ impl WorkspaceDTO {
         Workspace {
             tabs: self.tabs.into_iter().collect(),
             active_tab: self.active_tab,
+            recent_repos: self.recent_repos,
         }
     }
 }

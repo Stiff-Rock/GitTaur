@@ -58,6 +58,9 @@
   --icon-secondary-size: 15px;
 
   --icon-badge-size: 12px;
+
+  /* OTHER */
+  --app-font: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
 }
 
 [data-theme="dark"] {

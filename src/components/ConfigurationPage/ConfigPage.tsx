@@ -12,7 +12,7 @@ import { invoke } from "@tauri-apps/api/core";
 type ConfigTabs = "general" | "git" | "ui";
 
 const ConfigPage: React.FC = () => {
-  const { checkPageType, workspace, config, setConfig, setNotification } = useAppContext();
+  const { isType, workspace, config, setConfig, setNotification } = useAppContext();
   const { selectDirectoryDialog } = useDialog();
 
   const [newConfig, setNewConfig] = useState<Configuration | null>(null);
@@ -57,7 +57,7 @@ const ConfigPage: React.FC = () => {
 
   //TODO: ADD GRAPH COLOR THEMING
   return (
-    <div className={`${styles.mainContainer} ${checkPageType("Config") || !workspace ? '' : 'inactive'}`}>
+    <div className={`${styles.mainContainer} ${isType("Config") || !workspace ? '' : 'inactive'}`}>
       <aside className={styles.configTabSidebar}>
         <button className={`actionButton ${styles.configTabButton} ${configTab === "general" ? styles.selected : ''}`}
           onClick={() => setConfigTab("general")}
@@ -105,7 +105,7 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
               />
 
-              {/*TODO: BENCHMARK HOW MANY CAN I REASONABLY RENDER || ALSO APPLY LIMIT TO GRAPH*/}
+              {/*TODO: BENCHMARK HOW MANY CAN I REASONABLY RENDER*/}
               <InputField
                 title="Max commits"
                 type="number"
@@ -115,6 +115,14 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
                 min={0}
                 max={100000}
+              />
+
+              <ComboBox
+                title="Create TodoList file"
+                onItemSelected={(value) => { setNewConfig({ ...newConfig, createTodo: value === "true" }) }}
+                value={`${newConfig.createTodo}`}
+                optionsArray={['true', 'false']}
+                className={styles.configInput}
               />
 
               {/*TODO: Maybe provide the path of the system default*/}
@@ -156,10 +164,7 @@ const ConfigPage: React.FC = () => {
                 type="text"
                 placeholder="path/to/directory"
                 value={newConfig.clonePath}
-                onChange={(value) => {
-                  console.log("NEWPATH: ", value)
-                  setNewConfig({ ...newConfig, clonePath: value })
-                }}
+                onChange={(value) => setNewConfig({ ...newConfig, clonePath: value })}
                 buttonIcon={<FileDirectoryIcon />}
                 onButtonClick={selectDirectoryDialog}
                 className={styles.configInput}

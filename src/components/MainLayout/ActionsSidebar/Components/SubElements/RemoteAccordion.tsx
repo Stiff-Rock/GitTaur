@@ -70,9 +70,11 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
           id: "copyUrl",
           text: "Copy Url",
           action: () => {
-            navigator.clipboard.writeText(remote.url).catch(e =>
-              console.error("Failed to copy remote URL:", e)
-            );
+            navigator.clipboard.writeText(remote.url).catch(e => {
+              const msg = `Failed to copy remote URL: ${e}`;
+              setNotification(msg);
+              console.error(msg);
+            });
           },
         },
       ],

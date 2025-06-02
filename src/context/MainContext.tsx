@@ -111,8 +111,10 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   let lastInfoSidebarState = useRef(false);
 
   useLayoutEffect(() => {
-    if (currentAppTab === "local-changes" || currentAppTab === "todo-panel") {
+    if (currentAppTab === "local-changes") {
       setShowInfoSidebar(true);
+    } else if (currentAppTab === "todo-panel") {
+      setShowInfoSidebar(false);
     } else {
       setShowInfoSidebar(lastInfoSidebarState.current);
     }

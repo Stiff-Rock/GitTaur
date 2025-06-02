@@ -886,6 +886,7 @@
         "npm:@types/md5@^2.3.5",
         "npm:@types/react-dom@^18.3.1",
         "npm:@types/react@^18.3.1",
+        "npm:@uiw/react-md-editor@^4.0.7",
         "npm:@vitejs/plugin-react@^4.3.4",
         "npm:js-base64@^3.7.7",
         "npm:md5@^2.3.0",

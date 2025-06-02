@@ -27,9 +27,11 @@ const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
           id: "copyTag",
           text: "Copy tag name",
           action: () => {
-            navigator.clipboard.writeText(tagName).catch(e =>
-              console.error("Failed to copy tag name:", e)
-            );
+            navigator.clipboard.writeText(tagName).catch(e => {
+              const msg = `Failed to copy tag name: ${e}`;
+              setNotification(msg);
+              console.error(msg);
+            });
           },
         },
         {

@@ -84,11 +84,12 @@ const LocalChanges: React.FC = () => {
         </button>
       </div>
 
-      {/*TODO: THEY DONT LISTEN TO CAHNGES IN THE WI OR INDEX, OR IT DOES AT FIEST BUT JUST ONCE*/}
-      <ChangesSection {...unstagedFileSectionProps} />
-      <ChangesSection {...stagedFileSectionProps} />
+      <div className={styles.content}>
+        <ChangesSection {...unstagedFileSectionProps} />
+        <ChangesSection {...stagedFileSectionProps} />
 
-      <StashesSection isLoading={isStashLoading} />
+        <StashesSection isLoading={isStashLoading} />
+      </div>
     </div >
   );
 };

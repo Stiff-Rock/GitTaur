@@ -6,12 +6,12 @@ import { invoke } from '@tauri-apps/api/core';
 
 //TODO: EXTRACT COMMON ELMENTS
 const OpenTerminalDirButton: React.FC = () => {
-  const { setNotification, workspace, checkPageType } = useAppContext();
+  const { setNotification, workspace, isType } = useAppContext();
 
   const openTerminal = () => {
     if (!workspace) return;
 
-    const path = checkPageType("Welcome") || checkPageType("Config") ? "" : workspace.activeTab;
+    const path = isType("Welcome") || isType("Config") ? "" : workspace.activeTab;
 
     invoke('open_terminal', { path }).catch((e) => {
       const errMsg = `Failed to open terminal: ${e}`
