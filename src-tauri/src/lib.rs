@@ -325,6 +325,21 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn handle_setup_error(error: Box<dyn Error>) -> Result<(), Box<dyn Error>> {
+    let msg = format!("Error during setup: {error}");
+    error!("{msg}");
+    tinyfiledialogs::message_box_ok(
+        "GitTaur Error",
+        &msg,
+        tinyfiledialogs::MessageBoxIcon::Error,
+    );
+
+    Err(Box::new(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        msg,
+    )))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let run_result = tauri::Builder::default()
@@ -386,10 +401,18 @@ pub fn run() {
             repo_guard::reset,
         ])
         .setup(|app| {
-            setup_logging(app)?;
-            init_app_paths(app)?;
-            set_app_globals(app)?;
-            setup_app_theme(app)?;
+            if let Err(e) = setup_logging(app) {
+                handle_setup_error(e)?;
+            }
+            if let Err(e) = init_app_paths(app) {
+                handle_setup_error(e)?;
+            }
+            if let Err(e) = set_app_globals(app) {
+                handle_setup_error(e)?;
+            }
+            if let Err(e) = setup_app_theme(app) {
+                handle_setup_error(e)?;
+            }
             Ok(())
         })
         .run(tauri::generate_context!());
@@ -402,5 +425,6 @@ pub fn run() {
             &msg,
             tinyfiledialogs::MessageBoxIcon::Error,
         );
+        std::process::exit(1);
     }
 }

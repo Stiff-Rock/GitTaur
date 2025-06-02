@@ -35,6 +35,35 @@ pub fn save_config(new_config: Configuration) -> Result<(), String> {
 pub fn get_config() -> Result<Configuration, String> {
     Ok(config()?.to_owned())
 }
+#[command]
+pub async fn set_global_git_user_id(username: String, email: String) -> Result<(), String> {
+    let mut global_config = Config::open_default()
+        .map_err(|e| {
+            let msg = format!("Error while opening git config: {e}");
+            error!("{msg}");
+            msg
+        })?
+        .open_global()
+        .map_err(|e| {
+            let msg = format!("Error while opening global git config: {e}");
+            error!("{msg}");
+            msg
+        })?;
+
+    if !username.is_empty() {
+        global_config
+            .set_str("user.name", &username)
+            .map_err(|e| e.to_string())?;
+    }
+
+    if !email.is_empty() {
+        global_config
+            .set_str("user.email", &email)
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
 
 pub fn config() -> Result<MutexGuard<'static, Configuration>, String> {
     Ok(CONFIGUTARION
@@ -66,7 +95,7 @@ pub fn load_config() -> Result<String, String> {
 
         *config = Configuration::default();
     } else {
-        // Config file exists
+        // Config file exists - read it
 
         let mut file =
             File::open(path).map_err(|e| format!("Error while reading configuration file: {e}"))?;
@@ -75,42 +104,29 @@ pub fn load_config() -> Result<String, String> {
         file.read_to_string(&mut config_json)
             .map_err(|e| format!("Error reading configuration file contents: {e}"))?;
 
-        *config = serde_json::from_str(&config_json)
-            .map_err(|e| format!("Failed to load configuration info: {e}"))?;
+        *config = if let Ok(mut config_value) = serde_json::from_str::<Configuration>(&config_json)
+        {
+            config_value.verify_config();
+            config_value
+        } else {
+            // If malformed config json, use default values
+            error!("Malformed configuration JSON, using default values");
 
-        config.verify_config();
+            tinyfiledialogs::message_box_ok(
+                "Configuration Error",
+                "Your configuration file was corrupted or malformed and has been restored to defaults",
+                tinyfiledialogs::MessageBoxIcon::Warning,
+            );
+
+            Configuration::default()
+        };
+
+        match save_config(config.clone()) {
+            Ok(_) => {}
+            Err(e) => error!("{e}"),
+        }
     }
 
     Ok(serde_json::to_string(&*config)
         .map_err(|e| format!("Error during setup config serialization - {e}"))?)
-}
-
-#[command]
-pub async fn set_global_git_user_id(username: String, email: String) -> Result<(), String> {
-    let mut global_config = Config::open_default()
-        .map_err(|e| {
-            let msg = format!("Error while opening git config: {e}");
-            error!("{msg}");
-            msg
-        })?
-        .open_global()
-        .map_err(|e| {
-            let msg = format!("Error while opening global git config: {e}");
-            error!("{msg}");
-            msg
-        })?;
-
-    if !username.is_empty() {
-        global_config
-            .set_str("user.name", &username)
-            .map_err(|e| e.to_string())?;
-    }
-
-    if !email.is_empty() {
-        global_config
-            .set_str("user.email", &email)
-            .map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
 }

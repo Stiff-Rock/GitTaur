@@ -1,5 +1,5 @@
 use crate::{repo_manager::is_repo, types::workspace::*};
-use log::{trace, warn};
+use log::{error, trace};
 use std::{
     fs::{metadata, File},
     io::{Read, Write},
@@ -76,6 +76,8 @@ pub fn restore_workspace() -> Result<String, String> {
 
         *workspace = Workspace::new();
     } else {
+        // Workspace file exists - read it
+
         let mut file =
             File::open(path).map_err(|e| format!("Error while reading workspace file: {e}"))?;
 
@@ -83,14 +85,26 @@ pub fn restore_workspace() -> Result<String, String> {
         file.read_to_string(&mut workspace_json)
             .map_err(|e| format!("Error reading workspace file contents: {e}"))?;
 
-        *workspace = serde_json::from_str(&workspace_json)
-            .map_err(|e| format!("Failed to load workspace info: {e}"))?;
+        *workspace =
+            if let Ok(mut workspace_value) = serde_json::from_str::<Workspace>(&workspace_json) {
+                workspace_value.validate();
+                workspace_value
+            } else {
+                // If malformed workspace json, use default values
+                error!("Malformed workspace JSON, using default values");
+
+                tinyfiledialogs::message_box_ok(
+                "Workspace Error",
+                "Your workspace file was corrupted or malformed and had to be restored to default",
+                tinyfiledialogs::MessageBoxIcon::Warning,
+            );
+                Workspace::new()
+            };
     }
 
-    workspace.validate();
     match workspace.save(path.to_path_buf()) {
         Ok(_) => {}
-        Err(e) => warn!("{e}"),
+        Err(e) => error!("{e}"),
     }
 
     Ok(serde_json::to_string(&workspace.to_dto())
