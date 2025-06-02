@@ -1,9 +1,7 @@
-use log::info;
 use std::{
     collections::HashSet,
     sync::{Condvar, LazyLock, Mutex},
 };
-use tauri::command;
 
 static ACTIVE_REPOS: LazyLock<(Mutex<HashSet<String>>, Condvar)> =
     LazyLock::new(|| (Mutex::new(HashSet::new()), Condvar::new()));
