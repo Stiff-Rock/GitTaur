@@ -18,7 +18,7 @@
 [@babel/parser@7.26.9](https://github.com/babel/babel) - MIT<br>
 [@babel/plugin-transform-react-jsx-self@7.25.9](https://github.com/babel/babel) - MIT<br>
 [@babel/plugin-transform-react-jsx-source@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/runtime@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/runtime@7.27.4](https://github.com/babel/babel) - MIT<br>
 [@babel/template@7.26.9](https://github.com/babel/babel) - MIT<br>
 [@babel/traverse@7.26.9](https://github.com/babel/babel) - MIT<br>
 [@babel/types@7.26.10](https://github.com/babel/babel) - MIT<br>
@@ -30,96 +30,223 @@
 [@jridgewell/sourcemap-codec@1.5.0](https://github.com/jridgewell/sourcemap-codec) - MIT<br>
 [@jridgewell/trace-mapping@0.3.25](https://github.com/jridgewell/trace-mapping) - MIT<br>
 [@primer/octicons-react@19.15.1](https://github.com/primer/octicons) - MIT<br>
-[@restart/hooks@0.4.16](https://github.com/jquense/react-common-hooks) - MIT<br>
 [@rollup/rollup-win32-x64-msvc@4.34.9](https://github.com/rollup/rollup) - MIT<br>
 [@tauri-apps/api@2.3.0](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
 [@tauri-apps/cli-win32-x64-msvc@2.3.1](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
 [@tauri-apps/cli@2.3.1](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
 [@tauri-apps/plugin-dialog@2.2.0](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
 [@tauri-apps/plugin-opener@2.2.6](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
-[@tauri-apps/plugin-shell@2.2.1](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
 [@types/babel__core@7.20.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/babel__generator@7.6.8](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/babel__template@7.4.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/babel__traverse@7.20.6](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/classnames@2.3.4](undefined) - MIT<br>
+[@types/debug@4.1.12](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/estree-jsx@1.0.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/estree@1.0.6](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/hast@2.3.10](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/hast@3.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/md5@2.3.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/mdast@4.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/ms@2.1.0](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/node@22.15.18](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/prismjs@1.26.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/prop-types@15.7.14](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/react-dom@18.3.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/react-transition-group@4.4.12](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/react@18.3.18](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/unist@2.0.11](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/unist@3.0.3](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@uiw/copy-to-clipboard@1.0.17](https://github.com/uiwjs/copy-to-clipboard) - MIT<br>
+[@uiw/react-markdown-preview@5.1.4](https://github.com/uiwjs/react-markdown-preview) - MIT<br>
+[@uiw/react-md-editor@4.0.7](https://github.com/uiwjs/react-md-editor) - MIT<br>
+[@ungap/structured-clone@1.3.0](https://github.com/ungap/structured-clone) - ISC<br>
 [@vitejs/plugin-react@4.3.4](https://github.com/vitejs/vite-plugin-react) - MIT<br>
 [add-px-to-style@1.0.0](https://github.com/mikkoh/add-px-to-style) - MIT<br>
+[bail@2.0.2](https://github.com/wooorm/bail) - MIT<br>
+[bcp-47-match@2.0.3](https://github.com/wooorm/bcp-47-match) - MIT<br>
+[boolbase@1.0.0](https://github.com/fb55/boolbase) - ISC<br>
 [browserslist@4.24.4](https://github.com/browserslist/browserslist) - MIT<br>
 [caniuse-lite@1.0.30001701](https://github.com/browserslist/caniuse-lite) - CC-BY-4.0<br>
+[ccount@2.0.1](https://github.com/wooorm/ccount) - MIT<br>
+[character-entities-html4@2.1.0](https://github.com/wooorm/character-entities-html4) - MIT<br>
+[character-entities-legacy@3.0.0](https://github.com/wooorm/character-entities-legacy) - MIT<br>
+[character-entities@2.0.2](https://github.com/wooorm/character-entities) - MIT<br>
+[character-reference-invalid@2.0.1](https://github.com/wooorm/character-reference-invalid) - MIT<br>
 [charenc@0.0.2](https://github.com/pvorb/node-charenc) - BSD-3-Clause<br>
-[classnames@2.5.1](https://github.com/JedWatson/classnames) - MIT<br>
 [clsx@2.1.1](https://github.com/lukeed/clsx) - MIT<br>
+[comma-separated-tokens@2.0.3](https://github.com/wooorm/comma-separated-tokens) - MIT<br>
 [convert-source-map@2.0.0](https://github.com/thlorenz/convert-source-map) - MIT<br>
 [crypt@0.0.2](https://github.com/pvorb/node-crypt) - BSD-3-Clause<br>
+[css-selector-parser@3.1.2](https://github.com/mdevils/css-selector-parser) - MIT<br>
 [csstype@3.1.3](https://github.com/frenic/csstype) - MIT<br>
-[date-arithmetic@4.1.0](https://github.com/jquense/date-math) - MIT<br>
 [debug@4.4.0](https://github.com/debug-js/debug) - MIT<br>
+[decode-named-character-reference@1.1.0](https://github.com/wooorm/decode-named-character-reference) - MIT<br>
 [dequal@2.0.3](https://github.com/lukeed/dequal) - MIT<br>
+[devlop@1.1.0](https://github.com/wooorm/devlop) - MIT<br>
+[direction@2.0.1](https://github.com/wooorm/direction) - MIT<br>
 [dom-css@2.1.0](https://github.com/mattdesl/dom-css) - MIT<br>
-[dom-helpers@5.2.1](https://github.com/react-bootstrap/dom-helpers) - MIT<br>
 [electron-to-chromium@1.5.109](https://github.com/kilian/electron-to-chromium) - ISC<br>
+[entities@6.0.0](https://github.com/fb55/entities) - BSD-2-Clause<br>
 [esbuild@0.25.0](https://github.com/evanw/esbuild) - MIT<br>
 [escalade@3.2.0](https://github.com/lukeed/escalade) - MIT<br>
+[escape-string-regexp@5.0.0](https://github.com/sindresorhus/escape-string-regexp) - MIT<br>
+[estree-util-is-identifier-name@3.0.0](https://github.com/syntax-tree/estree-util-is-identifier-name) - MIT<br>
+[extend@3.0.2](https://github.com/justmoon/node-extend) - MIT<br>
 [fdir@6.4.4](https://github.com/thecodrr/fdir) - MIT<br>
 [gensync@1.0.0-beta.2](https://github.com/loganfsmyth/gensync) - MIT<br>
+[github-slugger@2.0.0](https://github.com/Flet/github-slugger) - ISC<br>
 [gittaur@0.1.0](undefined) - UNLICENSED<br>
 [globals@11.12.0](https://github.com/sindresorhus/globals) - MIT<br>
-[invariant@2.2.4](https://github.com/zertosh/invariant) - MIT<br>
+[hast-util-from-html@2.0.3](https://github.com/syntax-tree/hast-util-from-html) - MIT<br>
+[hast-util-from-parse5@8.0.3](https://github.com/syntax-tree/hast-util-from-parse5) - MIT<br>
+[hast-util-has-property@3.0.0](https://github.com/syntax-tree/hast-util-has-property) - MIT<br>
+[hast-util-heading-rank@3.0.0](https://github.com/syntax-tree/hast-util-heading-rank) - MIT<br>
+[hast-util-is-element@3.0.0](https://github.com/syntax-tree/hast-util-is-element) - MIT<br>
+[hast-util-parse-selector@3.1.1](https://github.com/syntax-tree/hast-util-parse-selector) - MIT<br>
+[hast-util-parse-selector@4.0.0](https://github.com/syntax-tree/hast-util-parse-selector) - MIT<br>
+[hast-util-raw@9.1.0](https://github.com/syntax-tree/hast-util-raw) - MIT<br>
+[hast-util-select@6.0.4](https://github.com/syntax-tree/hast-util-select) - MIT<br>
+[hast-util-to-html@9.0.5](https://github.com/syntax-tree/hast-util-to-html) - MIT<br>
+[hast-util-to-jsx-runtime@2.3.6](https://github.com/syntax-tree/hast-util-to-jsx-runtime) - MIT<br>
+[hast-util-to-parse5@8.0.0](https://github.com/syntax-tree/hast-util-to-parse5) - MIT<br>
+[hast-util-to-string@3.0.1](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-to-string) - MIT<br>
+[hast-util-whitespace@3.0.0](https://github.com/syntax-tree/hast-util-whitespace) - MIT<br>
+[hastscript@7.2.0](https://github.com/syntax-tree/hastscript) - MIT<br>
+[hastscript@9.0.1](https://github.com/syntax-tree/hastscript) - MIT<br>
+[html-url-attributes@3.0.1](https://github.com/rehypejs/rehype-minify/tree/main/packages/html-url-attributes) - MIT<br>
+[html-void-elements@3.0.0](https://github.com/wooorm/html-void-elements) - MIT<br>
+[inline-style-parser@0.2.4](https://github.com/remarkablemark/inline-style-parser) - MIT<br>
+[is-alphabetical@2.0.1](https://github.com/wooorm/is-alphabetical) - MIT<br>
+[is-alphanumerical@2.0.1](https://github.com/wooorm/is-alphanumerical) - MIT<br>
 [is-buffer@1.1.6](https://github.com/feross/is-buffer) - MIT<br>
+[is-decimal@2.0.1](https://github.com/wooorm/is-decimal) - MIT<br>
+[is-hexadecimal@2.0.1](https://github.com/wooorm/is-hexadecimal) - MIT<br>
+[is-plain-obj@4.1.0](https://github.com/sindresorhus/is-plain-obj) - MIT<br>
 [js-base64@3.7.7](https://github.com/dankogai/js-base64) - BSD-3-Clause<br>
 [js-tokens@4.0.0](https://github.com/lydell/js-tokens) - MIT<br>
 [jsesc@3.1.0](https://github.com/mathiasbynens/jsesc) - MIT<br>
 [json5@2.2.3](https://github.com/json5/json5) - MIT<br>
+[longest-streak@3.1.0](https://github.com/wooorm/longest-streak) - MIT<br>
 [loose-envify@1.4.0](https://github.com/zertosh/loose-envify) - MIT<br>
 [lru-cache@5.1.1](https://github.com/isaacs/node-lru-cache) - ISC<br>
+[markdown-table@3.0.4](https://github.com/wooorm/markdown-table) - MIT<br>
 [md5@2.3.0](https://github.com/pvorb/node-md5) - BSD-3-Clause<br>
+[mdast-util-find-and-replace@3.0.2](https://github.com/syntax-tree/mdast-util-find-and-replace) - MIT<br>
+[mdast-util-from-markdown@2.0.2](https://github.com/syntax-tree/mdast-util-from-markdown) - MIT<br>
+[mdast-util-gfm-autolink-literal@2.0.1](https://github.com/syntax-tree/mdast-util-gfm-autolink-literal) - MIT<br>
+[mdast-util-gfm-footnote@2.1.0](https://github.com/syntax-tree/mdast-util-gfm-footnote) - MIT<br>
+[mdast-util-gfm-strikethrough@2.0.0](https://github.com/syntax-tree/mdast-util-gfm-strikethrough) - MIT<br>
+[mdast-util-gfm-table@2.0.0](https://github.com/syntax-tree/mdast-util-gfm-table) - MIT<br>
+[mdast-util-gfm-task-list-item@2.0.0](https://github.com/syntax-tree/mdast-util-gfm-task-list-item) - MIT<br>
+[mdast-util-gfm@3.1.0](https://github.com/syntax-tree/mdast-util-gfm) - MIT<br>
+[mdast-util-mdx-expression@2.0.1](https://github.com/syntax-tree/mdast-util-mdx-expression) - MIT<br>
+[mdast-util-mdx-jsx@3.2.0](https://github.com/syntax-tree/mdast-util-mdx-jsx) - MIT<br>
+[mdast-util-mdxjs-esm@2.0.1](https://github.com/syntax-tree/mdast-util-mdxjs-esm) - MIT<br>
+[mdast-util-phrasing@4.1.0](https://github.com/syntax-tree/mdast-util-phrasing) - MIT<br>
+[mdast-util-to-hast@13.2.0](https://github.com/syntax-tree/mdast-util-to-hast) - MIT<br>
+[mdast-util-to-markdown@2.1.2](https://github.com/syntax-tree/mdast-util-to-markdown) - MIT<br>
+[mdast-util-to-string@4.0.0](https://github.com/syntax-tree/mdast-util-to-string) - MIT<br>
+[micromark-core-commonmark@2.0.3](https://github.com/micromark/micromark/tree/main/packages/micromark-core-commonmark) - MIT<br>
+[micromark-extension-gfm-autolink-literal@2.1.0](https://github.com/micromark/micromark-extension-gfm-autolink-literal) - MIT<br>
+[micromark-extension-gfm-footnote@2.1.0](https://github.com/micromark/micromark-extension-gfm-footnote) - MIT<br>
+[micromark-extension-gfm-strikethrough@2.1.0](https://github.com/micromark/micromark-extension-gfm-strikethrough) - MIT<br>
+[micromark-extension-gfm-table@2.1.1](https://github.com/micromark/micromark-extension-gfm-table) - MIT<br>
+[micromark-extension-gfm-tagfilter@2.0.0](https://github.com/micromark/micromark-extension-gfm-tagfilter) - MIT<br>
+[micromark-extension-gfm-task-list-item@2.1.0](https://github.com/micromark/micromark-extension-gfm-task-list-item) - MIT<br>
+[micromark-extension-gfm@3.0.0](https://github.com/micromark/micromark-extension-gfm) - MIT<br>
+[micromark-factory-destination@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-factory-destination) - MIT<br>
+[micromark-factory-label@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-factory-label) - MIT<br>
+[micromark-factory-space@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-factory-space) - MIT<br>
+[micromark-factory-title@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-factory-title) - MIT<br>
+[micromark-factory-whitespace@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-factory-whitespace) - MIT<br>
+[micromark-util-character@2.1.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-character) - MIT<br>
+[micromark-util-chunked@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-chunked) - MIT<br>
+[micromark-util-classify-character@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-classify-character) - MIT<br>
+[micromark-util-combine-extensions@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-combine-extensions) - MIT<br>
+[micromark-util-decode-numeric-character-reference@2.0.2](https://github.com/micromark/micromark/tree/main/packages/micromark-util-decode-numeric-character-reference) - MIT<br>
+[micromark-util-decode-string@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-decode-string) - MIT<br>
+[micromark-util-encode@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-encode) - MIT<br>
+[micromark-util-html-tag-name@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-html-tag-name) - MIT<br>
+[micromark-util-normalize-identifier@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-normalize-identifier) - MIT<br>
+[micromark-util-resolve-all@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-resolve-all) - MIT<br>
+[micromark-util-sanitize-uri@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-sanitize-uri) - MIT<br>
+[micromark-util-subtokenize@2.1.0](https://github.com/micromark/micromark/tree/main/packages/micromark-util-subtokenize) - MIT<br>
+[micromark-util-symbol@2.0.1](https://github.com/micromark/micromark/tree/main/packages/micromark-util-symbol) - MIT<br>
+[micromark-util-types@2.0.2](https://github.com/micromark/micromark/tree/main/packages/micromark-util-types) - MIT<br>
+[micromark@4.0.2](https://github.com/micromark/micromark/tree/main/packages/micromark) - MIT<br>
 [ms@2.1.3](https://github.com/vercel/ms) - MIT<br>
 [nanoid@3.3.8](https://github.com/ai/nanoid) - MIT<br>
 [node-releases@2.0.19](https://github.com/chicoxyzzy/node-releases) - MIT<br>
+[nth-check@2.1.1](https://github.com/fb55/nth-check) - BSD-2-Clause<br>
 [object-assign@4.1.1](https://github.com/sindresorhus/object-assign) - MIT<br>
+[parse-entities@4.0.2](https://github.com/wooorm/parse-entities) - MIT<br>
+[parse-numeric-range@1.3.0](https://github.com/euank/node-parse-numeric-range) - ISC<br>
+[parse5@7.3.0](https://github.com/inikulin/parse5) - MIT<br>
 [performance-now@2.1.0](https://github.com/braveg1rl/performance-now) - MIT<br>
 [picocolors@1.1.1](https://github.com/alexeyraspopov/picocolors) - ISC<br>
 [picomatch@4.0.2](https://github.com/micromatch/picomatch) - MIT<br>
 [postcss@8.5.3](https://github.com/postcss/postcss) - MIT<br>
 [prefix-style@2.0.1](https://github.com/mattdesl/prefix-style) - MIT<br>
-[prop-types-extra@1.1.1](https://github.com/react-bootstrap/prop-types-extra) - MIT<br>
 [prop-types@15.8.1](https://github.com/facebook/prop-types) - MIT<br>
+[property-information@6.5.0](https://github.com/wooorm/property-information) - MIT<br>
+[property-information@7.1.0](https://github.com/wooorm/property-information) - MIT<br>
 [raf@3.4.1](https://github.com/chrisdickinson/raf) - MIT<br>
 [react-collapsible@2.10.0](https://github.com/glennflanagan/react-collapsible) - MIT<br>
 [react-custom-scrollbars-2@4.5.0](https://github.com//RobPethick/react-custom-scrollbars-2) - MIT<br>
 [react-dom@18.3.1](https://github.com/facebook/react) - MIT<br>
 [react-is@16.13.1](https://github.com/facebook/react) - MIT<br>
-[react-lifecycles-compat@3.0.4](https://github.com/reactjs/react-lifecycles-compat) - MIT<br>
+[react-markdown@9.0.3](https://github.com/remarkjs/react-markdown) - MIT<br>
 [react-refresh@0.14.2](https://github.com/facebook/react) - MIT<br>
 [react-resizable-panels@2.1.7](https://github.com/bvaughn/react-resizable-panels) - MIT<br>
 [react-toastify@11.0.5](https://github.com/fkhadra/react-toastify) - MIT<br>
-[react-transition-group@4.4.5](https://github.com/reactjs/react-transition-group) - BSD-3-Clause<br>
-[react-widgets@5.8.6](https://github.com/jquense/react-widgets) - MIT<br>
 [react@18.3.1](https://github.com/facebook/react) - MIT<br>
+[refractor@4.9.0](https://github.com/wooorm/refractor) - MIT<br>
+[rehype-attr@3.0.3](https://github.com/jaywcjlove/rehype-attr) - MIT<br>
+[rehype-autolink-headings@7.1.0](https://github.com/rehypejs/rehype-autolink-headings) - MIT<br>
+[rehype-ignore@2.0.2](https://github.com/jaywcjlove/rehype-ignore) - MIT<br>
+[rehype-parse@9.0.1](https://github.com/rehypejs/rehype/tree/main/packages/rehype-parse) - MIT<br>
+[rehype-prism-plus@2.0.0](https://github.com/timlrx/rehype-prism-plus) - MIT<br>
+[rehype-prism-plus@2.0.1](https://github.com/timlrx/rehype-prism-plus) - MIT<br>
+[rehype-raw@7.0.0](https://github.com/rehypejs/rehype-raw) - MIT<br>
+[rehype-rewrite@4.0.2](https://github.com/jaywcjlove/rehype-rewrite) - MIT<br>
+[rehype-slug@6.0.0](https://github.com/rehypejs/rehype-slug) - MIT<br>
+[rehype-stringify@10.0.1](https://github.com/rehypejs/rehype/tree/main/packages/rehype-stringify) - MIT<br>
+[rehype@13.0.2](https://github.com/rehypejs/rehype/tree/main/packages/rehype) - MIT<br>
+[remark-gfm@4.0.1](https://github.com/remarkjs/remark-gfm) - MIT<br>
+[remark-github-blockquote-alert@1.3.1](https://github.com/jaywcjlove/remark-github-blockquote-alert) - MIT<br>
+[remark-parse@11.0.0](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) - MIT<br>
+[remark-rehype@11.1.2](https://github.com/remarkjs/remark-rehype) - MIT<br>
+[remark-stringify@11.0.0](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify) - MIT<br>
 [rollup@4.34.9](https://github.com/rollup/rollup) - MIT<br>
 [scheduler@0.23.2](https://github.com/facebook/react) - MIT<br>
 [semver@6.3.1](https://github.com/npm/node-semver) - ISC<br>
 [source-map-js@1.2.1](https://github.com/7rulnik/source-map-js) - BSD-3-Clause<br>
-[tiny-warning@1.0.3](https://github.com/alexreardon/tiny-warning) - MIT<br>
+[space-separated-tokens@2.0.2](https://github.com/wooorm/space-separated-tokens) - MIT<br>
+[stringify-entities@4.0.4](https://github.com/wooorm/stringify-entities) - MIT<br>
+[style-to-js@1.1.16](https://github.com/remarkablemark/style-to-js) - MIT<br>
+[style-to-object@1.0.8](https://github.com/remarkablemark/style-to-object) - MIT<br>
 [tinyglobby@0.2.13](https://github.com/SuperchupuDev/tinyglobby) - MIT<br>
 [to-camel-case@1.0.0](https://github.com/ianstormtaylor/to-camel-case) - MIT<br>
 [to-no-case@1.0.2](https://github.com/ianstormtaylor/to-no-case) - MIT<br>
 [to-space-case@1.0.0](https://github.com/ianstormtaylor/to-space-case) - MIT<br>
+[trim-lines@3.0.1](https://github.com/wooorm/trim-lines) - MIT<br>
+[trough@2.2.0](https://github.com/wooorm/trough) - MIT<br>
 [typescript@5.6.3](https://github.com/microsoft/TypeScript) - Apache-2.0<br>
-[uncontrollable@7.2.1](https://github.com/jquense/uncontrollable) - MIT<br>
 [undici-types@6.21.0](https://github.com/nodejs/undici) - MIT<br>
+[unified@11.0.5](https://github.com/unifiedjs/unified) - MIT<br>
+[unist-util-filter@5.0.1](https://github.com/syntax-tree/unist-util-filter) - MIT<br>
+[unist-util-is@6.0.0](https://github.com/syntax-tree/unist-util-is) - MIT<br>
+[unist-util-position@5.0.0](https://github.com/syntax-tree/unist-util-position) - MIT<br>
+[unist-util-stringify-position@4.0.0](https://github.com/syntax-tree/unist-util-stringify-position) - MIT<br>
+[unist-util-visit-parents@6.0.1](https://github.com/syntax-tree/unist-util-visit-parents) - MIT<br>
+[unist-util-visit@5.0.0](https://github.com/syntax-tree/unist-util-visit) - MIT<br>
 [update-browserslist-db@1.1.3](https://github.com/browserslist/update-db) - MIT<br>
+[vfile-location@5.0.3](https://github.com/vfile/vfile-location) - MIT<br>
+[vfile-message@4.0.2](https://github.com/vfile/vfile-message) - MIT<br>
+[vfile@6.0.3](https://github.com/vfile/vfile) - MIT<br>
 [vite@6.3.4](https://github.com/vitejs/vite) - MIT<br>
-[warning@4.0.3](https://github.com/BerkeleyTrue/warning) - MIT<br>
+[web-namespaces@2.0.1](https://github.com/wooorm/web-namespaces) - MIT<br>
 [yallist@3.1.1](https://github.com/isaacs/yallist) - ISC<br>
+[zwitch@2.0.4](https://github.com/wooorm/zwitch) - MIT<br>
 
 
 
@@ -424,6 +551,7 @@
 [schemars@0.8.21](https://github.com/GREsau/schemars) - MIT License<br>
 [schemars_derive@0.8.21](https://github.com/GREsau/schemars) - MIT License<br>
 [raw-window-handle@0.6.2](https://github.com/rust-windowing/raw-window-handle) - MIT License<br>
+[tokio-macros@2.5.0](https://github.com/tokio-rs/tokio) - MIT License<br>
 [proc-macro-error-attr@1.0.4](https://gitlab.com/CreepySkeleton/proc-macro-error) - MIT License<br>
 [proc-macro-error@1.0.4](https://gitlab.com/CreepySkeleton/proc-macro-error) - MIT License<br>
 [cfg_aliases@0.2.1](https://github.com/katharostech/cfg_aliases) - MIT License<br>
@@ -440,6 +568,7 @@
 [libredox@0.1.3](https://gitlab.redox-os.org/redox-os/libredox.git) - MIT License<br>
 [is-docker@0.2.0](https://github.com/TheLarkInn/is-docker) - MIT License<br>
 [is-wsl@0.4.0](https://github.com/TheLarkInn/is-wsl) - MIT License<br>
+[tokio-debouncer@0.3.1](https://github.com/vivsh/tokio-debouncer) - MIT License<br>
 [gittaur@0.1.0](https://crates.io/crates/gittaur) - MIT License<br>
 [block2@0.5.1](https://github.com/madsmtm/objc2) - MIT License<br>
 [block@0.1.6](http://github.com/SSheldon/rust-block) - MIT License<br>
@@ -494,7 +623,7 @@
 [winapi-x86_64-pc-windows-gnu@0.4.0](https://github.com/retep998/winapi-rs) - MIT License<br>
 [objc@0.2.7](http://github.com/SSheldon/rust-objc) - MIT License<br>
 [tokio-util@0.7.13](https://github.com/tokio-rs/tokio) - MIT License<br>
-[tokio@1.43.0](https://github.com/tokio-rs/tokio) - MIT License<br>
+[tokio@1.45.1](https://github.com/tokio-rs/tokio) - MIT License<br>
 [simd-adler32@0.3.7](https://github.com/mcountryman/simd-adler32) - MIT License<br>
 [android-tzdata@0.1.1](https://github.com/RumovZ/android-tzdata) - MIT License<br>
 [miniz_oxide@0.8.3](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) - MIT License<br>
