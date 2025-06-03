@@ -423,6 +423,9 @@ pub fn run() {
             if let Err(e) = setup_app_theme(app) {
                 handle_setup_error(e)?;
             }
+
+            trace!("Setup finished!");
+
             Ok(())
         })
         .run(tauri::generate_context!());
