@@ -14,6 +14,7 @@ import { useAppContext } from "../../../../context/AppContext.tsx";
 //TODO: ADD AUTHOR ICON
 //NOTE: Cant handle render of big repos
 
+//BUG: GRAPH DOESNT SHOW WHILE ON DETACHED STATE ON COMMIT BEHIND HEAD
 //BUG: TAGS ARE NOT ALWAYS DISPLAYED, SPECIALLY IF BRANCH TIP
 //TODO: HEAD DETACHED INDICATOR
 //TODO: Add a visual indicator of unpushed changes

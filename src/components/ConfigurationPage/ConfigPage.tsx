@@ -2,7 +2,7 @@ import styles from "./ConfigPage.module.css";
 import { useAppContext } from "../../context/AppContext";
 import { useLayoutEffect, useState } from "react";
 import ComboBox from "../Common/ComboBox/ComboBox";
-import { languageCodeFromName, languageNameFromCode, languageNames, parseTheme } from "../../utils/configUtils";
+import { parseTheme } from "../../utils/configUtils";
 import InputField from "../Common/InputField/InputField";
 import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useDialog } from "../../hooks/useDialog";
@@ -88,13 +88,16 @@ const ConfigPage: React.FC = () => {
           {configTab === "general" &&
             <div className={styles.configSection}>
               {/*BUG: COMBOBOX IS SLIGHLTY WIDER*/}
+
+              {/*TODO: Internacionalización
+
               <ComboBox
                 title="Language"
                 onItemSelected={(value) => { setNewConfig({ ...newConfig, lang: languageCodeFromName(value) }) }}
                 value={languageNameFromCode(newConfig.lang)}
                 optionsArray={languageNames}
                 className={styles.configInput}
-              />
+              />*/}
 
               <InputField
                 title="Date format"

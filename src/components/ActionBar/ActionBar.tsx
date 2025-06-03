@@ -43,7 +43,10 @@ const ActionBar: React.FC = () => {
         </div>
       )}
 
+
       <div className={`${styles.actions} ${styles.rightActions}`}>
+        {/*TODO: SYNC GITHUB ACCOUNT
+
         <button className={`actionButton ${styles.actionButton}`}>
           <svg
             className={styles.userAccountBg}
@@ -57,6 +60,7 @@ const ActionBar: React.FC = () => {
             </foreignObject>
           </svg>
         </button>
+        */}
       </div>
     </div>
   );

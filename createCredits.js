@@ -112,7 +112,7 @@ function combineCredits() {
 
   try {
     let content = '# Project Dependencies\n\n';
-
+    content += "Here you can find credited all the dependencies of this project. If yours is missing, don't hesitate to contact me through [email](mailto:yaguitor@gmail.com) or any of the social links available on my GitHub profile.\n\n";
     // Add frontend dependencies if file exists
     if (fs.existsSync(tempFrontendFile)) {
       content += '## Frontend Dependencies\n\n';
@@ -128,6 +128,12 @@ function combineCredits() {
 
     // Write the combined content to CREDITS.md
     fs.writeFileSync(outputFile, content);
+
+    const docsDir = path.join(projectRoot, 'docs');
+    if (!fs.existsSync(docsDir)) {
+      fs.mkdirSync(docsDir);
+    }
+    fs.copyFileSync(outputFile, path.join(docsDir, 'CREDITS.md'));
 
     console.log(`${colors.green}✓ Credits combined into ${outputFile}${colors.reset}`);
     return true;
