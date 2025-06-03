@@ -7,7 +7,7 @@ mod workspace_manager;
 use chrono::Local;
 use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
-use log::{error, info, LevelFilter};
+use log::{error, info, trace, LevelFilter};
 use repo_manager::is_repo;
 use std::fs::{read_to_string, OpenOptions};
 use std::{
@@ -23,12 +23,12 @@ use types::config::Theme;
 #[cfg(debug_assertions)]
 use crate::types::repo_guard;
 
-//TODO: PROPER ERRORS, INSTEAD OF SO MUCH .map_err
-
 const TODO_FILE_NAME: &str = "gittaur-todo-list.md";
 
 #[command]
 async fn create_todo_file(repo_path: String) -> Result<String, String> {
+    trace!("Creating todo list file at {repo_path}");
+
     let path = Path::new(&repo_path);
 
     if !path.exists() || !path.is_dir() {
@@ -96,6 +96,8 @@ async fn create_todo_file(repo_path: String) -> Result<String, String> {
 
 #[command]
 async fn save_todo_file(repo_path: String, todo_text: String) -> Result<(), String> {
+    trace!("Saving todo list file at {repo_path}");
+
     let path = Path::new(&repo_path);
 
     if !path.exists() || !path.is_dir() {
@@ -171,6 +173,8 @@ async fn open_terminal(mut path: String, app_handle: AppHandle) -> Result<(), St
 
 // Init project local data and config paths
 fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
+    trace!("Initializing app paths");
+
     let app_handle = app.app_handle();
 
     for dir in [
@@ -205,6 +209,8 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
 
 // Set workspace global variable
 fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
+    trace!("Setting up app global variables");
+
     let workspace_json: String = workspace_manager::restore_workspace()?;
     let config_json: String = config_manager::load_config()?;
 
@@ -223,6 +229,8 @@ fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
 }
 
 fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
+    trace!("Setting up app theme");
+
     let mut config = config_manager::get_config()?;
 
     let theme_config: Theme = config.theme_config;
@@ -274,6 +282,8 @@ fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
 }
 
 fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
+    trace!("Setting up logger");
+
     let colors = ColoredLevelConfig::new()
         .error(Color::Red)
         .warn(Color::Yellow)
@@ -321,7 +331,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
             .apply()?;
     }
 
-    info!("Logger initialized");
+    info!("--<<Logger initialized>>--");
     Ok(())
 }
 

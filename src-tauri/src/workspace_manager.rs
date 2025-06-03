@@ -55,31 +55,39 @@ pub fn open_repo(repo_path: String) -> Result<String, String> {
 }
 
 pub fn restore_workspace() -> Result<String, String> {
-    let workspace_path = if let Some(path) = WORKSPACE_PATH.get() {
+    trace!("Restoring workspace");
+
+    let path = if let Some(path) = WORKSPACE_PATH.get() {
         path
     } else {
         return Err("Unable to obtain workspace during restoration".to_string());
     };
 
-    let path = Path::new(&workspace_path);
+    let workspace_path = Path::new(&path);
 
     // If the workspace file is empty, craete a new empty one, if not, load it
     let mut workspace = workspace()?;
-    if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
+    if !workspace_path.exists()
+        || metadata(workspace_path)
+            .map(|m| m.len() == 0)
+            .unwrap_or(true)
+    {
+        trace!("Workspace file doest not exist, creating...");
+
         let workspace_json: String = serde_json::to_string_pretty(&*workspace)
             .map_err(|e| format!("Failed to serialize workspace: {e}"))?;
 
-        let mut file = File::create(workspace_path)
-            .map_err(|e| format!("Failed to create workspace.json: {e}"))?;
+        let mut file =
+            File::create(path).map_err(|e| format!("Failed to create workspace.json: {e}"))?;
         file.write_all(workspace_json.as_bytes())
             .map_err(|e| format!("Failed to write default workspace JSON content: {e}"))?;
 
         *workspace = Workspace::new();
     } else {
-        // Workspace file exists - read it
+        trace!("Reading workspace json file...");
 
-        let mut file =
-            File::open(path).map_err(|e| format!("Error while reading workspace file: {e}"))?;
+        let mut file = File::open(workspace_path)
+            .map_err(|e| format!("Error while reading workspace file: {e}"))?;
 
         let mut workspace_json: String = String::new();
         file.read_to_string(&mut workspace_json)
@@ -87,7 +95,9 @@ pub fn restore_workspace() -> Result<String, String> {
 
         *workspace =
             if let Ok(mut workspace_value) = serde_json::from_str::<Workspace>(&workspace_json) {
+                trace!("Validating deserialized workspace...");
                 workspace_value.validate();
+                trace!("Finished workspace validation");
                 workspace_value
             } else {
                 // If malformed workspace json, use default values
@@ -97,12 +107,13 @@ pub fn restore_workspace() -> Result<String, String> {
                 "Workspace Error",
                 "Your workspace file was corrupted or malformed and had to be restored to default",
                 tinyfiledialogs::MessageBoxIcon::Warning,
-            );
+                );
+
                 Workspace::new()
             };
 
-        match workspace.save(path.to_path_buf()) {
-            Ok(_) => {}
+        match workspace.save(workspace_path.to_path_buf()) {
+            Ok(_) => trace!("Workspace restoration complete!"),
             Err(e) => error!("{e}"),
         }
     }

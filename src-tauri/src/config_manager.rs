@@ -1,6 +1,6 @@
 use crate::types::config::*;
 use git2::Config;
-use log::error;
+use log::{error, trace};
 use std::{
     fs::{metadata, write, File},
     io::{Read, Write},
@@ -72,33 +72,35 @@ pub fn config() -> Result<MutexGuard<'static, Configuration>, String> {
 }
 
 pub fn load_config() -> Result<String, String> {
-    let config_path = if let Some(path) = CONFIG_PATH.get() {
+    trace!("Loading config");
+
+    let path = if let Some(path) = CONFIG_PATH.get() {
         path
     } else {
         return Err(format!("Unable to obtain config path during load"));
     };
 
-    let path = Path::new(config_path);
+    let config_path = Path::new(path);
 
     // If the configuration file is empty, craete a new empty one, if not, load it
     let mut config = config()?;
-    if !path.exists() || metadata(path).map(|m| m.len() == 0).unwrap_or(true) {
-        // Config file doesn't exists
+    if !config_path.exists() || metadata(config_path).map(|m| m.len() == 0).unwrap_or(true) {
+        trace!("Configuration file doest not exist, creating...");
 
         let config_json: String = serde_json::to_string_pretty(&*config)
             .map_err(|e| format!("Failed to serialize configuration: {e}"))?;
 
-        let mut file = File::create(config_path)
-            .map_err(|e| format!("Failed to create configuration.json: {e}"))?;
+        let mut file =
+            File::create(path).map_err(|e| format!("Failed to create configuration.json: {e}"))?;
         file.write_all(config_json.as_bytes())
             .map_err(|e| format!("Failed to write default configuration JSON content: {e}"))?;
 
         *config = Configuration::default();
     } else {
-        // Config file exists - read it
+        trace!("Reading configuration json file...");
 
-        let mut file =
-            File::open(path).map_err(|e| format!("Error while reading configuration file: {e}"))?;
+        let mut file = File::open(config_path)
+            .map_err(|e| format!("Error while reading configuration file: {e}"))?;
 
         let mut config_json: String = String::new();
         file.read_to_string(&mut config_json)
@@ -106,7 +108,9 @@ pub fn load_config() -> Result<String, String> {
 
         *config = if let Ok(mut config_value) = serde_json::from_str::<Configuration>(&config_json)
         {
+            trace!("Validating deserialized configuration...");
             config_value.verify_config();
+            trace!("Finished configuration validation");
             config_value
         } else {
             // If malformed config json, use default values
@@ -121,8 +125,8 @@ pub fn load_config() -> Result<String, String> {
             Configuration::default()
         };
 
-        match save_config(config.clone()) {
-            Ok(_) => {}
+        match config.save(config_path.to_path_buf()) {
+            Ok(_) => trace!("Configuration loading complete!"),
             Err(e) => error!("{e}"),
         }
     }

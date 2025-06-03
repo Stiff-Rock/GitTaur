@@ -46,6 +46,7 @@ function createTemplates() {
   "ISC",
   "CC0-1.0",
   "Apache-2.0 WITH LLVM-exception",
+  "zlib-acknowledgement",
 ]`;
 
   fs.writeFileSync(path.join(projectRoot, 'about.toml'), aboutToml);

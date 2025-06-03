@@ -1,6 +1,7 @@
 use dirs::{document_dir, home_dir};
 use git2::Config;
 use serde::{Deserialize, Serialize};
+use std::fs::write;
 use std::path::PathBuf;
 use tauri_plugin_os::locale;
 
@@ -162,5 +163,12 @@ impl Configuration {
         if self.accent_color.is_empty() {
             self.accent_color = default.accent_color;
         }
+    }
+
+    pub fn save(&self, path: PathBuf) -> Result<(), String> {
+        let json_data = serde_json::to_string_pretty(self)
+            .map_err(|e| format!("Error while saving config: {e}"))?;
+        write(path, json_data).map_err(|e| format!("Error while saving workspace: {e}"))?;
+        Ok(())
     }
 }
