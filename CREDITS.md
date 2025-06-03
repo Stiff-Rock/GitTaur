@@ -551,7 +551,6 @@
 [schemars@0.8.21](https://github.com/GREsau/schemars) - MIT License<br>
 [schemars_derive@0.8.21](https://github.com/GREsau/schemars) - MIT License<br>
 [raw-window-handle@0.6.2](https://github.com/rust-windowing/raw-window-handle) - MIT License<br>
-[tokio-macros@2.5.0](https://github.com/tokio-rs/tokio) - MIT License<br>
 [proc-macro-error-attr@1.0.4](https://gitlab.com/CreepySkeleton/proc-macro-error) - MIT License<br>
 [proc-macro-error@1.0.4](https://gitlab.com/CreepySkeleton/proc-macro-error) - MIT License<br>
 [cfg_aliases@0.2.1](https://github.com/katharostech/cfg_aliases) - MIT License<br>
@@ -568,7 +567,6 @@
 [libredox@0.1.3](https://gitlab.redox-os.org/redox-os/libredox.git) - MIT License<br>
 [is-docker@0.2.0](https://github.com/TheLarkInn/is-docker) - MIT License<br>
 [is-wsl@0.4.0](https://github.com/TheLarkInn/is-wsl) - MIT License<br>
-[tokio-debouncer@0.3.1](https://github.com/vivsh/tokio-debouncer) - MIT License<br>
 [gittaur@0.1.0](https://crates.io/crates/gittaur) - MIT License<br>
 [block2@0.5.1](https://github.com/madsmtm/objc2) - MIT License<br>
 [block@0.1.6](http://github.com/SSheldon/rust-block) - MIT License<br>
@@ -812,4 +810,5 @@
 [zerofrom@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [zerovec-derive@0.10.3](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [zerovec@0.10.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[tinyfiledialogs@3.9.1](https://github.com/jdm/tinyfiledialogs-rs) - zlib/libpng License with Acknowledgement<br>
 
