@@ -13,7 +13,7 @@ Tauri provee canales de comunicación eficaces y fáciles de mantener entre el f
 
 <h2>
     <img src="./img/React.png" alt="Logo de React" width="32" style="vertical-align: middle; margin-right: 8px;">
-    <img src="./img/TypeScript.png" alt="Logo de TypeScript" width="32" style="vertical-align: middle; margin-right: 8px; margin-bottom: 5px;">
+    <img src="./img/typescriptLogo.png" alt="Logo de TypeScript" width="32" style="vertical-align: middle; margin-right: 8px; margin-bottom: 5px;">
     React 18 + TypeScript - (Frontend)
 </h2>
 

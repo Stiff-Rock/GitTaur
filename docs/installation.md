@@ -4,9 +4,9 @@
 GitTaur esta disponile para Windows 10 en adelante, para su correcto funcionamiento será necesario disponer de [Git](https://git-scm.com/) instalado en tu sistema, puesto que la aplicación interactua con el para cualquier operacion relacionada con los repositorios.
 
 Existen 3 formas de obtener GitTaur:
-- Instalador [.msi](): Puede requerir permisos de admnistrador
-- Instalador [.exe](): No requiere permisos de administrador, instala unicamente al usuario si se desea
-- Apliación [portable](): No requiere instalación ninguna, se pude ejecutar directamente
+- Instalador .msi: Puede requerir permisos de administrador.
+- Instalador .exe: No requiere permisos de administrador, instala unicamente al usuario si se desea.
+- Apliación portable: No requiere instalación ninguna, se pude ejecutar directamente.
 
 Elige la que mas se adecue a tus necesidades.
 
@@ -45,7 +45,7 @@ Una vez cumplidos los requisitos, estos son los pasos a seguir para poder poner 
         border-right: solid 2px #34434B;"
     >
     <span style="align-self: center; text-align: justify; margin-right:15px;"> 
-        Ahora, desde la línea de comandos, ejecuta <code>npm install</code>, esto instalará las dependencias del frontend. Una vez finalice (como en la imagen) podrás ejecutar el programa desde la terminal con <code>npm run tauri dev</code>.<br><br><b>Ten en cuenta que la primera vez que ejecutes la aplicacion puede llevar un rato</b>, ya que automaticamente se descargarán todas las dependencias del backend.
+        Ahora, desde la línea de comandos, ejecuta <code>npm install</code>, esto instalará las dependencias del frontend. Una vez finalice (como en la imagen) podrás ejecutar el programa desde la terminal con <code>npm run tauri dev</code>.<br><br><b>Ten en cuenta que la primera vez que ejecutes la aplicación puede llevar un rato</b>, ya que automáticamente se descargarán todas las dependencias del backend.
     </span>
 </div>
 

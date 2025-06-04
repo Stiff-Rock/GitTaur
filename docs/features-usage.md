@@ -12,7 +12,7 @@ alt="Foto de la aplicación"
 style="max-width: 550px; box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.3); border-radius: 5px;">
 </div>
 
-### Visialización del y gestión del historial del repositorio (Pestaña principal)
+### Visialización y gestión del historial del repositorio (Pestaña principal)
 
 <br>
 
@@ -30,8 +30,8 @@ style="width: 250px; box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.3); border-radius:
 
 <div style="display: flex; gap: 20px; margin-bottom: 20px;">
     <span style="align-self: center; text-align: justify;">
-    Muchos de los elementos de la aplicación tienen acciones en el menu contextual. En el caso de un commit puedes encontrar 
-    las mas fundamentales como checkout, revert, tag entre otras utilidades.
+    Muchos de los elementos de la aplicación tienen acciones en el menú contextual. En el caso de un commit puedes encontrar 
+    las más fundamentales como checkout, revert, tag entre otras utilidades.
 </span>
 
 <img 
