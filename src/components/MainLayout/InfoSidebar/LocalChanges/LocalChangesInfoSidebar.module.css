@@ -20,6 +20,7 @@
 .diffSection {
   border-bottom: solid 1px var(--border-color);
   height: 60%;
+  overflow: auto;
 }
 
 .stashChangesSection {

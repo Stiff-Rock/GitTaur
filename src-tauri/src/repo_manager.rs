@@ -123,13 +123,16 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     // Get the branch that is considered the principal in this repo
     let main_branch: String;
     if repo.head_detached().map_err(|e| e.to_string())? {
+        //BUG: ESTO ESTA FATAL
         main_branch = "master".to_string();
     } else {
         let head = repo.head().map_err(|e| e.to_string())?;
         if let Some(branch_name) = head.shorthand() {
             main_branch = branch_name.to_string();
         } else {
-            panic!("\nCould not determine the current branch.");
+            let msg: &str = "Could not determine the current branch";
+            error!("{msg}");
+            return Err(format!("Error: {msg}"));
         }
     }
 
