@@ -127,7 +127,7 @@ O acciones de Git:
 
 <li>
     <img style="margin-bottom: -5px; margin-right: 5px;" src="./img/moveToBottom.svg" alt="Icono"> 
-    Aplicla los nuevos cambios del remoto seleccionado al repositorio local si los hubiera
+    Aplica los nuevos cambios del remoto seleccionado al repositorio local si los hubiera
 </li>
 <li>
     <img style="margin-bottom: -5px; margin-right: 5px;" src="./img/moveToTop.svg" alt="Icono"> 
@@ -190,7 +190,7 @@ style="min-width: 350px; box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.3); border-rad
 ---
 
 ### Creación listas de tareas del proyecto
-La última área de trabajo permite al usuario crear un archivo de tipo `markdown` almacenado en la raiz de su proyecto. El contenido es totalemnte libre,
+La última área de trabajo permite al usuario crear un archivo de tipo `markdown` almacenado en la raiz de su proyecto. El contenido es totalmente libre,
 teniendo a disposición un editor y una vista previa para sacar partido de las capacidades de los archivos markdown, pudiendo hacer listas de tareas del 
 proyecto, recordatorios, tablas, esquemas o cualquier otro tipo de documento que pueda ayudar con proceso de desasrrollo del proyecto.
 
