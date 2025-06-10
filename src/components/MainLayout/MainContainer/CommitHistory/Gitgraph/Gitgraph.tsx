@@ -1,288 +1,115 @@
-import styles from './GraphStyles.module.css';
-import * as React from "react";
-import {
-  GitgraphCore,
-  GitgraphOptions,
-  GitgraphUserApi,
-  Commit as CommitCore,
-  MergeStyle,
-  Mode,
-  Orientation,
-  TemplateName,
-  templateExtend,
-  BranchesPaths,
-  Coordinate,
-} from "@gitgraph/core";
+import './GitGraph.css';
+import React from "react";
+import createCommitNodes, { CommitNode } from "./commitsToNodes";
+import GraphSvg from "./GraphSvg";
+import BranchPath from "./BrachPath";
+import Node from "./Node";
+import Summary from "./Summary";
+import Labels from "./Labels";
+import { GitGraphProvider } from "./GitGraphContext";
+import Rect from "./Rect";
+import Throbber from '../../../../Common/Throbber/Throbber';
 
-import { BranchLabel } from "./BranchLabel";
-import { Tooltip } from "./Tooltip";
-import {
-  ReactSvgElement,
-  CommitOptions,
-  BranchOptions,
-  TagOptions,
-  MergeOptions,
-  Branch,
-} from "./types";
-import { Commit, GraphCommitOptions } from "./Commit";
-import { BranchPath } from "./BranchPath";
-import CommitRect from "./CommitRect";
-import { GraphProvider } from "../../../../../context/GraphContext";
+const NODE_RADIUS = 8;
+const X_SPACING = 35;
+const Y_SPACING = NODE_RADIUS * 3.5;
+const GRAPH_PADDING = 20;
 
-export {
-  Gitgraph,
-  TemplateName,
-  templateExtend,
-  MergeStyle,
-  Mode,
-  Orientation,
+const BASE_LABEL_OFFSET = 20;
+const LABEL_X_PADDING = 10;
+const LABEL_Y_PADDING = 5;
+const LABEL_SPACING = 10;
+
+const GitGraph: React.FC<{ commitHistoryMap: Map<string, Commit>, maxCommits: number }> = ({ commitHistoryMap, maxCommits }) => {
+  const [commitNodesMap, setCommitNodes] = React.useState<Map<string, CommitNode>>(new Map());
+
+  // Get commit nodes
+  React.useLayoutEffect(() => {
+    if (!commitHistoryMap) return;
+    setCommitNodes(createCommitNodes(commitHistoryMap, X_SPACING, Y_SPACING, maxCommits));
+  }, [commitHistoryMap]);
+
+  const [isPending, startTransition] = React.useTransition();
+  const [renderingComplete, setRenderingComplete] = React.useState(false);
+
+  // Start rendering when commitNodesMap is ready
+  React.useEffect(() => {
+    if (commitNodesMap.size > 0 && !renderingComplete) {
+      startTransition(() => {
+        // This will mark the rendering as a transition
+        setRenderingComplete(true);
+      });
+    }
+  }, [commitNodesMap, renderingComplete]);
+
+  if (isPending || !renderingComplete) {
+    return (
+      <div style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        gap: "60px"
+      }}>
+        <Throbber isVisible={true} size="huge" />
+        <span>Rendering graph...</span>
+      </div>
+    );
+  }
+
+  const gitGraphProviderType = {
+    commitNodesMap,
+    NODE_RADIUS,
+    X_SPACING,
+    Y_SPACING,
+    GRAPH_PADDING,
+    BASE_LABEL_OFFSET,
+    LABEL_X_PADDING,
+    LABEL_Y_PADDING,
+    LABEL_SPACING
+  }
+
+  return (
+    <GitGraphProvider {...gitGraphProviderType}>
+      <GraphSvg>
+        <g id="rects">
+          {[...commitNodesMap.values()].map((node) => (
+            <Rect key={`rect-${node.data.id}`} node={node} />
+          ))}
+        </g>
+
+        <g id="branchPahts">
+          {[...commitNodesMap.values()].map((node) => (
+            node.data.parents.length > 0 ? (
+              <BranchPath key={`branchPath-${node.data.id}`} node={node} />
+            ) : null
+          ))}
+        </g>
+
+        <g id="nodes">
+          {[...commitNodesMap.values()].map((node) => (
+            <Node key={`node-${node.data.id}`} node={node} />
+          ))}
+        </g>
+
+        <g id="labels">
+          {[...commitNodesMap.values()].map((node) => (
+            node.data.refs.length > 0 ? (
+              <Labels key={`labels-${node.data.id}`} node={node} />
+            ) : null
+          ))}
+        </g>
+
+        <g id="summaries">
+          {[...commitNodesMap.values()].map((node) => (
+            <Summary key={`summary-${node.data.id}`} node={node} />
+          ))}
+        </g>
+      </GraphSvg >
+    </GitGraphProvider>
+  );
 };
 
-export type {
-  GitgraphProps,
-  GitgraphState,
-  CommitOptions,
-  BranchOptions,
-  TagOptions,
-  MergeOptions,
-  Branch,
-}
-
-type GitgraphProps = GitgraphPropsWithChildren | GitgraphPropsWithGraph;
-
-interface GitgraphPropsWithChildren {
-  options?: GitgraphOptions;
-  graphCommitOptions?: GraphCommitOptions;
-  children: (gitgraph: GitgraphUserApi<ReactSvgElement>) => void;
-}
-
-interface GitgraphPropsWithGraph {
-  graph: GitgraphCore<ReactSvgElement>;
-}
-
-function isPropsWithGraph(
-  props: GitgraphProps,
-): props is GitgraphPropsWithGraph {
-  return "graph" in props;
-}
-
-interface GitgraphState {
-  commits: Array<CommitCore<ReactSvgElement>>;
-  branchesPaths: BranchesPaths<ReactSvgElement>;
-  commitMessagesX: number;
-  // Store a map to replace commits y with the correct value,
-  // including the message offset. Allows custom, flexible message height.
-  // E.g. {20: 30} means for commit: y=20 -> y=30
-  // Offset should be computed when graph is rendered (componentDidUpdate).
-  commitYWithOffsets: { [key: number]: number };
-  shouldRecomputeOffsets: boolean;
-  currentCommitOver: CommitCore<ReactSvgElement> | null;
-}
-
-class Gitgraph extends React.Component<GitgraphProps, GitgraphState> {
-  public static defaultProps: Partial<GitgraphProps> = {
-    options: {},
-    graphCommitOptions: {},
-  };
-
-  private gitgraph: GitgraphCore<ReactSvgElement>;
-  private $graph = React.createRef<SVGSVGElement>();
-  private $commits = React.createRef<SVGGElement>();
-  private $tooltip: React.ReactElement<SVGGElement> | null = null;
-
-  private graphCommitOptions: any;
-
-  constructor(props: GitgraphProps) {
-    super(props);
-    this.state = {
-      commits: [],
-      branchesPaths: new Map(),
-      commitMessagesX: 0,
-      commitYWithOffsets: {},
-      shouldRecomputeOffsets: true,
-      currentCommitOver: null,
-    };
-    this.gitgraph = isPropsWithGraph(props)
-      ? props.graph
-      : new GitgraphCore<ReactSvgElement>(props.options);
-    this.gitgraph.subscribe((data) => {
-      const { commits, branchesPaths, commitMessagesX } = data;
-      this.setState({
-        commits,
-        branchesPaths,
-        commitMessagesX,
-        shouldRecomputeOffsets: true,
-      });
-    });
-
-    if ("graphCommitOptions" in props) {
-      this.graphCommitOptions = props.graphCommitOptions;
-    }
-  }
-
-  public render() {
-    const rects: React.ReactElement[] = [];
-    const commits: React.ReactElement[] = [];
-
-    this.state.commits.forEach((commit) => {
-      const commitElRef = React.createRef<SVGGElement>();
-
-      const commitEl = (
-        <Commit
-          key={commit.hash}
-          commits={this.state.commits}
-          commit={commit}
-          currentCommitOver={this.state.currentCommitOver}
-          setCurrentCommitOver={this.setCurrentCommitOver.bind(this)}
-          gitgraph={this.gitgraph}
-          getWithCommitOffset={this.getWithCommitOffset.bind(this)}
-          setTooltip={this.setTooltip.bind(this)}
-          commitMessagesX={this.state.commitMessagesX}
-          graphCommitOptions={{
-            ...this.graphCommitOptions, ref: commitElRef
-          }}
-        />
-      );
-      commits.push(commitEl);
-
-      rects.push(
-        <CommitRect
-          key={commit.hash}
-          commit={commit}
-        />
-      );
-    });
-
-    return (
-      <GraphProvider graphSvgRef={this.$graph}>
-        <svg ref={this.$graph} className={styles.graphSvg}>
-          {/* Translate graph left => left-most branch label is not cropped (horizontal) */}
-          {/* Translate graph down => top-most commit tooltip is not cropped */}
-          <g transform={`translate(${BranchLabel.paddingX}, ${Tooltip.padding})`}>
-            <g ref={this.$commits}>
-              {rects}
-            </g>
-            {this.renderBranchesPaths()}
-            <g ref={this.$commits}>
-              {commits}
-            </g>
-            {this.$tooltip}
-          </g>
-        </svg>
-      </GraphProvider>
-    );
-  }
-
-  public componentDidMount() {
-    if (isPropsWithGraph(this.props)) return;
-    (this.props as GitgraphPropsWithChildren).children(this.gitgraph.getUserApi());
-  }
-
-  public componentDidUpdate() {
-    if (this.$graph.current) {
-      const { height, width } = this.$graph.current.getBBox();
-      this.$graph.current.setAttribute(
-        "width",
-        // Add `Tooltip.padding` so we don't crop the tooltip text.
-        // Add `BranchLabel.paddingX` so we don't cut branch label.
-        (width + Tooltip.padding + BranchLabel.paddingX).toString(),
-      );
-      this.$graph.current.setAttribute(
-        "height",
-        // Add `Tooltip.padding` so we don't crop tooltip text
-        // Add `BranchLabel.paddingY` so we don't crop branch label.
-        (height + Tooltip.padding + BranchLabel.paddingY).toString(),
-      );
-    }
-
-    if (!this.state.shouldRecomputeOffsets) return;
-    if (!this.$commits.current) return;
-
-    const commits = Array.from(this.$commits.current.children);
-    this.setState({
-      commitYWithOffsets: this.computeOffsets(commits),
-      shouldRecomputeOffsets: false,
-    });
-  }
-
-  private setCurrentCommitOver(v: CommitCore<ReactSvgElement> | null) {
-    this.setState({ currentCommitOver: v });
-  }
-
-  private setTooltip(v: React.ReactElement<SVGGElement> | null) {
-    this.$tooltip = v;
-  }
-
-  private renderBranchesPaths() {
-    const offset = this.gitgraph.template.commit.dot.size;
-    const isBezier =
-      this.gitgraph.template.branch.mergeStyle === MergeStyle.Bezier;
-
-    return Array.from(this.state.branchesPaths).map(([branch, coordinates]) => (
-      <BranchPath
-        key={branch.name}
-        gitgraph={this.gitgraph}
-        branch={branch}
-        coordinates={coordinates}
-        getWithCommitOffset={this.getWithCommitOffset.bind(this)}
-        isBezier={isBezier}
-        offset={offset}
-      />
-    ));
-  }
-
-  private computeOffsets(
-    commits: Element[],
-  ): GitgraphState["commitYWithOffsets"] {
-    let totalOffsetY = 0;
-
-    // In VerticalReverse orientation, commits are in the same order in the DOM.
-    const orientedCommits =
-      this.gitgraph.orientation === Orientation.VerticalReverse
-        ? commits
-        : commits.reverse();
-
-    return orientedCommits.reduce<GitgraphState["commitYWithOffsets"]>(
-      (newOffsets, commit) => {
-        const commitY = parseInt(
-          commit.getAttribute("transform")!.split(",")[1].slice(0, -1),
-          10,
-        );
-
-        const firstForeignObject = commit.getElementsByTagName(
-          "foreignObject",
-        )[0];
-        const customHtmlMessage =
-          firstForeignObject && firstForeignObject.firstElementChild;
-
-        let messageHeight = 0;
-        if (customHtmlMessage) {
-          const height = customHtmlMessage.getBoundingClientRect().height;
-          const marginTopInPx =
-            window.getComputedStyle(customHtmlMessage).marginTop || "0px";
-          const marginTop = parseInt(marginTopInPx.replace("px", ""), 10);
-
-          messageHeight = height + marginTop;
-        }
-
-        // Force the height of the foreignObject (browser issue)
-        if (firstForeignObject) {
-          firstForeignObject.setAttribute("height", `${messageHeight}px`);
-        }
-
-        newOffsets[commitY] = commitY + totalOffsetY;
-
-        // Increment total offset after setting the offset
-        // => offset next commits accordingly.
-        totalOffsetY += messageHeight;
-
-        return newOffsets;
-      },
-      {},
-    );
-  }
-
-  private getWithCommitOffset({ x, y }: Coordinate): Coordinate {
-    return { x, y: this.state.commitYWithOffsets[y] || y };
-  }
-}
+export default GitGraph;

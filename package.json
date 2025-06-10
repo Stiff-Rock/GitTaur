@@ -13,7 +13,6 @@
     "deploy": "tauri build"
   },
   "dependencies": {
-    "@gitgraph/core": "^1.5.0",
     "@primer/octicons-react": "^19.15.1",
     "@tauri-apps/api": "^2.3.0",
     "@tauri-apps/plugin-dialog": "~2.2.0",

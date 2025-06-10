@@ -37,7 +37,7 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     showInfoSidebar,
     setShowInfoSidebar,
     setRepoInfo, repoInfo,
-    setCommitHistory,
+    setCommitHistoryMap,
     headEvent, fetchEvent, statusEvent
   } = useMainContext();
 
@@ -68,8 +68,15 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 
   const getCommitHistory = async () => {
     if (!workspace) return;
-    invoke<Record<string, CommitLog>>("get_commit_history", { repoPath })
-      .then(setCommitHistory)
+    invoke<string>("get_commit_history", { repoPath })
+      .then((json) => {
+        const infoDto: Record<string, Commit> = JSON.parse(json);
+        const commitMap = new Map<string, Commit>();
+        Object.entries(infoDto).forEach(([key, value]) => {
+          commitMap.set(key, value);
+        });
+        setCommitHistoryMap(commitMap);
+      })
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
   }
 

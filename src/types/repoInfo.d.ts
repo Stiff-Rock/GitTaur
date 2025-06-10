@@ -18,20 +18,17 @@ interface FileChanges {
   file: string;
 }
 
-interface CommitLog {
-  refs: string[];
-  hash: string,
-  hashAbbrev: string,
-  tree: string,
-  treeAbbrev: string,
-  parents: string[],
-  parentsAbbrev: string[],
+interface Commit {
+  id: string;
+  parents: string[];
+  children: string[];
   author: UserInfo;
-  committer: UserInfo
+  date: number;
   subject: string;
   body: string;
-  notes: string;
-  changes: FileChanges[];
+  refs: string[];
+  changes: FileChanges[]
+  isFromMainBranch: boolean;
 }
 
 interface Remote {
@@ -42,7 +39,6 @@ interface Remote {
 
 interface RepoInfo {
   name: string;
-  mainBranch: string;
   currentBranch: string;
   localBranches: string[];
   remotes: Record<string, Remote>;

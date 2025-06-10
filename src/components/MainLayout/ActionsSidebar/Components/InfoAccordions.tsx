@@ -75,7 +75,7 @@ const InfoAccordions: React.FC = () => {
       </div >
 
       {/*Tags*/}
-      < Accordion
+      <Accordion
         containerClassName={styles.accordion}
         title="Tags"
         icon={< TagIcon />}

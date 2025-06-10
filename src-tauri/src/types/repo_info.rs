@@ -1,16 +1,52 @@
-use crate::git2json::FileChanges;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RepoInfo {
     pub name: String,
-    pub main_branch: String,
     pub current_branch: String,
     pub local_branches: Vec<String>,
     pub remotes: HashMap<String, Remote>,
     pub tags: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Commit {
+    pub id: String,
+    pub parents: Vec<String>,
+    pub children: Vec<String>,
+    pub author: UserInfo,
+    pub date: String,
+    pub subject: String,
+    pub body: String,
+    pub refs: Vec<String>,
+    pub changes: Vec<FileChanges>,
+    pub is_from_main_branch: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserInfo {
+    pub name: String,
+    pub email: String,
+    pub timestamp: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileChanges {
+    pub change_type: ChangeType,
+    pub file: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ChangeType {
+    Deleted,
+    Modified,
+    Added,
 }
 
 #[derive(Serialize, Debug)]

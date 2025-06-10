@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react';
 import styles from './Acordion.module.css'
+import React, { ReactNode } from 'react';
 import Collapsible from 'react-collapsible';
 import { ChevronRightIcon } from "@primer/octicons-react";
 

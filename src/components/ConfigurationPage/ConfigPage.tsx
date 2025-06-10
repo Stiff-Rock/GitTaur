@@ -10,7 +10,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 
 type ConfigTabs = "general" | "git" | "ui";
-
+//BUG: COLOR THEME IS NOT APPLYING TRHOGUH REFRESH
 const ConfigPage: React.FC = () => {
   const { isType, workspace, config, setConfig, setNotification } = useAppContext();
   const { selectDirectoryDialog } = useDialog();

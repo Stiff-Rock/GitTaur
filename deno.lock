@@ -1,7 +1,6 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@gitgraph/core@^1.5.0": "1.5.0",
     "npm:@primer/octicons-react@^19.15.1": "19.15.1_react@18.3.1",
     "npm:@tauri-apps/api@^2.3.0": "2.3.0",
     "npm:@tauri-apps/cli@2": "2.2.4",
@@ -288,9 +287,6 @@
       "integrity": "sha512-7VTgWzgMGvup6aSqDPLiW5zHaxYJGTO4OokMjIlrCtf+VpEL+cXKtCvg723iguPYI5oaUNdS+/V7OU2gvXVWEg==",
       "os": ["win32"],
       "cpu": ["x64"]
-    },
-    "@gitgraph/core@1.5.0": {
-      "integrity": "sha512-8CeeHbkKoFHM1y9vfjYiHyEpzl1mEhVrg5c/eFgDBsntOYswoDKU2yOf6DjtVINcE60wmcuynBSJqjMkQo07Ww=="
     },
     "@jridgewell/gen-mapping@0.3.8": {
       "integrity": "sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==",
@@ -877,7 +873,6 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@gitgraph/core@^1.5.0",
         "npm:@primer/octicons-react@^19.15.1",
         "npm:@tauri-apps/api@^2.3.0",
         "npm:@tauri-apps/cli@2",

@@ -1,6 +1,6 @@
 mod config_manager;
-mod git2json;
 mod repo_manager;
+mod repo_reader;
 mod repo_watcher;
 mod types;
 mod workspace_manager;
@@ -374,15 +374,16 @@ pub fn run() {
             config_manager::get_config,
             config_manager::save_config,
             config_manager::set_global_git_user_id,
-            // Repository commands
+            // Repository read commands
+            repo_reader::get_repo_info,
+            repo_reader::get_commit_history,
+            repo_reader::get_repo_status,
+            repo_reader::get_stashed_changes,
+            repo_reader::get_file_diff,
+            repo_reader::get_file_diff_from_stash,
+            // Repository modify commands
             repo_manager::create_repo,
             repo_manager::clone_repo,
-            repo_manager::get_repo_info,
-            repo_manager::get_commit_history,
-            repo_manager::get_repo_status,
-            repo_manager::get_stashed_changes,
-            repo_manager::get_file_diff,
-            repo_manager::get_file_diff_from_stash,
             repo_manager::tag_branch_tip,
             repo_manager::tag_commit,
             repo_manager::delete_tag,

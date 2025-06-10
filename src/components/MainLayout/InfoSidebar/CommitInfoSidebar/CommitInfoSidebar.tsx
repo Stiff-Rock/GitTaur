@@ -10,18 +10,18 @@ import { formatTimestamp } from '../../../../utils/dateParser';
 
 const CommitInfoSidebar: React.FC = () => {
   const { config } = useAppContext();
-  const { currentAppTab, commitInfo, commitHistory, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
+  const { currentAppTab, commitInfo, commitHistoryMap, setSelectedCommit, setCommitInfo, scrollToCommit } = useMainContext();
 
   const goToParent = (sha: string) => {
-    if (!commitHistory) return;
+    if (!commitHistoryMap) return;
 
-    const commit = commitHistory[sha];
+    const commit = commitHistoryMap.get(sha);
     if (!commit) {
       console.error("Could not find commit by the following sha: ", sha);
       return;
     }
 
-    setSelectedCommit(commit.hash);
+    setSelectedCommit(commit.id);
     setCommitInfo(commit);
     scrollToCommit();
   }
@@ -71,9 +71,9 @@ const CommitInfoSidebar: React.FC = () => {
               <div className={styles.shaField} >
                 <div className={styles.commitInfoField}>
                   <span className={styles.label}>SHA:</span>
-                  <span className={styles.value}>{commitInfo.hash}</span>
+                  <span className={styles.value}>{commitInfo.id}</span>
                 </div>
-                <CopyShaButton sha={commitInfo.hash} />
+                <CopyShaButton sha={commitInfo.id} />
               </div>
 
               {/* SUBJECT */}

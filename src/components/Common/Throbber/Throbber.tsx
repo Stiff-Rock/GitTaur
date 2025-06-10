@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './Throbber.module.css';
 
 interface ThrobberProps {
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'huge';
   isVisible?: boolean;
 }
 
@@ -13,7 +13,8 @@ const Throbber: React.FC<ThrobberProps> = ({
   const sizeValue = {
     small: '12px',
     medium: '24px',
-    large: '32px'
+    large: '32px',
+    huge: '80px'
   }[size];
 
   return (

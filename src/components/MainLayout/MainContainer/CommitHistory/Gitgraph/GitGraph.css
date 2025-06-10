@@ -1,0 +1,33 @@
+.labelRect {
+  fill: var(--secondary-bg);
+}
+
+.label {
+  user-select: none;
+  dominant-baseline: middle;
+  text-anchor: start;
+  font-size: 12px;
+  fill: var(--primary-text);
+}
+
+.labelIcon {
+  vertical-align: middle;
+  fill: var(--primary-text);
+}
+
+.summary {
+  user-select: none;
+  pointer-events: none;
+  fill: var(--primary-text);
+  font-size: 14px;
+  dominant-baseline: middle;
+}
+
+.node {
+  stroke-width: 2;
+  fill: var(--primary-bg);
+}
+
+.branchPath {
+  stroke-width: 2;
+}

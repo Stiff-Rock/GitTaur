@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './ActionBar.module.css';
-import { PersonIcon } from "@primer/octicons-react";
+//import { PersonIcon } from "@primer/octicons-react";
 import { useAppContext } from '../../context/AppContext';
 import OpenRepositoryButton from './Actions/WelcomePageActions/OpenRepositoryButton';
 import CloneRepositoryButton from './Actions/WelcomePageActions/CloneRepositoryButton';

@@ -13,14 +13,14 @@ interface MainContextType {
   repoPath: string;
 
   repoInfo: RepoInfo | null;
-  commitHistory: Record<string, CommitLog> | null;
+  commitHistoryMap: Map<string, Commit>;
   repoStatus: RepoStatus | null;
   repoStashes: Stash[] | null;
 
   lastSelectedChange: { name: string, status: FileStatusState } | null;
   fileDiff: string;
 
-  commitInfo: CommitLog | null;
+  commitInfo: Commit | null;
   selectedCommit: string;
   showInfoSidebar: boolean;
   shouldScroll: boolean;
@@ -44,8 +44,8 @@ interface MainContextType {
   setFileDiff: React.Dispatch<React.SetStateAction<string>>;
 
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
-  setCommitHistory: React.Dispatch<React.SetStateAction<Record<string, CommitLog> | null>>;
-  setCommitInfo: React.Dispatch<React.SetStateAction<CommitLog | null>>;
+  setCommitHistoryMap: React.Dispatch<React.SetStateAction<Map<string, Commit>>>;
+  setCommitInfo: React.Dispatch<React.SetStateAction<Commit | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -93,14 +93,14 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [inChangesTab, setInChangesTab] = useState(true);
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
-  const [commitHistory, setCommitHistory] = useState<Record<string, CommitLog> | null>(null);
+  const [commitHistoryMap, setCommitHistoryMap] = useState<Map<string, Commit>>(new Map());
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);
 
   const [lastSelectedChange, setLastSelectedChange] = useState<{ name: string, status: FileStatusState } | null>(null);
   const [fileDiff, setFileDiff] = useState<string>("");
 
-  const [commitInfo, setCommitInfo] = useState<CommitLog | null>(null);
+  const [commitInfo, setCommitInfo] = useState<Commit | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<string>("");
 
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
@@ -132,9 +132,9 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   }, [showInfoSidebar]);
 
   useEffect(() => {
-    if (commitHistory && selectedCommit) {
-      const commitLog = commitHistory[selectedCommit];
-      setCommitInfo(commitLog);
+    if (commitHistoryMap && selectedCommit) {
+      const commitObj = commitHistoryMap.get(selectedCommit);
+      if (commitObj) setCommitInfo(commitObj);
     }
   }, [selectedCommit]);
 
@@ -337,7 +337,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       inChangesTab, setInChangesTab,
 
       repoInfo, setRepoInfo,
-      commitHistory, setCommitHistory,
+      commitHistoryMap, setCommitHistoryMap,
       repoStatus, setRepoStatus,
       repoStashes, setRepoStashes,
 
