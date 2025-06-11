@@ -1,15 +1,14 @@
 import React, { useLayoutEffect, useState } from "react";
 import baseStyle from "../BaseModal.module.css";
 import { FileDirectoryIcon } from "@primer/octicons-react";
-import { useDialog } from "../../../../hooks/useDialog";
 import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import InputField from "../../InputField/InputField";
+import { selectDirectoryDialog } from "../../../../utils/FileExplorerDialog";
 //TODO: THIS MODAL AN OTHERS, PROPER LOADING INDICATORS AND BLOCKING
 const CloneRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo, config } = useAppContext();
-  const { selectDirectoryDialog } = useDialog();
 
   const [path, setParentFolder] = useState("");
   const [repoUrl, setRepoUrl] = useState("");

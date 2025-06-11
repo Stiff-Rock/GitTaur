@@ -3,13 +3,12 @@ import baseStyle from "../BaseModal.module.css";
 import { FileDirectoryIcon } from "@primer/octicons-react";
 import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
-import { useDialog } from "../../../../hooks/useDialog";
 import { invoke } from "@tauri-apps/api/core";
 import InputField from "../../InputField/InputField";
+import { selectDirectoryDialog } from "../../../../utils/FileExplorerDialog";
 
 const CreateRepositoryModal: React.FC = () => {
   const { setActiveModal, setNotification, openNewRepo } = useAppContext();
-  const { selectDirectoryDialog } = useDialog();
 
   const [path, setParentFolder] = useState("");
 
