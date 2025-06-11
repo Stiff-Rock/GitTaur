@@ -5,7 +5,7 @@ use std::fs::write;
 use std::path::PathBuf;
 use tauri_plugin_os::locale;
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Language {
     En,
@@ -18,7 +18,7 @@ impl Default for Language {
     }
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
     Light,
@@ -52,7 +52,7 @@ impl Language {
     }
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Configuration {
     // General configs

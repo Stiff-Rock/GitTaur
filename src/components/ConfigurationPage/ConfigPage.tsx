@@ -10,12 +10,20 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 
 type ConfigTabs = "general" | "git" | "ui";
-//BUG: COLOR THEME IS NOT APPLYING TRHOGUH REFRESH
 const ConfigPage: React.FC = () => {
-  const { isType, workspace, config, setConfig, setNotification } = useAppContext();
+  const {
+    newConfig,
+    setNewConfig,
+    isType,
+    workspace,
+    config,
+    setConfig,
+    setNotification,
+    openConfirmationModal,
+    setActiveModal
+  } = useAppContext();
   const { selectDirectoryDialog } = useDialog();
 
-  const [newConfig, setNewConfig] = useState<Configuration | null>(null);
   const [configTab, setConfigTab] = useState<ConfigTabs>("general");
 
   useLayoutEffect(() => {
@@ -37,14 +45,6 @@ const ConfigPage: React.FC = () => {
       });
     }
 
-    if (newConfig.themeValue != config.themeValue) {
-      document.documentElement.setAttribute('data-theme', newConfig.themeValue);
-    }
-
-    if (newConfig.accentColor != config.accentColor) {
-      document.documentElement.style.setProperty('--active-color', newConfig.accentColor);
-    }
-
     setConfig(newConfig);
     setNotification("Succesfully applied new configuration!");
   }
@@ -53,33 +53,57 @@ const ConfigPage: React.FC = () => {
     setNewConfig(config);
   }
 
+  const handleResetToDefault = () => {
+    openConfirmationModal({
+      onConfirmed: () => {
+        invoke<Configuration>("restore_config_defaults").then(setConfig).catch((e) => {
+          console.error(e);
+          setNotification(e);
+        }).finally(() => setActiveModal(""));
+      },
+      title: "Restore default configuration",
+      subTitle: "¿Are you sure you want to restore ALL the default configuration values?",
+    })
+  };
+
   //TODO: ARE YOU SURE? dialog when trying to close the tab
 
   //TODO: ADD GRAPH COLOR THEMING
   return (
     <div className={`${styles.mainContainer} ${isType("Config") || !workspace ? '' : 'inactive'}`}>
       <aside className={styles.configTabSidebar}>
-        <button className={`actionButton ${styles.configTabButton} ${configTab === "general" ? styles.selected : ''}`}
+        <button
+          className={`actionButton ${styles.configTabButton} ${configTab === "general" ? styles.selected : ''}`}
           onClick={() => setConfigTab("general")}
         >
           General
         </button>
 
-        <button className={`actionButton ${styles.configTabButton} ${configTab === "git" ? styles.selected : ''}`}
+        <button
+          className={`actionButton ${styles.configTabButton} ${configTab === "git" ? styles.selected : ''}`}
           onClick={() => setConfigTab("git")}
         >
           Git
         </button>
 
-        <button className={`actionButton ${styles.configTabButton} ${configTab === "ui" ? styles.selected : ''}`}
+        <button
+          className={`actionButton ${styles.configTabButton} ${configTab === "ui" ? styles.selected : ''}`}
           onClick={() => setConfigTab("ui")}
         >
           Ui
         </button>
+
+        <button
+          className={`appButton ${styles.resetButton}`}
+          onClick={handleResetToDefault}
+        >
+          Reset to Default
+        </button>
       </aside>
 
 
-      {newConfig &&
+      {
+        newConfig &&
         <section className={styles.configsContainer}>
           <div className={styles.configTitle}>
             <span>{configTab.charAt(0).toUpperCase() + configTab.slice(1)} Configuration</span>
@@ -90,7 +114,6 @@ const ConfigPage: React.FC = () => {
               {/*BUG: COMBOBOX IS SLIGHLTY WIDER*/}
 
               {/*TODO: Internacionalización
-
               <ComboBox
                 title="Language"
                 onItemSelected={(value) => { setNewConfig({ ...newConfig, lang: languageCodeFromName(value) }) }}
@@ -213,7 +236,7 @@ const ConfigPage: React.FC = () => {
           </div>
         </section >
       }
-    </div>
+    </div >
   );
 }
 

@@ -39,7 +39,6 @@ pub fn workspace() -> Result<MutexGuard<'static, Workspace>, String> {
         .map_err(|e| format!("Could not obtain workspace lock: {e}"))?)
 }
 
-//TODO: THIS DOES NOT ACTUALLY HAVE TO OPEN THE REPO IN GIT2, IT HAS TO REGISTER AND CACHE IT AS A RECENTLY OPENED ONE
 #[command]
 pub fn open_repo(repo_path: String) -> Result<String, String> {
     if workspace()?.tabs.contains_key(&repo_path) {

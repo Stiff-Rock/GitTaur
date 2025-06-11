@@ -371,6 +371,7 @@ pub fn run() {
             workspace_manager::get_workspace,
             workspace_manager::save_workspace,
             // Configuration commands
+            config_manager::restore_config_defaults,
             config_manager::get_config,
             config_manager::save_config,
             config_manager::set_global_git_user_id,

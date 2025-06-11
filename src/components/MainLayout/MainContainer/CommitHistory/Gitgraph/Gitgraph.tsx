@@ -32,11 +32,10 @@ const GitGraph: React.FC<{ commitHistoryMap: Map<string, Commit>, maxCommits: nu
   const [isPending, startTransition] = React.useTransition();
   const [renderingComplete, setRenderingComplete] = React.useState(false);
 
-  // Start rendering when commitNodesMap is ready
+  // Show loading animation
   React.useEffect(() => {
     if (commitNodesMap.size > 0 && !renderingComplete) {
       startTransition(() => {
-        // This will mark the rendering as a transition
         setRenderingComplete(true);
       });
     }

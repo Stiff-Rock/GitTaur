@@ -17,6 +17,11 @@ pub static CONFIG_PATH: OnceLock<PathBuf> = OnceLock::new();
 #[command]
 pub fn save_config(new_config: Configuration) -> Result<(), String> {
     let mut config = CONFIGUTARION.lock().map_err(|e| e.to_string())?;
+
+    if *config == new_config {
+        return Ok(());
+    }
+
     *config = new_config;
 
     let json_data = serde_json::to_string_pretty(&*config).map_err(|e| e.to_string())?;
@@ -133,4 +138,11 @@ pub fn load_config() -> Result<String, String> {
 
     Ok(serde_json::to_string(&*config)
         .map_err(|e| format!("Error during setup config serialization - {e}"))?)
+}
+
+#[command]
+pub async fn restore_config_defaults() -> Result<Configuration, String> {
+    let mut config = CONFIGUTARION.lock().map_err(|e| e.to_string())?;
+    *config = Configuration::default();
+    Ok(config.clone())
 }

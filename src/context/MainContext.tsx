@@ -23,7 +23,6 @@ interface MainContextType {
   commitInfo: Commit | null;
   selectedCommit: string;
   showInfoSidebar: boolean;
-  shouldScroll: boolean;
 
   isUnstagedLoading: boolean;
   isStagedLoading: boolean;
@@ -47,7 +46,6 @@ interface MainContextType {
   setCommitHistoryMap: React.Dispatch<React.SetStateAction<Map<string, Commit>>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<Commit | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
-  setShouldScroll: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Tauri events
   headEvent: string;
@@ -58,7 +56,7 @@ interface MainContextType {
   scrollbarRef: React.MutableRefObject<Scrollbars | null>;
 
   // Global Functions
-  scrollToCommit: () => void;
+  scrollToCommit: (commitId: string) => void;
 
   getRepoStatus: () => void;
   getStashedChanges: () => void;
@@ -106,7 +104,6 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [showInfoSidebar, setShowInfoSidebar] = useState(false);
 
   const scrollbarRef = useRef<Scrollbars>(null);
-  const [shouldScroll, setShouldScroll] = useState(false);
 
   let lastInfoSidebarState = useRef(false);
 
@@ -139,50 +136,27 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   }, [selectedCommit]);
 
   useEffect(() => {
-    if (commitInfo) {
-      setShowInfoSidebar(true);
-    }
-
-    if (shouldScroll) {
-      scrollToCommit();
-    }
+    if (commitInfo && !showInfoSidebar) setShowInfoSidebar(true);
   }, [commitInfo]);
 
-  const scrollToCommit = () => {
-    /*BUG: IT ALWAYS SCROLLS TO 320, ALMOST THERE
-    if (!scrollbarsRef.current || !selectedCommitNode) return;
-
-    const scrollbars = scrollbarsRef.current;
-    const elementContainer = document.getElementById(`commit-${selectedCommitNode.hash}`);
-
-    if (!elementContainer) return;
-
-    // Get the scroll container DOM element
-    const scrollContainerElement = scrollbars.container;
-    const containerRect = scrollContainerElement.getBoundingClientRect();
-    const elementRect = elementContainer.getBoundingClientRect();
-
-    // Calculate element's top relative to the scroll container's viewport
-    const elementTopRelativeToContainer = elementRect.top - containerRect.top;
-
-    // Current scroll position of the container
-    const currentScrollTop = scrollbars.getScrollTop();
-
-    // Calculate the element's position within the scrollable content
-    const elementPositionInContent = currentScrollTop + elementTopRelativeToContainer;
-
-    // Get container and element heights
-    const containerHeight = containerRect.height;
-    const elementHeight = elementRect.height;
-
-    // Calculate target scroll position to center the element
-    console.log("elementPositionInContent: " + elementPositionInContent)
-    console.log("containerHeight: " + containerHeight)
-    console.log("elementHeight: " + elementHeight)
-    const targetScrollTop = elementPositionInContent - (containerHeight / 2) + (elementHeight / 2);
-
-    // Perform the scroll
-    scrollbars.scrollTop(targetScrollTop);*/
+  const scrollToCommit = (commitId: string) => {
+    if (!scrollbarRef.current) return;
+    const scrollbar = scrollbarRef.current;
+    const element = document.getElementById(commitId);
+    if (!element) return;
+    // Get container height
+    const containerHeight = scrollbar.getClientHeight();
+    // For SVG elements, use getBoundingClientRect() instead of offsetTop/offsetHeight
+    const rect = element.getBoundingClientRect();
+    // Get the scrollbar container's position
+    const scrollbarRect = scrollbar.container.getBoundingClientRect();
+    // Calculate element's position relative to the scrollbar container
+    const elementRelativeTop = rect.top - scrollbarRect.top + scrollbar.getScrollTop();
+    const elementHeight = rect.height;
+    // Calculate scroll position to center the element
+    const scrollTop = elementRelativeTop - (containerHeight / 2) + (elementHeight / 2);
+    // Scroll to the calculated position
+    scrollbar.scrollTop(scrollTop);
   };
 
   // Changes section functions and states
@@ -347,7 +321,6 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       commitInfo, setCommitInfo,
       selectedCommit, setSelectedCommit,
       showInfoSidebar, setShowInfoSidebar,
-      shouldScroll, setShouldScroll,
 
       isUnstagedLoading,
       isStagedLoading,

@@ -16,6 +16,7 @@ interface AppContextType {
   // State 
   workspace: Workspace | null;
   config: Configuration | null;
+  newConfig: Configuration | null;
 
   activeModal: AppModals;
   notification: string;
@@ -26,6 +27,7 @@ interface AppContextType {
   // Setters 
   setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   setConfig: React.Dispatch<React.SetStateAction<Configuration | null>>;
+  setNewConfig: React.Dispatch<React.SetStateAction<Configuration | null>>;
 
   setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
   setNotification: React.Dispatch<React.SetStateAction<string>>;
@@ -83,7 +85,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [mainWindow, setMainWindow] = useState<Window | null>(null);
 
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
+
   const [config, setConfig] = useState<Configuration | null>(initConfig);
+  const [newConfig, setNewConfig] = useState<Configuration | null>(null);
 
   const [activeModal, setActiveModal] = useState<AppModals>("");
   const [notification, setNotification] = useState("");
@@ -212,6 +216,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useLayoutEffect(() => {
     if (!config) return;
+
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    if (config.themeValue !== currentTheme)
+      document.documentElement.setAttribute('data-theme', config.themeValue);
+
+    const currentAccentColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--active-color').trim();
+    if (config.accentColor !== currentAccentColor)
+      document.documentElement.style.setProperty('--active-color', config.accentColor);
+
     invoke("save_config", { newConfig: config })
       .catch((e) => console.error('Error while saving config:', e));
   }, [config]);
@@ -224,7 +238,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  //TODO: SI ABRE UN REPO QUE ESTA EN EL HISTORIAL, ABRELO DE AHI, DEBERIA ESTAR CACHEADO
   const openNewRepo = async (path: string = "") => {
     if (!workspace) return;
 
@@ -255,14 +268,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     openWorkspaceTab(repoPath, newTab);
   }
 
-  //BUG: CANNOT CLOSE LAST REPO TAB
-  const closeWorkspaceTab = (tabKey: string) => {
+  const closeWorkspaceTab = (tabKey: string, updatedConfig = newConfig) => {
     if (!workspace) return;
 
     const tabs = new Map<string, Tab>(workspace.tabs);
 
     // If it is the only tab and it's a welcome page, don't close it
-    if (tabs.size === 1 && !isType("Welcome", tabKey)) return;
+    if (tabs.size === 1 && isType("Welcome", tabKey)) return;
+
+    if (isType("Config", tabKey) && config !== updatedConfig) {
+      console.warn("CONFIG NOT CLOSE")
+      openConfirmationModal({
+        onConfirmed: () => {
+          setActiveModal("");
+          setNewConfig(config);
+          closeWorkspaceTab(tabKey, config);
+        },
+        title: "Discard Changes?",
+        subTitle: "You have unsaved changes. Close without saving?"
+      })
+      return;
+    }
 
     if (isType("Repo", tabKey)) {
       invoke("stop_git_watcher", { repoPath: tabKey }).catch((e) => {
@@ -357,6 +383,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // States and Setters
       workspace, setWorkspace,
       config, setConfig,
+      newConfig, setNewConfig,
 
       activeModal, setActiveModal,
       notification, setNotification,

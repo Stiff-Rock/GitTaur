@@ -27,6 +27,7 @@
 
 .configTabSidebar {
   flex: 1;
+  height: 100%;
   border-right: solid 1px var(--border-color);
   justify-content: flex-start;
   gap: 10px;
@@ -76,6 +77,12 @@
 
 .configTabButton.selected:hover {
   background-color: var(--active-color);
+}
+
+.resetButton {
+  width: 80%;
+  margin-top: auto;
+  margin-bottom: 10px;
 }
 
 .buttonsContainer {

@@ -1,3 +1,4 @@
+//TODO: MAKE IT A NORMAL UTILITY
 import { open } from '@tauri-apps/plugin-dialog';
 
 export const useDialog = () => {

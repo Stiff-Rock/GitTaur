@@ -4,7 +4,6 @@ import styles from '../../ActionBar.module.css';
 import { useAppContext } from '../../../../context/AppContext';
 import { invoke } from '@tauri-apps/api/core';
 
-//TODO: EXTRACT COMMON ELMENTS
 const OpenTerminalDirButton: React.FC = () => {
   const { setNotification, workspace, isType } = useAppContext();
 

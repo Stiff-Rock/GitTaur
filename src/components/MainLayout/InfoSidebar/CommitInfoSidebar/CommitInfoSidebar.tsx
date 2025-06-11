@@ -23,7 +23,7 @@ const CommitInfoSidebar: React.FC = () => {
 
     setSelectedCommit(commit.id);
     setCommitInfo(commit);
-    scrollToCommit();
+    scrollToCommit(commit.id);
   }
 
   return (

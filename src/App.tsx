@@ -17,7 +17,6 @@ import ConfirmationModal from "./components/Common/Modals/ConfirmationModal/Conf
 function App() {
   const { workspace, notification, setNotification, isType, activeModal } = useAppContext();
 
-  // NOTE: ESTO QUIZAS NO HAYA QUE QUITARLO
   // Debug effect and invoke
   if (import.meta.env.DEV) {
     const appLoaded = useRef<boolean>(false);
