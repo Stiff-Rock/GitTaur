@@ -4,7 +4,7 @@ import { useMainContext } from "../../../../../context/MainContext";
 import { useGitGraphContext } from "./GitGraphContext";
 
 const GraphSvg: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { GRAPH_PADDING } = useGitGraphContext();
+  const { commitNodesMap, GRAPH_PADDING, maxX, Y_SPACING } = useGitGraphContext();
 
   const { scrollbarRef, currentAppTab } = useMainContext();
 
@@ -21,18 +21,33 @@ const GraphSvg: React.FC<{ children: ReactNode }> = ({ children }) => {
   //FROM THE ELEMENTS THROUGH THE CONTEXT. STILL FINDING ISSUES WITH USEEFFECTS
   //requestanimationframe does not solve it, try doing ctrl + s here and see the horizontal scrolllbar
 
-  // Calculate dimensions when children change
+  // Obtain the highest Y value
+  const [maxY, setMaxY] = React.useState<number>(0);
   React.useLayoutEffect(() => {
-    if (graphContentRef.current && children) {
-      const bbox = graphContentRef.current.getBBox();
-      setSvgDimensions({
-        width: bbox.width + GRAPH_PADDING,
-        height: bbox.height + GRAPH_PADDING,
-        translateX: GRAPH_PADDING - bbox.x,
-        translateY: GRAPH_PADDING - bbox.y
-      });
+    if (commitNodesMap.size === 0) return;
+    const nodes = [...commitNodesMap.values()];
+    let newMaxYvalue = 0;
+    for (const node of nodes) {
+      newMaxYvalue = Math.max(newMaxYvalue, node.position.y);
     }
-  }, [children]);
+    if (maxY < newMaxYvalue) {
+      setMaxY(newMaxYvalue);
+    }
+  }, [commitNodesMap.size])
+
+  // Calculate dimensions with the highest X and Y values
+  React.useLayoutEffect(() => {
+    setSvgDimensions({
+      width: maxX + GRAPH_PADDING,
+      height: maxY + GRAPH_PADDING + Y_SPACING,
+      translateX: GRAPH_PADDING - maxX,
+      translateY: GRAPH_PADDING - maxY
+    });
+  }, [maxX, maxY]);
+
+  React.useEffect(() => {
+    console.log("x:", svgDimensions.width, " | y:", svgDimensions.height)
+  }, [svgDimensions])
 
   return (
     <ScrollBar

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef } from 'react';
+import React, { createContext, useContext, useRef, useState } from 'react';
 import { CommitNode } from './commitsToNodes';
 
 interface GitGraphContextType {
@@ -17,6 +17,9 @@ interface GitGraphContextType {
   LABEL_X_PADDING: number
   LABEL_Y_PADDING: number
   LABEL_SPACING: number
+
+  maxX: number
+  setMaxX: React.Dispatch<React.SetStateAction<number>>
 }
 
 interface GitGraphProviderType {
@@ -71,6 +74,8 @@ export const GitGraphProvider: React.FC<GitGraphProviderType> = ({
 
   const graphSvgRef = useRef<SVGSVGElement>() as React.RefObject<SVGSVGElement>;
 
+  const [maxX, setMaxX] = useState(0);
+
   return (
     <GraphContext.Provider value={{
       maxHorizontalOffset,
@@ -88,6 +93,8 @@ export const GitGraphProvider: React.FC<GitGraphProviderType> = ({
       labelsHorizontalOffsets,
 
       commitNodesMap: commitNodesMap,
+
+      maxX, setMaxX,
     }}>
       {children}
     </GraphContext.Provider>
