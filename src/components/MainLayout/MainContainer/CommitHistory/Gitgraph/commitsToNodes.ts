@@ -11,17 +11,17 @@ export interface CommitNode {
 }
 
 const COLORS = [
-  "#1CA085",
-  "#C0392B",
-  "#8E44AD",
-  "#F39C12",
-  "#2980B9",
-  "#F1C40F",
-  "#F194EB",
-  "#34495E",
-  "#D35400",
-  "#7F8C8D",
-  "#F1948A",
+  "rgb(28 160 133)", // #1CA085
+  "rgb(192 57 43)", // #C0392B
+  "rgb(142 68 173)", // #8E44AD
+  "rgb(243 156 18)", // #F39C12
+  "rgb(41 128 185)", //#2980B9
+  "rgb(241 196 15)", // #F1C40F
+  "rgb(241 148 235)", // #F194EB
+  "rgb(52 73 94)", // #34495E
+  "rgb(211 84 0)", // #D35400
+  "rgb(127 140 141)", // #7F8C8D
+  "rgb(241 148 138)", //#F1948A
 ];
 
 let currentColorIndex = 0;
@@ -32,12 +32,39 @@ export function getColor(): string {
   return color;
 }
 
+const GRAY_FACTOR = 0.4;  // Controls grayness
+const DESATURATE_FACTOR = 0.3;  // Controls desaturation
+
+export function makeMoreGray(color: string): string {
+  // Parse the RGB values
+  const values = color.replace('rgb(', '').replace(')', '').split(' ').map(v => parseInt(v));
+  const [r, g, b] = values;
+
+  // Calculate the luminance (brightness perception)
+  const luminance = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+  // Make more gray by moving toward the average
+  const avg = Math.round((r + g + b) / 3);
+  let newR = Math.round(r * (1 - GRAY_FACTOR) + avg * GRAY_FACTOR);
+  let newG = Math.round(g * (1 - GRAY_FACTOR) + avg * GRAY_FACTOR);
+  let newB = Math.round(b * (1 - GRAY_FACTOR) + avg * GRAY_FACTOR);
+
+  // Further desaturate by moving RGB values toward luminance
+  // This preserves perceived brightness better than simple averaging
+  newR = Math.round(newR * (1 - DESATURATE_FACTOR) + luminance * DESATURATE_FACTOR);
+  newG = Math.round(newG * (1 - DESATURATE_FACTOR) + luminance * DESATURATE_FACTOR);
+  newB = Math.round(newB * (1 - DESATURATE_FACTOR) + luminance * DESATURATE_FACTOR);
+
+  return `rgb(${newR} ${newG} ${newB})`;
+}
+
 export default function createCommitNodes(
-  commitMap: Map<string, Commit>,
+  repoHistory: RepoHistory,
   x_spacing: number,
   y_spacing: number,
   maxCommits: number
 ): Map<string, CommitNode> {
+  const commitMap = repoHistory.commitHistoryMap;
   const commitHistory = [...commitMap.values()].slice(-maxCommits);
 
   currentColorIndex = 0;

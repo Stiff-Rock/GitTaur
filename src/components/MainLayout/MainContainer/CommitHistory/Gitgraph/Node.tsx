@@ -1,8 +1,21 @@
-import { CommitNode } from "./commitsToNodes";
+import { CommitNode, makeMoreGray } from "./commitsToNodes";
 import { useGitGraphContext } from "./GitGraphContext";
 
 const Node: React.FC<{ node: CommitNode }> = ({ node }) => {
-  const { GRAPH_PADDING, NODE_RADIUS } = useGitGraphContext();
+  const {
+    GRAPH_PADDING,
+    NODE_RADIUS,
+    currentCommitId
+  } = useGitGraphContext();
+
+  const refs = node.data.refs;
+  let strokeColor: string;
+  const isRemoteOnly = !refs.some(r => r.includes("branch")) && refs.some(r => r.includes("remoteBranch"));
+  if (isRemoteOnly) {
+    strokeColor = makeMoreGray(node.nodeColor);
+  } else {
+    strokeColor = node.nodeColor;
+  }
 
   return (
     <g
@@ -13,9 +26,23 @@ const Node: React.FC<{ node: CommitNode }> = ({ node }) => {
     >
       <circle
         className="node"
-        stroke={node.nodeColor}
+        stroke={strokeColor}
         r={NODE_RADIUS}
       />
+
+      {currentCommitId === node.id &&
+        <circle
+          fill={strokeColor}
+          r={NODE_RADIUS * 0.6}
+        />
+      }
+
+      {isRemoteOnly &&
+        <circle
+          fill={strokeColor}
+          r={NODE_RADIUS * 0.4}
+        />
+      }
     </g>
   );
 }

@@ -5,9 +5,9 @@ import ComboBox from "../Common/ComboBox/ComboBox";
 import { parseTheme } from "../../utils/configUtils";
 import InputField from "../Common/InputField/InputField";
 import { FileDirectoryIcon } from "@primer/octicons-react";
-import { useDialog } from "../../hooks/useDialog";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
+import { selectDirectoryDialog } from "../../utils/FileExplorerDialog";
 
 type ConfigTabs = "general" | "git" | "ui";
 const ConfigPage: React.FC = () => {
@@ -22,7 +22,6 @@ const ConfigPage: React.FC = () => {
     openConfirmationModal,
     setActiveModal
   } = useAppContext();
-  const { selectDirectoryDialog } = useDialog();
 
   const [configTab, setConfigTab] = useState<ConfigTabs>("general");
 

@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useLayoutEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { useDialog } from '../hooks/useDialog';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
 import { Menu } from '@tauri-apps/api/menu';
 import { getCurrentWindow, PhysicalPosition, Window } from '@tauri-apps/api/window';
@@ -11,6 +10,7 @@ import { PushModalProps } from '../components/Common/Modals/PushRemote/PushRemot
 import { RebaseBranchModalProps } from '../components/Common/Modals/RebaseBranchModal/RebaseBranchModal';
 import { MergeBranchModalProps } from '../components/Common/Modals/MergeBranchModal/MergeBranchModal';
 import { PullModalProps } from '../components/Common/Modals/PullRemote/PullRemoteModal';
+import { selectDirectoryDialog } from '../utils/FileExplorerDialog';
 
 interface AppContextType {
   // State 
@@ -94,8 +94,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
   const [activeRepoHistory, setActiveRepoHistory] = useState<Commit[] | null>(null);
-
-  const { selectDirectoryDialog } = useDialog();
 
   const [confirmationModalProps, setConfirmationModalProps] = useState<ConfirmationModalProps>({
     title: "",

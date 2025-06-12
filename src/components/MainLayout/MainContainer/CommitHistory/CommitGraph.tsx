@@ -14,20 +14,20 @@ import Throbber from "../../../Common/Throbber/Throbber.tsx";
 //TODO: SCROLL TO SELECTED COMMIT
 
 const CommitGraph: React.FC<{ isActive: boolean }> = ({ isActive }) => {
-  const { commitHistoryMap } = useMainContext();
+  const { repoHistory } = useMainContext();
 
   const { setActiveRepoHistory, config } = useAppContext();
 
   const [commitLogs, setCommitLogs] = useState<Commit[] | null>(null);
 
   useLayoutEffect(() => {
-    if (!commitHistoryMap) return;
+    if (!repoHistory) return;
 
-    if (commitHistoryMap) {
-      const commitLogs = Object.values(commitHistoryMap);
+    if (repoHistory) {
+      const commitLogs = Object.values(repoHistory);
       setCommitLogs(commitLogs);
     }
-  }, [commitHistoryMap]);
+  }, [repoHistory]);
 
   useEffect(() => {
     setActiveRepoHistory(commitLogs);
@@ -36,7 +36,7 @@ const CommitGraph: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   return (
     <>
       {commitLogs && config ? (
-        <GitGraph key={config.maxCommits} commitHistoryMap={commitHistoryMap} maxCommits={config.maxCommits} />
+        <GitGraph key={config.maxCommits} repoHistory={repoHistory} maxCommits={config.maxCommits} />
       ) : (
         <div style={{
           width: "100%",

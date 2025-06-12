@@ -3,6 +3,7 @@ import { CommitNode } from './commitsToNodes';
 
 interface GitGraphContextType {
   commitNodesMap: Map<string, CommitNode>
+  currentCommitId: string | null
 
   labelsHorizontalOffsets: Map<string, number>
 
@@ -24,7 +25,9 @@ interface GitGraphContextType {
 
 interface GitGraphProviderType {
   children: React.ReactNode
+
   commitNodesMap: Map<string, CommitNode>
+  currentCommitId: string | null
 
   NODE_RADIUS: number
   X_SPACING: number
@@ -51,6 +54,7 @@ export interface Position {
 export const GitGraphProvider: React.FC<GitGraphProviderType> = ({
   children,
   commitNodesMap,
+  currentCommitId,
 
   NODE_RADIUS,
   X_SPACING,
@@ -92,7 +96,8 @@ export const GitGraphProvider: React.FC<GitGraphProviderType> = ({
 
       labelsHorizontalOffsets,
 
-      commitNodesMap: commitNodesMap,
+      commitNodesMap,
+      currentCommitId,
 
       maxX, setMaxX,
     }}>

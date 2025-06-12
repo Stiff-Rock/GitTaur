@@ -13,7 +13,7 @@ interface MainContextType {
   repoPath: string;
 
   repoInfo: RepoInfo | null;
-  commitHistoryMap: Map<string, Commit>;
+  repoHistory: RepoHistory | null;
   repoStatus: RepoStatus | null;
   repoStashes: Stash[] | null;
 
@@ -43,7 +43,7 @@ interface MainContextType {
   setFileDiff: React.Dispatch<React.SetStateAction<string>>;
 
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
-  setCommitHistoryMap: React.Dispatch<React.SetStateAction<Map<string, Commit>>>;
+  setRepoHistory: React.Dispatch<React.SetStateAction<RepoHistory | null>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<Commit | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -91,7 +91,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [inChangesTab, setInChangesTab] = useState(true);
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
-  const [commitHistoryMap, setCommitHistoryMap] = useState<Map<string, Commit>>(new Map());
+  const [repoHistory, setRepoHistory] = useState<RepoHistory | null>(null);
+
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);
 
@@ -129,8 +130,8 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   }, [showInfoSidebar]);
 
   useEffect(() => {
-    if (commitHistoryMap && selectedCommit) {
-      const commitObj = commitHistoryMap.get(selectedCommit);
+    if (repoHistory && selectedCommit) {
+      const commitObj = repoHistory.commitHistoryMap.get(selectedCommit);
       if (commitObj) setCommitInfo(commitObj);
     }
   }, [selectedCommit]);
@@ -311,7 +312,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       inChangesTab, setInChangesTab,
 
       repoInfo, setRepoInfo,
-      commitHistoryMap, setCommitHistoryMap,
+      repoHistory, setRepoHistory,
       repoStatus, setRepoStatus,
       repoStashes, setRepoStashes,
 

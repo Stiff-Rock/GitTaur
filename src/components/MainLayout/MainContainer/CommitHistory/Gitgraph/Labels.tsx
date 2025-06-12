@@ -1,6 +1,6 @@
 import React from "react";
 import { Dimensions, Position, useGitGraphContext } from "./GitGraphContext";
-import { CommitNode } from "./commitsToNodes";
+import { CommitNode, makeMoreGray } from "./commitsToNodes";
 
 const LABEL_ICON_SIZE = 14;
 const LABEL_TEXT_PADDING = 5;
@@ -14,7 +14,8 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
     BASE_LABEL_OFFSET,
     LABEL_X_PADDING,
     LABEL_Y_PADDING,
-    LABEL_SPACING
+    LABEL_SPACING,
+    currentCommitId
   } = useGitGraphContext();
 
   const labelXpos = BASE_LABEL_OFFSET + NODE_RADIUS + GRAPH_PADDING + maxHorizontalOffset - LABEL_X_PADDING;
@@ -26,7 +27,6 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
     index: number,
     labelXpos: number,
     labelYpos: number,
-    color: string,
     refLabel: string,
   }
 
@@ -35,7 +35,6 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
       index,
       labelXpos,
       labelYpos,
-      color,
       refLabel
     } = props;
 
@@ -63,8 +62,17 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
     }, [textRef.current]);
 
     const parts = refLabel.split(':');
-    const labelType = parts[0];
+    const labelType = currentCommitId === node.id && index === 0 ? 'check' : parts[0];
     const labelText = parts[1];
+
+    const refs = node.data.refs;
+    let strokeColor: string;
+    const isRemoteOnly = !refs.some(r => r.includes("branch")) && refs.some(r => r.includes("remoteBranch"));
+    if (isRemoteOnly) {
+      strokeColor = makeMoreGray(node.nodeColor);
+    } else {
+      strokeColor = node.nodeColor;
+    }
 
     return (
       <g id={refLabel} transform={`translate(${labelXpos}, ${labelYpos})`} style={{ pointerEvents: 'none' }}>
@@ -75,7 +83,7 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
           x={position.x}
           y={position.y}
           rx={3}
-          stroke={color}
+          stroke={strokeColor}
           strokeWidth='1'
         />
 
@@ -83,10 +91,10 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
           ref={containerRef}
           transform={`translate(${position.x + LABEL_X_PADDING / 2}, ${position.y + dimensions.height / 2})`}
         >
-          <LabelIcon type={labelType} />
+          <LabelIcon type={labelType} disabled={isRemoteOnly} />
 
           <text
-            className="label"
+            className={isRemoteOnly ? "disabledLabel" : "label"}
             ref={textRef}
             x={LABEL_ICON_SIZE + LABEL_TEXT_PADDING}
             y={0}
@@ -106,7 +114,6 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
             <RefLabel
               key={`${node.id}-${refName}`}
               index={index}
-              color={node.nodeColor}
               refLabel={refName}
               labelXpos={labelXpos}
               labelYpos={labelYpos}
@@ -118,21 +125,38 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
   );
 }
 
-const LabelIcon: React.FC<{ type: string }> = ({ type }) => {
+const LabelIcon: React.FC<{ type: string, disabled: boolean }> = ({ type, disabled }) => {
   return (
-    <>
-      {type === 'tag' ? <TagIcon size={LABEL_ICON_SIZE} /> :
-        type === 'branch' ? <BranchIcon size={LABEL_ICON_SIZE} /> :
-          type === 'remoteBranch' ? <RemoteIcon size={LABEL_ICON_SIZE} /> :
-            <OtherIcon size={LABEL_ICON_SIZE} />}
-    </>
+    <g className={disabled ? "disabledLabelIcon" : "labelIcon"}>
+      {type === 'check' ? <CheckIcon size={LABEL_ICON_SIZE} /> :
+        type === 'tag' ? <TagIcon size={LABEL_ICON_SIZE} /> :
+          type === 'branch' ? <BranchIcon size={LABEL_ICON_SIZE} /> :
+            type === 'remoteBranch' ? <RemoteIcon size={LABEL_ICON_SIZE} /> :
+              <OtherIcon size={LABEL_ICON_SIZE} />}
+    </g>
+  );
+};
+
+const CheckIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 16 16"
+      width={size}
+      height={size}
+      y={-size / 2}
+    >
+      <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 
+        0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751
+        0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z">
+      </path>
+    </svg>
   );
 };
 
 const TagIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
   return (
     <svg
-      className="labelIcon"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
       width={size}
@@ -154,7 +178,6 @@ const TagIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
 const BranchIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
   return (
     <svg
-      className="labelIcon"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
       width={size}
@@ -176,7 +199,6 @@ const BranchIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
 const RemoteIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
   return (
     <svg
-      className="labelIcon"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
       width={size}
@@ -198,7 +220,6 @@ const RemoteIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
 const OtherIcon: React.FC<{ size: number }> = ({ size = LABEL_ICON_SIZE }) => {
   return (
     <svg
-      className="labelIcon"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
       width={size}

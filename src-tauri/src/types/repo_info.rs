@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -9,6 +10,14 @@ pub struct RepoInfo {
     pub local_branches: Vec<String>,
     pub remotes: HashMap<String, Remote>,
     pub tags: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepoHistory {
+    pub commit_history_map: IndexMap<String, Commit>,
+    pub head_is_detached: bool,
+    pub current_commit_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

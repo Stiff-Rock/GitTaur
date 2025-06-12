@@ -8,6 +8,7 @@ use std::path::Path;
 use std::{collections::HashMap, num::TryFromIntError};
 use tauri::command;
 
+use crate::types::repo_info::RepoHistory;
 use crate::{
     repo_manager::is_repo,
     types::{
@@ -158,12 +159,26 @@ pub async fn get_commit_history(repo_path: String) -> Result<String, String> {
     let master_history: Vec<String> = get_main_branch_history(&repo).map_err(|e| e.to_string())?;
 
     // Map the commit objects
-    let commit_map = get_commit_history_map(&repo, revwalk, &ref_map, master_history)
+    let commit_history_map = get_commit_history_map(&repo, revwalk, &ref_map, master_history)
         .map_err(|e| e.to_string())?;
 
-    let repo_info_json = serde_json::to_string(&commit_map).map_err(|e| e.to_string())?;
+    // Check if repo head is detached
+    let head_is_detached = repo.head_detached().map_err(|e| e.to_string())?;
 
-    Ok(repo_info_json)
+    // Get the current commit the repository is checked out on
+    let head = repo.head().map_err(|e| e.to_string())?;
+    let head_commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+    let current_commit_id = head_commit.id().to_string();
+
+    let repo_history = RepoHistory {
+        commit_history_map,
+        head_is_detached,
+        current_commit_id,
+    };
+
+    let repo_history_json = serde_json::to_string(&repo_history).map_err(|e| e.to_string())?;
+
+    Ok(repo_history_json)
 }
 
 fn get_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String>>, git2::Error> {

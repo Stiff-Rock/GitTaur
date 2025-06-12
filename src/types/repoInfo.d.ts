@@ -31,6 +31,12 @@ interface Commit {
   isFromMainBranch: boolean;
 }
 
+interface RepoHistory {
+  commitHistoryMap: Map<string, Commit>,
+  headIsDetached: boolean,
+  currentCommitId: string,
+}
+
 interface Remote {
   name: string,
   url: string,

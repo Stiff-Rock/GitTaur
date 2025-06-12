@@ -20,14 +20,14 @@ const LABEL_X_PADDING = 10;
 const LABEL_Y_PADDING = 5;
 const LABEL_SPACING = 10;
 
-const GitGraph: React.FC<{ commitHistoryMap: Map<string, Commit>, maxCommits: number }> = ({ commitHistoryMap, maxCommits }) => {
+const GitGraph: React.FC<{ repoHistory: RepoHistory | null, maxCommits: number }> = ({ repoHistory, maxCommits }) => {
   const [commitNodesMap, setCommitNodes] = React.useState<Map<string, CommitNode>>(new Map());
 
   // Get commit nodes
   React.useLayoutEffect(() => {
-    if (!commitHistoryMap) return;
-    setCommitNodes(createCommitNodes(commitHistoryMap, X_SPACING, Y_SPACING, maxCommits));
-  }, [commitHistoryMap]);
+    if (!repoHistory) return;
+    setCommitNodes(createCommitNodes(repoHistory, X_SPACING, Y_SPACING, maxCommits));
+  }, [repoHistory]);
 
   const [isPending, startTransition] = React.useTransition();
   const [renderingComplete, setRenderingComplete] = React.useState(false);
@@ -60,6 +60,7 @@ const GitGraph: React.FC<{ commitHistoryMap: Map<string, Commit>, maxCommits: nu
 
   const gitGraphProviderType = {
     commitNodesMap,
+    currentCommitId: repoHistory?.currentCommitId ?? null,
     NODE_RADIUS,
     X_SPACING,
     Y_SPACING,

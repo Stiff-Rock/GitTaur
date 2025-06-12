@@ -2,25 +2,49 @@
   fill: var(--secondary-bg);
 }
 
-.label {
+.label,
+.disabledLabel {
   user-select: none;
   dominant-baseline: middle;
   text-anchor: start;
   font-size: 12px;
+}
+
+.label {
   fill: var(--primary-text);
 }
 
-.labelIcon {
+.disabledLabel {
+  fill: var(--secondary-text);
+}
+
+.labelIcon svg,
+.disabledLabelIcon svg {
   vertical-align: middle;
+}
+
+.labelIcon svg {
   fill: var(--primary-text);
+}
+
+.disabledLabelIcon svg {
+  fill: var(--secondary-text);
+}
+
+.summary,
+.disabledSummary {
+  user-select: none;
+  pointer-events: none;
+  font-size: 14px;
+  dominant-baseline: middle;
 }
 
 .summary {
-  user-select: none;
-  pointer-events: none;
   fill: var(--primary-text);
-  font-size: 14px;
-  dominant-baseline: middle;
+}
+
+.disabledSummary {
+  fill: var(--secondary-text);
 }
 
 .node {
