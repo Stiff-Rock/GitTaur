@@ -6,6 +6,11 @@
   width: 100%;
 }
 
+.inputFieldContainer span {
+  width: 25%;
+  font-size: var(--font-size-tab);
+}
+
 .inputFieldContainer input {
   flex: 1;
 }

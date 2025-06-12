@@ -135,7 +135,7 @@ pub async fn tag_commit(
     tag_name: String,
     tag_msg: String,
 ) -> Result<(), String> {
-    info!("Creating tag {tag_name} in repo {repo_path}");
+    info!("Creating tag <{tag_name}> in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 

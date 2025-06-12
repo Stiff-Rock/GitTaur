@@ -4,6 +4,7 @@ import baseStyle from "../BaseModal.module.css";
 import BaseModal from "../BaseModal";
 import { useState } from "react";
 import InputField from "../../InputField/InputField";
+import { isValidGitName } from "../../../../utils/gitUtils";
 
 export interface CreateTagModalProps {
   commitOid?: string,
@@ -47,12 +48,22 @@ const TagBranchModal: React.FC = () => {
 
   return (
     <BaseModal title="Create Tag">
+      {tagName && !isValidGitName(tagName) &&
+        <span className={baseStyle.errorMsg}>
+          Tag name should not contain spaces,
+          special characters (~^:?*[]\@),
+          consecutive dots (..),
+          slashes (/),
+          or start with a dot.
+        </span>}
+
       <InputField
         title="Tag Name"
         type="text"
         placeholder="tagName"
         value={tagName}
         onChange={setTagName}
+        className={branchName && !isValidGitName(branchName) ? 'invalidInputData' : ''}
       />
 
       <InputField

@@ -34,13 +34,15 @@
 
 
   /* MISC COLORS */
-  --link-color: #7FDBFF;
+  --link-color: #40afff;
 
   --active-color: #50FA7B;
 
   --modal-bg: rgba(0, 0, 0, 0.5);
 
   --warning-color: #FFD54F;
+
+  --error-color: #CE2029;
 
   /* FONT SIZES */
   --font-size-title: 24px;
@@ -77,7 +79,6 @@
   --contrast-text: #121212;
 }
 
-/*TODO: THE TEXT AND WINDOW ACTION ICONS ARE NOT VISIBLE ENOUGH*/
 [data-theme="light"] {
   --primary-bg: #ffffff;
   --secondary-bg: #f5f5f5;

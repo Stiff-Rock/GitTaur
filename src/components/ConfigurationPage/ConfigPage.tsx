@@ -65,8 +65,6 @@ const ConfigPage: React.FC = () => {
     })
   };
 
-  //TODO: ARE YOU SURE? dialog when trying to close the tab
-
   //TODO: ADD GRAPH COLOR THEMING
   return (
     <div className={`${styles.mainContainer} ${isType("Config") || !workspace ? '' : 'inactive'}`}>
@@ -110,8 +108,6 @@ const ConfigPage: React.FC = () => {
 
           {configTab === "general" &&
             <div className={styles.configSection}>
-              {/*BUG: COMBOBOX IS SLIGHLTY WIDER*/}
-
               {/*TODO: Internacionalización
               <ComboBox
                 title="Language"
@@ -228,7 +224,6 @@ const ConfigPage: React.FC = () => {
             </div>
           }
 
-          {/*TODO: ADD RESET DEFAULTS BUTTON*/}
           <div className={styles.buttonsContainer}>
             <button className='appButton' onClick={cancel}>Cancel</button>
             <button className='appButton' onClick={applyChanges}>Apply</button>

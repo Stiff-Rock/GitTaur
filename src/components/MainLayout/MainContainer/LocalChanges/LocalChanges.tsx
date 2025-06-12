@@ -14,8 +14,6 @@ export interface FileItem {
   status: FileStatusState;
 }
 
-//TODO: ALSO ADD STASH BADGE
-
 const LocalChanges: React.FC = () => {
   const {
     currentAppTab,

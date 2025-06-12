@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useLayoutEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useLayoutEffect, Dispatch, SetStateAction, ReactNode } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
 import { Menu } from '@tauri-apps/api/menu';
@@ -22,18 +22,18 @@ interface AppContextType {
   notification: string;
 
   activeRepoInfo: RepoInfo | null;
-  activeRepoHistory: Commit[] | null;
+  activeRepoHistory: Commit[] | undefined | null;
 
   // Setters 
-  setWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
-  setConfig: React.Dispatch<React.SetStateAction<Configuration | null>>;
-  setNewConfig: React.Dispatch<React.SetStateAction<Configuration | null>>;
+  setWorkspace: Dispatch<SetStateAction<Workspace | null>>;
+  setConfig: Dispatch<SetStateAction<Configuration | null>>;
+  setNewConfig: Dispatch<SetStateAction<Configuration | null>>;
 
-  setActiveModal: React.Dispatch<React.SetStateAction<AppModals>>;
-  setNotification: React.Dispatch<React.SetStateAction<string>>;
+  setActiveModal: Dispatch<SetStateAction<AppModals>>;
+  setNotification: Dispatch<SetStateAction<string>>;
 
-  setActiveRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
-  setActiveRepoHistory: React.Dispatch<React.SetStateAction<Commit[] | null>>;
+  setActiveRepoInfo: Dispatch<SetStateAction<RepoInfo | null>>;
+  setActiveRepoHistory: Dispatch<SetStateAction<Commit[] | undefined | null>>;
 
   // Global Functions
   openContextMenu: (menu: Menu, event: React.MouseEvent) => void;
@@ -81,7 +81,7 @@ let initConfig: Configuration | null = null;
 
 //TODO: MAYBE DO AN INVISILBE OVERLAY THAT APPEARS WHEN OPERATIONS THAT SHOULD BLOCK THE UI 
 //APPEAR AND MAYBE THE LOADING INDICATOR ON THE CURSOR OR SOMETHING
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [mainWindow, setMainWindow] = useState<Window | null>(null);
 
   const [workspace, setWorkspace] = useState<Workspace | null>(initWorkspace);
@@ -93,7 +93,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notification, setNotification] = useState("");
 
   const [activeRepoInfo, setActiveRepoInfo] = useState<RepoInfo | null>(null);
-  const [activeRepoHistory, setActiveRepoHistory] = useState<Commit[] | null>(null);
+  const [activeRepoHistory, setActiveRepoHistory] = useState<Commit[] | undefined | null>(undefined);
 
   const [confirmationModalProps, setConfirmationModalProps] = useState<ConfirmationModalProps>({
     title: "",
@@ -216,8 +216,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!config) return;
 
     const currentTheme = document.documentElement.getAttribute('data-theme');
-    if (config.themeValue !== currentTheme)
-      document.documentElement.setAttribute('data-theme', config.themeValue);
+    if (config.themeValue !== currentTheme) {
+      let theme: string;
+      if (config.themeValue === "system") {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      } else {
+        theme = config.themeValue;
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    }
 
     const currentAccentColor = getComputedStyle(document.documentElement)
       .getPropertyValue('--active-color').trim();

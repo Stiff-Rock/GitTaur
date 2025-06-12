@@ -10,7 +10,6 @@ const SettingsButton: React.FC = () => {
     <button
       className={`${styles.titleBarIcon} actionButton`}
       onClick={openConfigPage}
-      /*TODO: WHILE NO WORKSPACE BUTTON, NO NEED FOR THIS style={{ marginRight: "5px" }}*/
       title="Settings"
     >
       <GearIcon />

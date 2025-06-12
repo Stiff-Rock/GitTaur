@@ -13,7 +13,7 @@ interface MainContextType {
   repoPath: string;
 
   repoInfo: RepoInfo | null;
-  repoHistory: RepoHistory | null;
+  repoHistory: RepoHistory | undefined | null;
   repoStatus: RepoStatus | null;
   repoStashes: Stash[] | null;
 
@@ -43,7 +43,7 @@ interface MainContextType {
   setFileDiff: React.Dispatch<React.SetStateAction<string>>;
 
   setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
-  setRepoHistory: React.Dispatch<React.SetStateAction<RepoHistory | null>>;
+  setRepoHistory: React.Dispatch<React.SetStateAction<RepoHistory | undefined | null>>;
   setCommitInfo: React.Dispatch<React.SetStateAction<Commit | null>>;
   setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -91,7 +91,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
   const [inChangesTab, setInChangesTab] = useState(true);
 
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
-  const [repoHistory, setRepoHistory] = useState<RepoHistory | null>(null);
+  const [repoHistory, setRepoHistory] = useState<RepoHistory | undefined | null>(undefined);
 
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [repoStashes, setRepoStashes] = useState<Stash[] | null>(null);

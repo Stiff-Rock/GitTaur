@@ -5,10 +5,10 @@ import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import InputField from "../../InputField/InputField";
 import Checkbox from "../../CheckBox/Checkbox";
+import { isValidGitName } from "../../../../utils/gitUtils";
 
 const CreateBranchModal: React.FC = () => {
   const { setActiveModal, setNotification, workspace } = useAppContext();
-
 
   const [branchName, setBranchName] = useState("");
   const [checkout, setCheckout] = useState(true);
@@ -29,12 +29,20 @@ const CreateBranchModal: React.FC = () => {
 
   return (
     <BaseModal title="Create Branch">
+      {branchName && !isValidGitName(branchName) &&
+        <span className={baseStyle.errorMsg}>
+          Branch name should not contain spaces,
+          special characters (~^:?*[]\@),
+          consecutive dots (..), or end with a slash.
+        </span>}
+
       <InputField
         title="Branch name"
         type="text"
         placeholder="feature-branch"
         value={branchName}
         onChange={setBranchName}
+        className={branchName && !isValidGitName(branchName) ? 'invalidInputData' : ''}
       />
 
       <Checkbox

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import styles from './MainLayout.module.css';
 import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
 import CommitInfoSidebar from './InfoSidebar/CommitInfoSidebar/CommitInfoSidebar';
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { Panel, PanelGroup, PanelResizeHandle, setNonce } from "react-resizable-panels";
 import { DashIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../context/MainContext';
 import { usePanelSync } from '../../context/PanelSyncContext';
@@ -37,7 +37,7 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     showInfoSidebar,
     setShowInfoSidebar,
     setRepoInfo, repoInfo,
-    setRepoHistory: setCommitHistoryMap,
+    setRepoHistory: setRepoHistory,
     headEvent, fetchEvent, statusEvent
   } = useMainContext();
 
@@ -70,6 +70,10 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     if (!workspace) return;
     invoke<string>("get_commit_history", { repoPath })
       .then((json) => {
+        if (!json) {
+          setRepoHistory(null);
+          return;
+        }
         const historyJsonDTO = JSON.parse(json);
         const commitHistoryDto: Record<string, Commit> = historyJsonDTO.commitHistoryMap;
         const commitHistoryMap = new Map<string, Commit>();
@@ -81,7 +85,7 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           headIsDetached: historyJsonDTO.headIsDetached,
           currentCommitId: historyJsonDTO.currentCommitId,
         };
-        setCommitHistoryMap(repoHistory);
+        setRepoHistory(repoHistory);
       })
       .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
   }
@@ -107,7 +111,10 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 
       const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
       invoke("setup_watchers", { repoPath, repoEvents })
-        .catch(e => console.error("Error starting git watcher:", e));
+        .catch(e => {
+          console.error(e);
+          setNotification(e);
+        });
 
       getRepoInfoAndHistory();
     }

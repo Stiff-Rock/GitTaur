@@ -15,9 +15,8 @@ static WATCHER_STORE: LazyLock<Arc<Mutex<HashMap<String, RecommendedWatcher>>>> 
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 /// Stores the yet unwatched dynamic directories of each currently watched repo
-static DYNAMIC_DIRS_MAP: LazyLock<
-    Arc<Mutex<HashMap<String, Vec<(PathBuf, bool, RecursiveMode)>>>>,
-> = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
+static DYNAMIC_DIRS_MAP: LazyLock<Arc<Mutex<HashMap<String, Vec<(PathBuf, RecursiveMode)>>>>> =
+    LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -48,10 +47,9 @@ pub async fn setup_watchers(
 
     let base_path = PathBuf::from(&repo_path);
     let git_path = base_path.join(".git");
-    let mut paths_to_watch: Vec<(PathBuf, bool, RecursiveMode)> = vec![
-        (base_path, false, Recursive),
-        (git_path.join("HEAD"), false, NonRecursive),
-        (git_path.join("index"), false, NonRecursive),
+    let mut paths_to_watch: Vec<(PathBuf, RecursiveMode)> = vec![
+        (base_path, Recursive),
+        (git_path.join("HEAD"), NonRecursive),
     ];
 
     let mut unwatched_dirs_map = match DYNAMIC_DIRS_MAP.lock() {
@@ -69,21 +67,22 @@ pub async fn setup_watchers(
 
     let mut has_unwatched_dirs = false;
 
-    let dynamic_paths: Vec<(PathBuf, bool, RecursiveMode)> = vec![
-        (git_path.join("FETCH_HEAD"), true, NonRecursive),
-        (git_path.join("refs").join("remotes"), true, Recursive),
-        (git_path.join("refs").join("stash"), true, NonRecursive),
+    let dynamic_paths: Vec<(PathBuf, RecursiveMode)> = vec![
+        (git_path.join("index"), NonRecursive),
+        (git_path.join("FETCH_HEAD"), NonRecursive),
+        (git_path.join("refs").join("remotes"), Recursive),
+        (git_path.join("refs").join("stash"), NonRecursive),
+        (git_path.join("refs").join("tags"), NonRecursive),
         (
             git_path.join("logs").join("refs").join("stash"),
-            true,
             NonRecursive,
         ),
     ];
 
     for entry in &dynamic_paths {
-        let (path, is_dynamic, _) = entry;
+        let (path, _) = entry;
 
-        if *is_dynamic && !path.exists() {
+        if !path.exists() {
             unwatched_dirs.push(entry.clone());
             has_unwatched_dirs = true;
         } else {
@@ -114,7 +113,10 @@ pub async fn setup_watchers(
                     }
                     if path.ends_with("HEAD") && !path.ends_with("FETCH_HEAD") {
                         tx.send(("head", ())).ok();
-                    } else if path.ends_with("FETCH_HEAD") || path_str.contains("/refs/remotes/") {
+                    } else if path.ends_with("FETCH_HEAD")
+                        || path_str.contains("/refs/remotes/")
+                        || path_str.contains("/refs/tags")
+                    {
                         tx.send(("fetch", ())).ok();
                     } else if path_str.contains("/refs/stash")
                         || path_str.contains("/logs/refs/stash")
@@ -131,12 +133,12 @@ pub async fn setup_watchers(
         },
         Config::default(),
     )
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| format!("Error while creating repo watchers: {e}"))?;
 
-    for (path, _, recursive_mode) in paths_to_watch {
+    for (path, recursive_mode) in paths_to_watch {
         watcher
             .watch(&path, recursive_mode)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Error while watching <{:#?}>: {}", path, e))?;
     }
 
     watchers.insert(repo_path.clone(), watcher);
@@ -190,7 +192,7 @@ pub async fn setup_watchers(
     Ok(())
 }
 
-//TODO: IMPROVE IN THE FUTURE WITH BETTER DYNAMIC PATHS HANDLING
+//TODO: IMPROVE IN THE FUTURE WITH BETTER DYNAMIC PATHS HANDLING (but i dont remember what i had in mind)
 fn handle_dynamic_dirs(repo_path: &String) {
     let mut unwatched_dirs_map = match DYNAMIC_DIRS_MAP.lock() {
         Ok(guard) => guard,
@@ -219,26 +221,13 @@ fn handle_dynamic_dirs(repo_path: &String) {
 
     let count = entries.len();
     for i in (0..count).rev() {
-        let (path, _, recursive_mode) = &entries[i];
+        let (path, recursive_mode) = &entries[i];
 
         if let Err(e) = watcher.watch(path, *recursive_mode) {
-            warn!("Failed to watch dynamic path {}: {}", path.display(), e);
+            trace!("Failed to watch dynamic path {}: {}", path.display(), e);
             continue;
         }
-
-        //entries.remove(i);
     }
-
-    /*if entries.is_empty() {
-        let git_path = PathBuf::from(repo_path).join(".git");
-
-        if let Err(e) = watcher.unwatch(&git_path) {
-            warn!("Failed to unwatch .git directory: {}", e);
-            return;
-        }
-
-        unwatched_dirs_map.remove(repo_path);
-    }*/
 }
 
 #[command]

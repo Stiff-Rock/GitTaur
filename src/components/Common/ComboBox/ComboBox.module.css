@@ -13,10 +13,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.comboBox input {
+  gap: 10px;
   flex: 1;
 }

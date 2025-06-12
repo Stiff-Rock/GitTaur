@@ -29,6 +29,8 @@ const GraphSvg: React.FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, [commitNodesMap.size])
 
+  // BUG: X SHOULD AT LEAST COVER THE MAX AVIABLE SPACE SO THE RECTS ARE NOT CUT OFF, THEN IF IF HAS TO OVERFLOW THEN DO
+
   // Calculate dimensions with the highest X and Y values
   React.useLayoutEffect(() => {
     setSvgDimensions({

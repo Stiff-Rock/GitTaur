@@ -110,7 +110,7 @@ export default function createCommitNodes(
 
   /*TODO: FOR MORE ACCURATE BRANCH LANE ASSINGMENT, USE DATE SYSTEM, 
    * WHERE IN A RECORD OF SOME KIND WE STORE WHAT LANES ARE OCCUPIED
-   * AT THAT DATE RANGE */
+   * AT THAT DATE RANGE, ALSO BETTER LANE ASSINGMENT */
 
   let proccessOnlyMasterBranch = true;
   // First procces only the main/master branch to ensure that it takes the first lane entirely, then process the rest
@@ -183,11 +183,7 @@ export default function createCommitNodes(
               const merge_parents = commit.parents.slice(1);
 
               for (const parentId of merge_parents) {
-                if (!commitMap.has(parentId)) {
-                  console.error(`Id not found in commit map during lane freeing:\n- Commit: ${commit.subject}\n- ParentId: ${parentId} `)
-                  continue
-                };
-
+                if (!commitMap.has(parentId)) continue;
                 commitsToFreeLane.add(parentId);
               }
             }

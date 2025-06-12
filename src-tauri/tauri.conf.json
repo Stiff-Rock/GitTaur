@@ -19,7 +19,8 @@
         "minHeight": 0,
         "minWidth": 0,
         "center": true,
-        "decorations": false
+        "decorations": false,
+        "browserExtensionsEnabled": false
       }
     ],
     "security": {

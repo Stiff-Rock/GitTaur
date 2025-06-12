@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
 import styles from './InputField.module.css';
+import { ReactNode } from 'react';
 
 interface InputField {
   title?: string;

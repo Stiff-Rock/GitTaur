@@ -16,6 +16,7 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::Path,
 };
+use tauri::WebviewWindow;
 use tauri::{command, path::BaseDirectory, App, AppHandle, Manager, Theme as TauriTheme};
 use tauri_plugin_shell::{process::Command, ShellExt};
 use types::config::Theme;
@@ -26,7 +27,7 @@ use crate::types::repo_guard;
 const TODO_FILE_NAME: &str = "gittaur-todo-list.md";
 
 //BUG: WHEN CREATING REPO -> Error: reference 'refs/heads/master' not found; class=Reference (4); code=UnbornBranch (-9)
-//BUG: EMPTY COMMITS
+//BUG: IT ALLOWS YOU TO DO EMPTY COMMITS
 //BUG: TAGS DONT UPDATE WHEN CREATED
 
 #[command]
@@ -212,7 +213,7 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
 }
 
 // Set workspace global variable
-fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
+fn set_app_globals(webview: &WebviewWindow) -> Result<(), Box<dyn Error>> {
     trace!("Setting up app global variables");
 
     let workspace_json: String = workspace_manager::restore_workspace()?;
@@ -223,45 +224,28 @@ fn set_app_globals(app: &mut App) -> Result<(), Box<dyn Error>> {
         workspace_json, config_json
     );
 
-    if let Some(webview) = app.get_webview_window("main") {
-        webview.eval(eval_command)?;
-    } else {
-        return Err("Unable to obtain webview window setting up app globals".into());
-    }
+    webview.eval(eval_command)?;
 
     Ok(())
 }
 
-fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
+fn setup_app_theme(webview: &WebviewWindow) -> Result<(), Box<dyn Error>> {
     trace!("Setting up app theme");
 
-    let mut config = config_manager::get_config()?;
+    let config = config_manager::get_config()?;
 
-    let theme_config: Theme = config.theme_config;
-
-    let window = if let Some(webview) = app.get_webview_window("main") {
-        webview
-    } else {
-        return Err("Unable to obtain webview window setting up app theme".into());
-    };
-
-    match theme_config {
-        Theme::System => {
-            let system_theme = match window.theme() {
-                Ok(TauriTheme::Dark) => Theme::Dark,
-                Ok(TauriTheme::Light) => Theme::Light,
-                _ => Theme::Dark,
-            };
-            config.theme_value = system_theme;
+    let theme_str = if matches!(config.theme_config, Theme::System) {
+        match webview.theme() {
+            Ok(TauriTheme::Dark) => "dark",
+            Ok(TauriTheme::Light) => "light",
+            _ => "dark",
         }
-        Theme::Dark => app.set_theme(Some(TauriTheme::Dark)),
-        Theme::Light => app.set_theme(Some(TauriTheme::Light)),
-    }
-
-    let theme_str = match config.theme_value {
-        Theme::Light => "light",
-        Theme::Dark => "dark",
-        _ => "dark",
+    } else {
+        match config.theme_value {
+            Theme::Dark => "dark",
+            Theme::Light => "light",
+            _ => "dark",
+        }
     };
 
     let eval_command = &format!(
@@ -280,7 +264,7 @@ fn setup_app_theme(app: &mut App) -> Result<(), Box<dyn Error>> {
         theme_str, config.accent_color
     );
 
-    window.eval(eval_command)?;
+    webview.eval(eval_command)?;
 
     Ok(())
 }
@@ -299,8 +283,11 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 
     if is_dev {
         Dispatch::new()
-            .level(LevelFilter::Trace)
+            .level(LevelFilter::Info)
             .level_for("notify", LevelFilter::Info)
+            .level_for("gittaur_lib::repo_manager", LevelFilter::Off)
+            .level_for("gittaur_lib::repo_reader", LevelFilter::Off)
+            .level_for("gittaur_lib::repo_watcher", LevelFilter::Trace)
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}] {}",
@@ -339,7 +326,7 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn handle_setup_error(error: Box<dyn Error>) -> Result<(), Box<dyn Error>> {
+fn handle_setup_error(error: Box<dyn Error>) -> Box<dyn Error> {
     let msg = format!("Error during setup: {error}");
     error!("{msg}");
     tinyfiledialogs::message_box_ok(
@@ -348,10 +335,20 @@ fn handle_setup_error(error: Box<dyn Error>) -> Result<(), Box<dyn Error>> {
         tinyfiledialogs::MessageBoxIcon::Error,
     );
 
-    Err(Box::new(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        msg,
-    )))
+    Box::new(std::io::Error::new(std::io::ErrorKind::Other, msg))
+}
+
+fn get_main_webview(app: &App) -> Result<WebviewWindow, Box<dyn Error>> {
+    match app.get_webview_window("main") {
+        Some(webview) => Ok(webview),
+        None => {
+            let error = std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Unable to obtain webview window setting up app theme",
+            );
+            Err(handle_setup_error(Box::new(error)))
+        }
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -417,19 +414,20 @@ pub fn run() {
             repo_guard::reset,
         ])
         .setup(|app| {
+            let webview = get_main_webview(app)?;
+
             if let Err(e) = setup_logging(app) {
-                handle_setup_error(e)?;
+                return Err(handle_setup_error(e));
             }
             if let Err(e) = init_app_paths(app) {
-                handle_setup_error(e)?;
+                return Err(handle_setup_error(e));
             }
-            if let Err(e) = set_app_globals(app) {
-                handle_setup_error(e)?;
+            if let Err(e) = set_app_globals(&webview) {
+                return Err(handle_setup_error(e));
             }
-            if let Err(e) = setup_app_theme(app) {
-                handle_setup_error(e)?;
+            if let Err(e) = setup_app_theme(&webview) {
+                return Err(handle_setup_error(e));
             }
-
             trace!("Setup finished!");
 
             Ok(())

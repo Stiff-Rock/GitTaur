@@ -40,7 +40,7 @@ const Node: React.FC<{ node: CommitNode }> = ({ node }) => {
       {isRemoteOnly &&
         <circle
           fill={strokeColor}
-          r={NODE_RADIUS * 0.4}
+          r={NODE_RADIUS * 0.3}
         />
       }
     </g>

@@ -21,6 +21,8 @@ const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
       return;
     }
 
+    const repoPath = workspace.activeTab;
+
     let contextMenu = await Menu.new({
       items: [
         {
@@ -40,7 +42,7 @@ const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
           action: () => {
             openConfirmationModal({
               onConfirmed: () => {
-                invoke("delete_tag", { tagName }).catch((e) => {
+                invoke("delete_tag", { repoPath, tagName }).catch((e) => {
                   console.error(e);
                   setNotification(e);
                 }).finally(() => setActiveModal(""))

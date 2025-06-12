@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
 import styles from './AppTabs.module.css';
+import React, { useEffect, useState } from 'react';
 import { HistoryIcon, FileDiffIcon, ChecklistIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../../../context/MainContext';
 
@@ -28,7 +28,6 @@ const AppTabChooser: React.FC = () => {
       >
         <FileDiffIcon className={`${currentAppTab === "local-changes" ? styles.active : styles.inactive}`} />
         <span>Changes</span>
-        {/*TODO: THE NUMBERS ARE NOT CENTERED AT ALL (TRY 2 DIGITS) AND MAYBE USE LINE-HEIGHT: 1*/}
         {totalChanges > 0 && <div className={styles.changesStatusIndicator}>{totalChanges > 999 ? '+999' : totalChanges}</div>}
       </div>
 
