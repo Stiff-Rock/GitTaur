@@ -25,7 +25,7 @@ export function languageNameFromCode(code: Language): string {
 }
 
 function isValidTheme(value: string): value is Theme {
-  return ['light', 'dark', 'system'].includes(value as any);
+  return ['gittaur', 'light', 'dark', 'system'].includes(value as any);
 }
 
 export function parseTheme(value: string): Theme {

@@ -21,6 +21,7 @@ impl Default for Language {
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
+    GitTaur,
     Light,
     Dark,
     System,

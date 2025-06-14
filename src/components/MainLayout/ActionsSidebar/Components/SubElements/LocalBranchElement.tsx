@@ -108,7 +108,6 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
         },
       });
 
-      //TODO: MERGE AND REBASE
       menuItems.push({
         id: "mergeBranch",
         text: "Merge",

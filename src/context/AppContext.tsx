@@ -11,6 +11,8 @@ import { RebaseBranchModalProps } from '../components/Common/Modals/RebaseBranch
 import { MergeBranchModalProps } from '../components/Common/Modals/MergeBranchModal/MergeBranchModal';
 import { PullModalProps } from '../components/Common/Modals/PullRemote/PullRemoteModal';
 import { selectDirectoryDialog } from '../utils/FileExplorerDialog';
+import { LoadingIndicatorProps } from '../components/Common/Modals/LoadingIndicator/LoadingIndicator';
+import { listen } from '@tauri-apps/api/event';
 
 interface AppContextType {
   // State 
@@ -65,6 +67,12 @@ interface AppContextType {
 
   rebaseBranchModalProps: RebaseBranchModalProps;
   openRebaseBranchModal: (props: RebaseBranchModalProps) => void;
+
+  loadingIndicatorProps: LoadingIndicatorProps;
+  showLoadingIndicator: boolean;
+  setShowLoadingIndicator: Dispatch<SetStateAction<boolean>>;
+  showLoadingDuringTask: (props: LoadingIndicatorProps, promise: Promise<void>) => void
+  updateLiveFeedback: (text: string) => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -79,8 +87,6 @@ let initConfig: Configuration | null = null;
     initConfig = window.__APP_CONFIG__;
 })();
 
-//TODO: MAYBE DO AN INVISILBE OVERLAY THAT APPEARS WHEN OPERATIONS THAT SHOULD BLOCK THE UI 
-//APPEAR AND MAYBE THE LOADING INDICATOR ON THE CURSOR OR SOMETHING
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [mainWindow, setMainWindow] = useState<Window | null>(null);
 
@@ -372,7 +378,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     openWorkspaceTab(key, newTab);
-  }
+  };
 
   const openConfigPage = () => {
     if (!workspace) return;
@@ -381,7 +387,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       label: "Configuration",
       repoPath: key,
     });
-  }
+  };
+
+  const loadingIndicatorPropsDefault = { title: "", liveFeedBack: false, feedbackText: "" }
+  const [loadingIndicatorProps, setLoadingIndicatorProps] = useState<LoadingIndicatorProps>(loadingIndicatorPropsDefault)
+  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+  const showLoadingDuringTask = async (props: LoadingIndicatorProps, promise: Promise<void>) => {
+    const unlisten = await listen<string>("operation-progress", (event) => {
+      updateLiveFeedback(event.payload)
+    });
+
+    setLoadingIndicatorProps(props);
+    setShowLoadingIndicator(true);
+    await promise;
+    setShowLoadingIndicator(false);
+    setLoadingIndicatorProps(loadingIndicatorPropsDefault)
+
+    unlisten();
+  };
+
+  const updateLiveFeedback = (text: string) => {
+    setLoadingIndicatorProps(prev => {
+      if (!prev) return prev;
+      return { ...prev, feedbackText: text };
+    });
+  };
 
   return (
     <AppContext.Provider value={{
@@ -426,6 +456,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       rebaseBranchModalProps,
       openRebaseBranchModal,
+
+      loadingIndicatorProps,
+      showLoadingIndicator,
+      setShowLoadingIndicator,
+      showLoadingDuringTask,
+      updateLiveFeedback
     }}>
       {children}
     </AppContext.Provider>

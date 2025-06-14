@@ -13,11 +13,21 @@ interface CommitButtonProps {
 const CommitButton: React.FC<CommitButtonProps> = (props) => {
   const { commitSummary, setCommitSummary, commitBody, setCommitBody } = props;
 
-  const { setNotification } = useAppContext();
-  const { repoPath, } = useMainContext();
+  const { setNotification, showLoadingDuringTask } = useAppContext();
+  const { repoPath, repoStatus } = useMainContext();
 
   const commitChanges = () => {
-    invoke("commit", { repoPath, commitSummary, commitBody }).then(() => {
+    if (!repoStatus || repoStatus.stagedFiles.length <= 0) {
+      setNotification("Error: You must stage some changes to commit");
+      return;
+    }
+
+    if (!commitSummary) {
+      setNotification("Error: You must write a summary for the commit");
+      return;
+    }
+
+    const commitPromise = invoke("commit", { repoPath, commitSummary, commitBody }).then(() => {
       setCommitSummary("");
       setCommitBody("");
     }).catch((e) => {
@@ -25,6 +35,11 @@ const CommitButton: React.FC<CommitButtonProps> = (props) => {
       console.error(msg)
       setNotification(msg);
     });
+
+    const shortSummary = commitSummary.length > 25 ? commitSummary.slice(0, 25) + "..." : commitSummary;
+    showLoadingDuringTask({
+      title: "Creating commit \"" + shortSummary + "\""
+    }, commitPromise)
   }
 
   return (

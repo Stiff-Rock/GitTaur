@@ -65,7 +65,6 @@ const ConfigPage: React.FC = () => {
     })
   };
 
-  //TODO: ADD GRAPH COLOR THEMING
   return (
     <div className={`${styles.mainContainer} ${isType("Config") || !workspace ? '' : 'inactive'}`}>
       <aside className={styles.configTabSidebar}>
@@ -126,7 +125,7 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
               />
 
-              {/*TODO: BENCHMARK HOW MANY CAN I REASONABLY RENDER*/}
+              {/*NODE: BENCHMARK HOW MANY CAN I REASONABLY RENDER*/}
               <InputField
                 title="Max commits"
                 type="number"
@@ -146,7 +145,7 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
               />
 
-              {/*TODO: Maybe provide the path of the system default*/}
+              {/*NOTE: Maybe provide the path of the system default*/}
               {/*<InputField
                 title="Terminal app"
                 type="text"
@@ -201,16 +200,28 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
                 onItemSelected={(value) => {
                   const selectedTheme = parseTheme(value);
-                  if (selectedTheme != "system") {
-                    setNewConfig({ ...newConfig, themeConfig: selectedTheme, themeValue: selectedTheme });
+                  const accentColor = selectedTheme !== 'gittaur' ? "#50FA7B" : "#06b6d4";
+
+                  if (selectedTheme !== "system") {
+                    setNewConfig({
+                      ...newConfig,
+                      themeConfig: selectedTheme,
+                      themeValue: selectedTheme,
+                      accentColor
+                    });
                   } else {
                     getCurrentWindow().theme().then((theme) => {
                       const sysTheme = theme ? parseTheme(theme) : "dark";
-                      setNewConfig({ ...newConfig, themeConfig: selectedTheme, themeValue: sysTheme });
+                      setNewConfig({
+                        ...newConfig,
+                        themeConfig: selectedTheme,
+                        themeValue: sysTheme,
+                        accentColor
+                      });
                     })
                   }
                 }}
-                optionsArray={["Light", "Dark", "System"]}
+                optionsArray={["GitTaur", "Light", "Dark", "System"]}
               />
 
               <InputField

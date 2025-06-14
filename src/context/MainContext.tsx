@@ -1,9 +1,10 @@
-import React, { createContext, useState, useContext, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef, useLayoutEffect, Dispatch, SetStateAction } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { Base64 } from 'js-base64';
 import { useAppContext } from './AppContext';
 import { invoke } from '@tauri-apps/api/core';
 import { FileItem } from '../components/MainLayout/MainContainer/LocalChanges/LocalChanges';
+import { LoadingIndicatorProps } from '../components/Common/Modals/LoadingIndicator/LoadingIndicator';
 
 interface MainContextType {
   // State 
@@ -29,23 +30,23 @@ interface MainContextType {
   isStashLoading: boolean;
 
   selectedFiles: FileItem[];
-  setSelectedFiles: React.Dispatch<React.SetStateAction<FileItem[]>>;
+  setSelectedFiles: Dispatch<SetStateAction<FileItem[]>>;
 
   // Setters 
-  setCurrentAppTab: React.Dispatch<React.SetStateAction<AppTabs>>;
-  setInChangesTab: React.Dispatch<React.SetStateAction<boolean>>;
+  setCurrentAppTab: Dispatch<SetStateAction<AppTabs>>;
+  setInChangesTab: Dispatch<SetStateAction<boolean>>;
 
-  setRepoInfo: React.Dispatch<React.SetStateAction<RepoInfo | null>>;
-  setRepoStatus: React.Dispatch<React.SetStateAction<RepoStatus | null>>;
-  setRepoStashes: React.Dispatch<React.SetStateAction<Stash[] | null>>;
+  setRepoInfo: Dispatch<SetStateAction<RepoInfo | null>>;
+  setRepoStatus: Dispatch<SetStateAction<RepoStatus | null>>;
+  setRepoStashes: Dispatch<SetStateAction<Stash[] | null>>;
 
-  setLastSelectedChange: React.Dispatch<React.SetStateAction<{ name: string, status: FileStatusState } | null>>;
-  setFileDiff: React.Dispatch<React.SetStateAction<string>>;
+  setLastSelectedChange: Dispatch<SetStateAction<{ name: string, status: FileStatusState } | null>>;
+  setFileDiff: Dispatch<React.SetStateAction<string>>;
 
-  setSelectedCommit: React.Dispatch<React.SetStateAction<string>>;
-  setRepoHistory: React.Dispatch<React.SetStateAction<RepoHistory | undefined | null>>;
-  setCommitInfo: React.Dispatch<React.SetStateAction<Commit | null>>;
-  setShowInfoSidebar: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedCommit: Dispatch<SetStateAction<string>>;
+  setRepoHistory: Dispatch<SetStateAction<RepoHistory | undefined | null>>;
+  setCommitInfo: Dispatch<SetStateAction<Commit | null>>;
+  setShowInfoSidebar: Dispatch<SetStateAction<boolean>>;
 
   // Tauri events
   headEvent: string;
@@ -244,7 +245,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     }
 
     const files = selectedFiles.map(f => f.fileName);
-    const fileStatus = files[0];
+    const fileStatus = selectedFiles[0].status;
 
     let loadingIndicatorState: (isLoading: boolean) => void;
     if (fileStatus === "unstaged") {
@@ -259,7 +260,9 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       return prev.filter(f1 => !files.some(f2 => f1.fileName === f2));
     }))
 
-    statusUpdatePromiseRef.current = invoke("stash_changes", { repoPath, stashMsg, files }).catch((e) => {
+    let includeUntracked = fileStatus === "unstaged";
+
+    statusUpdatePromiseRef.current = invoke("stash_changes", { repoPath, stashMsg, files, includeUntracked }).catch((e) => {
       console.error("Error stashing changes: ", e);
       setNotification("Error stashing changes: " + e);
     }).finally(() => loadingIndicatorState(false));
@@ -344,7 +347,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
       stashChanges,
       applyStash,
       dropStash,
-      popStash
+      popStash,
     }}>
       {children}
     </MainContext.Provider>

@@ -7,6 +7,7 @@ import { Menu, MenuItemOptions } from "@tauri-apps/api/menu";
 import { invoke } from "@tauri-apps/api/core";
 
 const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
+  const { showLoadingDuringTask } = useAppContext();
   const { GRAPH_PADDING, Y_SPACING } = useGitGraphContext();
 
   const {
@@ -31,6 +32,9 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
 
     setSelectedCommit(node.id);
 
+    const subject = node.data.subject;
+    const shortSubject = subject.length > 25 ? subject.slice(0, 25) + "..." : subject;
+
     const repoPath = workspace.activeTab;
 
     let menuItems: MenuItemOptions[] = [];
@@ -39,10 +43,16 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
       id: "checkoutCommit",
       text: "Checkout",
       action: () => {
-        invoke("checkout_commit", { repoPath, commitOid: node.id }).catch((e) => {
+        const checkoutPromise = invoke<void>("checkout_commit", { repoPath, commitOid: node.id }).then(() => {
+          setNotification("Successfully checked out to \"" + shortSubject + "\"")
+        }).catch((e) => {
           console.error(e);
           setNotification(e);
         });
+
+        showLoadingDuringTask({
+          title: "Checking out to " + shortSubject,
+        }, checkoutPromise);
       },
     });
 
@@ -52,10 +62,14 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
       action: () => {
         openConfirmationModal({
           onConfirmed: () => {
-            invoke("revert_commit", { repoPath, commitOid: node.id }).catch((e) => {
+            const revertPromise = invoke<void>("revert_commit", { repoPath, commitOid: node.id }).catch((e) => {
               console.error(e);
               setNotification(e);
             }).finally(() => setActiveModal(""));
+
+            showLoadingDuringTask({
+              title: "Reverting \"" + shortSubject + "\"",
+            }, revertPromise);
           },
           title: "Revert commit",
           subTitle: "Target: <" + node.data.subject + ">",

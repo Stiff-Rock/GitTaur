@@ -4,6 +4,7 @@ use git2::{
 };
 use indexmap::IndexMap;
 use log::{info, trace};
+use std::collections::HashSet;
 use std::path::Path;
 use std::{collections::HashMap, num::TryFromIntError};
 use tauri::command;
@@ -19,8 +20,6 @@ use crate::{
         },
     },
 };
-
-//TODO: GET HEAD DETACHED INDICATOR (maybe only for graph)
 
 /// Returns informatation about the repository, not including the commit history
 #[command]
@@ -128,8 +127,6 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Remote>, Str
     Ok(remote_branches_map)
 }
 
-//TODO: LIMITING IS FAST BUT COULD BE FASTER
-
 /// Returns the commit history of the repo as an map of commit id as key and a commit object as
 /// value serialized into a string for better 'rust indexmap to typescript map' compatibilty
 #[command]
@@ -169,14 +166,9 @@ pub async fn get_commit_history(repo_path: String) -> Result<String, String> {
     // First, collect all references in the repository and create a mapping
     let ref_map = get_refs_map(&repo).map_err(|e| e.to_string())?;
 
-    // Get the main branch first parent history
-    let master_history: Vec<String> =
-        get_main_branch_history(&repo, max_commits).map_err(|e| e.to_string())?;
-
     // Map the commit objects
     let commit_history_map =
-        get_commit_history_map(&repo, revwalk, &ref_map, master_history, max_commits)
-            .map_err(|e| e.to_string())?;
+        get_commit_history_map(&repo, revwalk, &ref_map, max_commits).map_err(|e| e.to_string())?;
 
     // Check if repo head is detached
     let head_is_detached = repo.head_detached().map_err(|e| e.to_string())?;
@@ -284,15 +276,16 @@ fn get_refs_map(repo: &Repository) -> Result<HashMap<String, Vec<String>>, git2:
     Ok(ref_map)
 }
 
-//TODO: LIMITING IS FAST BUT COULD BE FASTER
 fn get_commit_history_map(
     repo: &Repository,
     revwalk: Revwalk<'_>,
     ref_map: &HashMap<String, Vec<String>>,
-    master_history: Vec<String>,
     max_commits: usize,
 ) -> Result<IndexMap<String, Commit>, git2::Error> {
     let mut commit_map: IndexMap<String, Commit> = IndexMap::with_capacity(max_commits);
+
+    // Get the main branch first parent history
+    let master_history: HashSet<String> = get_main_branch_history(&repo, max_commits)?;
 
     for (i, oid) in revwalk.enumerate() {
         if i >= max_commits {
@@ -307,7 +300,8 @@ fn get_commit_history_map(
     }
 
     // Map parent-child relationships
-    let mut child_relationships: IndexMap<String, Vec<String>> = IndexMap::new();
+    let mut child_relationships: IndexMap<String, Vec<String>> =
+        IndexMap::with_capacity(commit_map.len());
     for (id, commit) in &commit_map {
         for parent_id in &commit.parents {
             if commit_map.contains_key(parent_id) {
@@ -330,20 +324,15 @@ fn get_commit_history_map(
     Ok(commit_map)
 }
 
-//TODO: LIMITING IS FAST BUT COULD BE FASTER, MAYBE FIND A WAY TO NOT TO ITERATE TWICE
 fn get_main_branch_history(
     repo: &Repository,
     max_commits: usize,
-) -> Result<Vec<String>, git2::Error> {
-    let mut master_history: Vec<String> = Vec::with_capacity(max_commits);
+) -> Result<HashSet<String>, git2::Error> {
+    let mut master_history: HashSet<String> = HashSet::with_capacity(max_commits);
 
-    let main_branch_name = if repo.find_branch("main", BranchType::Local).is_ok() {
-        "main"
-    } else {
-        "master"
-    };
+    let main_branch_name = get_default_branch_name(repo)?;
 
-    let branch_ref = repo.find_branch(main_branch_name, git2::BranchType::Local)?;
+    let branch_ref = repo.find_branch(&main_branch_name, git2::BranchType::Local)?;
     let reference = branch_ref.into_reference();
 
     // Get the tip commit of the branch
@@ -356,7 +345,7 @@ fn get_main_branch_history(
     let mut count = 0;
     loop {
         let id = current_commit.id().to_string();
-        master_history.push(id);
+        master_history.insert(id);
 
         count += 1;
         if count >= max_commits {
@@ -370,16 +359,40 @@ fn get_main_branch_history(
         current_commit = current_commit.parent(0)?;
     }
 
-    master_history.reverse();
-
     Ok(master_history)
+}
+
+fn get_default_branch_name(repo: &Repository) -> Result<String, git2::Error> {
+    if repo.find_branch("main", BranchType::Local).is_ok() {
+        return Ok("main".to_string());
+    } else if repo.find_branch("master", BranchType::Local).is_ok() {
+        return Ok("master".to_string());
+    }
+
+    if let Ok(head) = repo.head() {
+        if head.is_branch() {
+            if let Some(name) = head.shorthand() {
+                return Ok(name.to_string()); // Create owned String
+            }
+        }
+    }
+
+    let branches = repo.branches(Some(BranchType::Local))?;
+    for branch_result in branches {
+        let (branch, _) = branch_result?;
+        if let Some(name) = branch.name()? {
+            return Ok(name.to_string()); // Create owned String
+        }
+    }
+
+    Err(git2::Error::from_str("No branches found in repository"))
 }
 
 fn get_commit_obj(
     repo: &Repository,
     current_commit: &git2::Commit,
     ref_map: &HashMap<String, Vec<String>>,
-    master_history: &Vec<String>,
+    master_history: &HashSet<String>,
 ) -> Result<Commit, git2::Error> {
     let id = current_commit.id().to_string();
 

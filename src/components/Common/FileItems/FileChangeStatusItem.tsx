@@ -22,7 +22,7 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     setLastSelectedChange,
     addToStagingArea,
     removeFromStagingArea,
-    discardChanges
+    discardChanges,
   } = useMainContext();
   const {
     file,
@@ -31,7 +31,6 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
   } = props;
   const { fileName, changeType, status } = file;
 
-  //TODO: STASH
   const handleOpenContextMenu = async (event: React.MouseEvent) => {
     event.preventDefault();
 

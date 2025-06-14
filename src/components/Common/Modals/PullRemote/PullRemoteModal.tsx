@@ -11,7 +11,7 @@ export interface PullModalProps {
 }
 
 const PullRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification, activeRepoInfo, pullModalProps } = useAppContext();
+  const { workspace, setActiveModal, setNotification, activeRepoInfo, pullModalProps, showLoadingDuringTask } = useAppContext();
   const { selectedRemoteBranch } = pullModalProps;
 
   const [remoteName, setRemoteName] = useState<string>("");
@@ -47,7 +47,6 @@ const PullRemoteModal: React.FC = () => {
     }
   }, [activeRepoInfo]);
 
-  //TODO: LOADING INDICATOR
   const handlePullRemote = () => {
     if (!workspace) return;
 
@@ -56,7 +55,7 @@ const PullRemoteModal: React.FC = () => {
 
       const b = pullAll ? "" : branch;
 
-      invoke<string>("pull_remote", { repoPath, remoteName, branch: b }).then((msg) => {
+      const pullPromise = invoke<string>("pull_remote", { repoPath, remoteName, branch: b }).then((msg) => {
         setActiveModal("");
         setNotification(msg);
       }).catch((e) => {
@@ -65,6 +64,11 @@ const PullRemoteModal: React.FC = () => {
           console.error(e);
         }
       });
+
+      showLoadingDuringTask({
+        title: "Pulling remote",
+        liveFeedBack: true,
+      }, pullPromise);
     } else {
       setNotification("You must select a valid remote")
     }

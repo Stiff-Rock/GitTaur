@@ -1,15 +1,108 @@
 use crate::{config_manager::config, types::repo_guard::RepoGuard};
 use auth_git2_pem::GitAuthenticator;
 use git2::{
-    build::CheckoutBuilder, BranchType, IndexAddOption, Oid, Repository, Signature,
-    StashApplyOptions, StashFlags,
+    build::CheckoutBuilder, BranchType, IndexAddOption, Oid, Progress, Repository, Signature,
 };
 use log::{error, info};
-use std::{collections::HashMap, num::TryFromIntError, path::Path};
-use tauri::{command, AppHandle};
+use std::{
+    collections::HashMap,
+    num::TryFromIntError,
+    path::Path,
+    sync::{LazyLock, Mutex},
+    time::{Duration, Instant},
+};
+use tauri::{command, AppHandle, Emitter};
 use tauri_plugin_shell::{self, ShellExt};
 
 //TODO: GitAuthenticator::set_prompter()
+
+static LAST_UPDATE: LazyLock<Mutex<Instant>> = LazyLock::new(|| {
+    Mutex::new(
+        Instant::now()
+            .checked_sub(Duration::from_secs(1))
+            .unwrap_or(Instant::now()),
+    )
+});
+
+pub fn live_update_transfer<'a>(
+    app_handle: AppHandle,
+    title: String,
+) -> Option<impl FnMut(Progress<'_>) -> bool + 'a> {
+    Some(move |stats: Progress<'_>| {
+        let now = Instant::now();
+
+        let should_update = {
+            let mut last = LAST_UPDATE.lock().unwrap();
+            let should_update = now.duration_since(*last) >= Duration::from_millis(250)
+                || (stats.received_objects() == stats.total_objects() && stats.total_objects() > 0);
+
+            if should_update {
+                *last = now;
+            }
+
+            should_update
+        };
+
+        if should_update {
+            let progress_msg = if stats.total_objects() > 0 {
+                format!(
+                    "{}: {:.2}% ({}/{}) - {:.2} KiB",
+                    title,
+                    (stats.received_objects() as f32 / stats.total_objects() as f32) * 100.0,
+                    stats.received_objects(),
+                    stats.total_objects(),
+                    stats.received_bytes() as f32 / 1024.0
+                )
+            } else {
+                format!("{}: Preparing to receive objects...", title)
+            };
+
+            let _ = app_handle.emit("operation-progress", &progress_msg);
+        }
+
+        true
+    })
+}
+
+pub fn live_update_push<'a>(
+    app_handle: AppHandle,
+    title: String,
+) -> Option<impl FnMut(usize, usize, usize) + 'a> {
+    Some(move |current, total, bytes| {
+        let now = Instant::now();
+
+        // Same debouncing logic as live_update_transfer
+        let should_update = {
+            let mut last = LAST_UPDATE.lock().unwrap();
+            let should_update = now.duration_since(*last) >= Duration::from_millis(250)
+                || (current == total && total > 0);
+
+            if should_update {
+                *last = now;
+            }
+
+            should_update
+        };
+
+        if should_update {
+            let progress_msg = if total > 0 {
+                format!(
+                    "{}: {:.2}% ({}/{}) - {:.2} KiB",
+                    title,
+                    (current as f32 / total as f32) * 100.0,
+                    current,
+                    total,
+                    bytes as f32 / 1024.0
+                )
+            } else {
+                format!("{}: Preparing to send objects...", title)
+            };
+
+            let _ = app_handle.emit("operation-progress", &progress_msg);
+        }
+    })
+}
+
 pub fn is_repo(repo_path: &String, has_lock: bool) -> Result<bool, String> {
     let _repo_lock;
     if !has_lock {
@@ -37,7 +130,6 @@ pub async fn create_repo(repo_path: String) -> Result<String, String> {
     }
 }
 
-//TODO: Live loading feedback
 #[command]
 pub async fn clone_repo(
     app_handle: AppHandle,
@@ -63,9 +155,11 @@ pub async fn clone_repo(
         ));
     }
 
-    let auth = GitAuthenticator::new();
-
-    let git2_clone_result = auth.clone_repo(&repo_url, &clone_path);
+    let git2_clone_result = GitAuthenticator::new().clone_repo(
+        &repo_url,
+        &clone_path,
+        live_update_transfer(app_handle.clone(), "Receiving objects".to_string()),
+    );
 
     let repo_path = clone_path.to_string_lossy().to_string();
 
@@ -200,42 +294,15 @@ pub async fn checkout_commit(
 
     let output = shell
         .command("git")
-        .args(["stash"])
+        .args(["checkout", &commit_oid])
         .current_dir(&repo_path)
         .output()
         .await
-        .map_err(|e| format!("Failed to execute git stash command: {}", e))?;
+        .map_err(|e| format!("Failed to execute git checkout command: {}", e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Error creating stash before checkout - {}", stderr));
-    }
-
-    {
-        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-
-        let oid = Oid::from_str(commit_oid.as_str()).map_err(|e| e.to_string())?;
-        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-        let object = commit.as_object();
-
-        let mut checkout_builder = CheckoutBuilder::new();
-        repo.checkout_tree(&object, Some(&mut checkout_builder))
-            .map_err(|e| e.to_string())?;
-
-        repo.set_head_detached(oid).map_err(|e| e.to_string())?;
-    }
-
-    let output = shell
-        .command("git")
-        .args(["stash", "pop"])
-        .current_dir(&repo_path)
-        .output()
-        .await
-        .map_err(|e| format!("Failed to execute git stash pop command: {}", e))?;
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Error doing stash pop after checkout - {}", stderr));
+        return Err(format!("Error performing checkout - {}", stderr));
     }
 
     Ok(())
@@ -446,67 +513,73 @@ pub async fn discard_changes(repo_path: String, files: Vec<String>) -> Result<()
     Ok(())
 }
 
-//TODO: STASH WITH GIT COMMANDS
 #[command]
 pub async fn stash_changes(
+    app_handle: AppHandle,
     repo_path: String,
     stash_msg: String,
     files: Vec<String>,
+    include_untracked: bool,
 ) -> Result<(), String> {
     info!("Stashing changes in repo {repo_path} with msg {stash_msg}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    let signature = repo.signature().map_err(|e| e.to_string())?;
+    let shell = app_handle.shell();
 
-    let mut opts = git2::StashSaveOptions::new(signature);
-    opts.flags(Some(StashFlags::INCLUDE_UNTRACKED));
-    for file in &files {
-        opts.pathspec(file);
+    let mut command = shell.command("git").args(["stash", "push"]);
+
+    if include_untracked {
+        command = command.arg("--include-untracked"); // or "-u" for short
     }
 
-    let _stash_oid = repo
-        .stash_save_ext(Some(&mut opts))
-        .map_err(|e| e.to_string())?;
+    if !stash_msg.is_empty() {
+        command = command.args(["-m", &stash_msg]);
+    }
 
-    /*
-        if !stash_msg.is_empty() {
-            let stash_commit = repo.find_commit(stash_oid).map_err(|e| e.to_string())?;
+    for file_path in files {
+        command = command.arg(file_path);
+    }
 
-            stash_commit
-                .amend(
-                    Some("refs/stash"),
-                    Some(&stash_commit.author()),
-                    Some(&stash_commit.committer()),
-                    stash_commit.message_encoding(),
-                    Some(stash_msg.as_str()),
-                    Some(&stash_commit.tree().map_err(|e| e.to_string())?),
-                )
-                .map_err(|e| e.to_string())?;
+    let output = command
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git stash command: {}", e))?;
 
-            info!("Amended stash commit with message: {stash_msg}");
-        }
-    */
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+
+        return Err(format!("Error stashing - {}", stderr));
+    }
 
     Ok(())
 }
 
-//TODO: APPLY WITH GIT COMMANDS
 #[command]
-pub async fn apply_stash(repo_path: String, index: i64) -> Result<(), String> {
+pub async fn apply_stash(
+    app_handle: AppHandle,
+    repo_path: String,
+    index: i64,
+) -> Result<(), String> {
     info!("Applying stash with index {index} in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    let index = index
-        .try_into()
-        .map_err(|e: TryFromIntError| e.to_string())?;
+    let shell = app_handle.shell();
 
-    let mut opts = StashApplyOptions::new();
-    repo.stash_apply(index, Some(&mut opts))
-        .map_err(|e| e.to_string())?;
+    let output = shell
+        .command("git")
+        .args(["stash", "apply", &format!("stash@{{{index}}}")])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git stash apply command: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Error applying stash - {}", stderr));
+    }
 
     Ok(())
 }
@@ -527,21 +600,26 @@ pub async fn drop_stash(repo_path: String, index: i64) -> Result<(), String> {
     Ok(())
 }
 
-//TODO: POP WITH GIT COMMANDS
 #[command]
-pub async fn pop_stash(repo_path: String, index: i64) -> Result<(), String> {
+pub async fn pop_stash(app_handle: AppHandle, repo_path: String, index: i64) -> Result<(), String> {
     info!("Popping stash with index {index} in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
 
-    let index = index
-        .try_into()
-        .map_err(|e: TryFromIntError| e.to_string())?;
+    let shell = app_handle.shell();
 
-    let mut opts = StashApplyOptions::new();
-    repo.stash_pop(index, Some(&mut opts))
-        .map_err(|e| e.to_string())?;
+    let output = shell
+        .command("git")
+        .args(["stash", "pop", &format!("stash@{{{index}}}")])
+        .current_dir(&repo_path)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute git stash pop command: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Error applying stash pop - {}", stderr));
+    }
 
     Ok(())
 }
@@ -574,7 +652,6 @@ pub async fn delete_remote(repo_path: String, remote_name: String) -> Result<(),
     Ok(())
 }
 
-//TODO: Live loading feedback
 #[command]
 pub async fn fetch_remote(
     app_handle: AppHandle,
@@ -599,7 +676,13 @@ pub async fn fetch_remote(
             let refspecs = &[] as &[&str];
             let auth = GitAuthenticator::new();
 
-            match auth.fetch(&repo, &mut remote, refspecs, None) {
+            match auth.fetch(
+                &repo,
+                &mut remote,
+                refspecs,
+                None,
+                live_update_transfer(app_handle.clone(), format!("Fetching \"{remote_name}\"")),
+            ) {
                 Ok(_) => true,
                 Err(e) => {
                     info!("git2 failed to fetch from remote '{}': {}", remote_name, e);
@@ -686,7 +769,6 @@ fn find_updated_refs(
     false
 }
 
-//TODO: Live loading feedback
 #[command]
 pub async fn pull_remote(
     app_handle: AppHandle,
@@ -711,7 +793,7 @@ pub async fn pull_remote(
 
     let output = shell
         .command("git")
-        .args(args)
+        .args(&args)
         .current_dir(&repo_path)
         .output()
         .await
@@ -726,7 +808,6 @@ pub async fn pull_remote(
     Ok("Successfully pulled changes".to_string())
 }
 
-//TODO: Live loading feedback
 #[command]
 pub async fn push_remote(
     app_handle: AppHandle,
@@ -757,7 +838,12 @@ pub async fn push_remote(
         };
 
         let auth = GitAuthenticator::new();
-        auth.push(&repo, &mut remote, &[&refspec])
+        auth.push(
+            &repo,
+            &mut remote,
+            &[&refspec],
+            live_update_push(app_handle.clone(), format!("Pushing to {remote_name}")),
+        )
     };
 
     if let Err(err) = push_result {

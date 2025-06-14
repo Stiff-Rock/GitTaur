@@ -1,0 +1,27 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.throbberContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 40px;
+  padding: 50px 90px;
+  border-radius: 10px;
+  background-color: rgb(0, 0, 0, 0.8);
+}
+
+.throbberContaine>* {
+  user-select: none;
+}

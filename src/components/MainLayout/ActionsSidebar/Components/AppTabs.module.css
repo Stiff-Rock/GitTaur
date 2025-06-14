@@ -54,7 +54,7 @@
   z-index: 1;
   font-size: var(--font-size-small);
   font-weight: bold;
-  color: var(--tertiary-text);
+  color: var(--contrast-text);
 }
 
 .changesStatusIndicator span {

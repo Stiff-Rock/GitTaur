@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import styles from './MainLayout.module.css';
 import ActionsSidebar from './ActionsSidebar/ActionsSidebar';
 import CommitInfoSidebar from './InfoSidebar/CommitInfoSidebar/CommitInfoSidebar';
-import { Panel, PanelGroup, PanelResizeHandle, setNonce } from "react-resizable-panels";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DashIcon } from "@primer/octicons-react";
 import { useMainContext } from '../../context/MainContext';
 import { usePanelSync } from '../../context/PanelSyncContext';
@@ -23,6 +23,7 @@ import RenameBranchModal from '../Common/Modals/RenameBranchModal/RenameBranchMo
 import TagBranchModal from '../Common/Modals/CreateTagModal/CreateTagModal';
 import MergeBranchModal from '../Common/Modals/MergeBranchModal/MergeBranchModal';
 import RebaseBranchModal from '../Common/Modals/RebaseBranchModal/RebaseBranchModal';
+import LoadingIndicator from '../Common/Modals/LoadingIndicator/LoadingIndicator';
 
 interface RepoEvents {
   headEvent: string,
@@ -37,8 +38,8 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     showInfoSidebar,
     setShowInfoSidebar,
     setRepoInfo, repoInfo,
-    setRepoHistory: setRepoHistory,
-    headEvent, fetchEvent, statusEvent
+    setRepoHistory,
+    headEvent, fetchEvent, statusEvent,
   } = useMainContext();
 
   const {
@@ -158,7 +159,7 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   }, [rightSize, showInfoSidebar]);
 
   const panelMaxSize = 40;
-  //TODO: WHEN OPENING AND CLOSING RIGHT the tab icons move a bit
+
   return (
     <div className={`${styles.appMain} ${isActive ? '' : 'inactive'}`}>
       <PanelGroup direction="horizontal">

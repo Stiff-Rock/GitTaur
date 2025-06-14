@@ -12,7 +12,7 @@ export interface PushModalProps {
 };
 
 const PushRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification, activeRepoInfo, pushModalProps } = useAppContext();
+  const { workspace, setActiveModal, setNotification, activeRepoInfo, pushModalProps, showLoadingDuringTask } = useAppContext();
   const { seletedLocalBranch = "" } = pushModalProps;
 
   const [remoteName, setRemoteName] = useState<string>("");
@@ -55,7 +55,6 @@ const PushRemoteModal: React.FC = () => {
 
   }, [activeRepoInfo]);
 
-  //TODO: LOADING INDICATOR
   const handlePushRemote = () => {
     if (!workspace) return;
 
@@ -67,7 +66,7 @@ const PushRemoteModal: React.FC = () => {
       }
       const repoPath = workspace.activeTab;
 
-      invoke<string>("push_remote", {
+      const pushRemotePromise = invoke<string>("push_remote", {
         repoPath, remoteName, localBranch,
         remoteBranch: rb, forcePush
       }).then((msg) => {
@@ -78,6 +77,11 @@ const PushRemoteModal: React.FC = () => {
           console.error(e);
         }
       }).finally(() => setActiveModal(""));
+
+      showLoadingDuringTask({
+        title: "Pushing to remote",
+        liveFeedBack: true,
+      }, pushRemotePromise);
     } else {
       setNotification("You must select a valid options")
       console.error(`Invalid push args | Remote: ${remoteName} | lB: ${localBranch} | rB: ${remoteBranch}`);

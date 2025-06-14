@@ -25,7 +25,6 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [@babel/traverse@7.26.9](https://github.com/babel/babel) - MIT<br>
 [@babel/types@7.26.10](https://github.com/babel/babel) - MIT<br>
 [@esbuild/win32-x64@0.25.0](https://github.com/evanw/esbuild) - MIT<br>
-[@gitgraph/core@1.5.0](https://github.com/nicoespeon/gitgraph.js) - MIT<br>
 [@jridgewell/gen-mapping@0.3.8](https://github.com/jridgewell/gen-mapping) - MIT<br>
 [@jridgewell/resolve-uri@3.1.2](https://github.com/jridgewell/resolve-uri) - MIT<br>
 [@jridgewell/set-array@1.2.1](https://github.com/jridgewell/set-array) - MIT<br>
@@ -254,13 +253,13 @@ Here you can find credited all the dependencies of this project. If yours is mis
 
 ## Backend Dependencies
 
-[sync_wrapper@1.0.2](https://github.com/Actyx/sync_wrapper) - Apache License 2.0<br>
+[target-lexicon@0.12.16](https://github.com/bytecodealliance/target-lexicon) - Apache License 2.0<br>
 [ryu@1.0.18](https://github.com/dtolnay/ryu) - Apache License 2.0<br>
 [gethostname@1.0.2](https://codeberg.org/swsnr/gethostname.rs.git) - Apache License 2.0<br>
 [dpi@0.1.1](https://github.com/rust-windowing/winit) - Apache License 2.0<br>
 [tao@0.31.1](https://github.com/tauri-apps/tao) - Apache License 2.0<br>
 [dunce@1.0.5](https://gitlab.com/kornelski/dunce) - Apache License 2.0<br>
-[target-lexicon@0.12.16](https://github.com/bytecodealliance/target-lexicon) - Apache License 2.0<br>
+[sync_wrapper@1.0.2](https://github.com/Actyx/sync_wrapper) - Apache License 2.0<br>
 [auth-git2-pem@0.5.7-pem](https://github.com/Stiff-Rock/auth-git2-rs) - BSD 2-Clause &quot;Simplified&quot; License<br>
 [terminal-prompt@0.2.3](https://github.com/de-vri-es/terminal-prompt-rs) - BSD 2-Clause &quot;Simplified&quot; License<br>
 [alloc-no-stdlib@2.0.4](https://github.com/dropbox/rust-alloc-no-stdlib) - BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License<br>
@@ -423,7 +422,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [kqueue-sys@1.0.4](https://gitlab.com/rust-kqueue/rust-kqueue-sys) - MIT License<br>
 [kqueue@1.1.1](https://gitlab.com/rust-kqueue/rust-kqueue) - MIT License<br>
 [indexmap@1.9.3](https://github.com/bluss/indexmap) - MIT License<br>
-[indexmap@2.8.0](https://github.com/indexmap-rs/indexmap) - MIT License<br>
+[indexmap@2.9.0](https://github.com/indexmap-rs/indexmap) - MIT License<br>
 [equivalent@1.0.1](https://github.com/cuviper/equivalent) - MIT License<br>
 [addr2line@0.24.2](https://github.com/gimli-rs/addr2line) - MIT License<br>
 [scopeguard@1.2.0](https://github.com/bluss/scopeguard) - MIT License<br>
@@ -792,16 +791,6 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [option-ext@0.2.0](https://github.com/soc/option-ext.git) - Mozilla Public License 2.0<br>
 [selectors@0.22.0](https://github.com/servo/servo) - Mozilla Public License 2.0<br>
 [thin-slice@0.1.1](https://github.com/heycam/thin-slice) - Mozilla Public License 2.0<br>
-[icu_collections@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_locid@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_locid_transform@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_locid_transform_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_normalizer@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_normalizer_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_properties@1.5.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_properties_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_provider@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_provider_macros@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [litemap@0.7.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [tinystr@0.7.6](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [unicode-ident@1.0.14](https://github.com/dtolnay/unicode-ident) - Unicode License v3<br>
@@ -812,5 +801,15 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [zerofrom@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [zerovec-derive@0.10.3](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [zerovec@0.10.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_collections@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_locid@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_locid_transform@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_locid_transform_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_normalizer@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_normalizer_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_properties@1.5.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_properties_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_provider@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_provider_macros@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [tinyfiledialogs@3.9.1](https://github.com/jdm/tinyfiledialogs-rs) - zlib/libpng License with Acknowledgement<br>
 

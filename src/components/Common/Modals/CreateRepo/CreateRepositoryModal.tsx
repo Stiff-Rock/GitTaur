@@ -8,7 +8,7 @@ import InputField from "../../InputField/InputField";
 import { selectDirectoryDialog } from "../../../../utils/FileExplorerDialog";
 
 const CreateRepositoryModal: React.FC = () => {
-  const { setActiveModal, setNotification, openNewRepo } = useAppContext();
+  const { setActiveModal, setNotification, openNewRepo, showLoadingDuringTask } = useAppContext();
 
   const [path, setParentFolder] = useState("");
 
@@ -17,10 +17,9 @@ const CreateRepositoryModal: React.FC = () => {
     if (path) setParentFolder(path);
   };
 
-  //TODO: LOADING INDICATOR
   const handleCreateRepo = () => {
     if (path) {
-      invoke("create_repo", { repoPath: path }).then((msg) => {
+      const createRepoPromise = invoke("create_repo", { repoPath: path }).then((msg) => {
         setActiveModal("");
         openNewRepo(path);
         setNotification(msg as string);
@@ -28,6 +27,11 @@ const CreateRepositoryModal: React.FC = () => {
         setNotification(e);
         console.error(e)
       });
+
+
+      showLoadingDuringTask({
+        title: "Creating repository",
+      }, createRepoPromise);
     } else {
       setNotification("A directory path is needed")
     }

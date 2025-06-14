@@ -1,6 +1,6 @@
 type Language = 'en' | 'es';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'gittaur' | 'light' | 'dark' | 'system';
 
 interface Configuration {
   // General configs

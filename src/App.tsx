@@ -11,11 +11,11 @@ import { invoke } from "@tauri-apps/api/core";
 import ConfigPage from "./components/ConfigurationPage/ConfigPage";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import ConfirmationModal from "./components/Common/Modals/ConfirmationModal/ConfirmationModal";
+import LoadingIndicator from "./components/Common/Modals/LoadingIndicator/LoadingIndicator";
 
 //TODO: FRONTEND LOGS?
-//TODO: PREVENT ANY DEFAULT CONTEXT MENU
 function App() {
-  const { workspace, notification, setNotification, isType, activeModal } = useAppContext();
+  const { workspace, notification, setNotification, isType, activeModal, showLoadingIndicator } = useAppContext();
 
   // Debug effect and invoke
   if (import.meta.env.DEV) {
@@ -34,7 +34,6 @@ function App() {
     else toast.info(notification);
 
     setNotification("");
-
   }, [notification]);
 
   // Click listener to avoid opening urls in the app's webview
@@ -88,6 +87,8 @@ function App() {
       }
 
       {activeModal === "confirmation" && <ConfirmationModal />}
+
+      {showLoadingIndicator && <LoadingIndicator />}
     </main>
   );
 }

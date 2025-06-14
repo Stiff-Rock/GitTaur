@@ -13,7 +13,6 @@ const CreateBranchModal: React.FC = () => {
   const [branchName, setBranchName] = useState("");
   const [checkout, setCheckout] = useState(true);
 
-  //TODO: LOADING INDICATOR
   const handleCreateBranch = () => {
     if (!workspace) return;
     if (!branchName) { setNotification("Please enter a branch name"); return; }

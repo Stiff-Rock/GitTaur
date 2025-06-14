@@ -6,7 +6,7 @@ import { useAppContext } from "../../../../context/AppContext";
 import { invoke } from "@tauri-apps/api/core";
 
 const AddRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification } = useAppContext();
+  const { workspace, setActiveModal, setNotification, showLoadingDuringTask } = useAppContext();
 
   const [remoteName, setRemoteName] = useState("");
   const [remoteUrl, setRemoteUrl] = useState("");

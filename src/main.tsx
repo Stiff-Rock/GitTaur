@@ -6,10 +6,12 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AppProvider } from './context/AppContext';
 
-document.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  return false;
-});
+if (!import.meta.env.DEV) {
+  document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+  });
+}
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>

@@ -26,10 +26,6 @@ use crate::types::repo_guard;
 
 const TODO_FILE_NAME: &str = "gittaur-todo-list.md";
 
-//BUG: WHEN CREATING REPO -> Error: reference 'refs/heads/master' not found; class=Reference (4); code=UnbornBranch (-9)
-//BUG: IT ALLOWS YOU TO DO EMPTY COMMITS
-//BUG: TAGS DONT UPDATE WHEN CREATED
-
 #[command]
 async fn create_todo_file(repo_path: String) -> Result<String, String> {
     trace!("Creating todo list file at {repo_path}");

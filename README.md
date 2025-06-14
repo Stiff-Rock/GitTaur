@@ -20,9 +20,11 @@ This project wouldn't be possible without the work of the open-source community.
   Inspired the Git-to-JSON conversion logic. This functionality has been fully reimplemented in Rust for GitTaur's backend.
 
 - [**gitgraph.js by nicoespeon**](https://github.com/nicoespeon/gitgraph.js/) - MIT License <br>
-  Used as the foundation for GitTaur’s graph rendering. A custom fork was adapted to meet the specific needs of the app.
+  Used during the early development of GitTaur as the basis for graph rendering. A custom fork was created to better align 
+  with the app’s evolving needs. It was eventually replaced by a fully in-house implementation, though the original library 
+  served as a significant source of inspiration.
 
 - [**auth-git2-rs by de-vri-es**](https://github.com/de-vri-es/auth-git2-rs) - BSD-2-Clause License <br>
   Provided crucial utilities for handling authentication for `git2-rs` backend operations.
 
-GitTaur uses many additional open-source crates and packages from the Rust and JavaScript/React ecosystems. For a complete list of all libraries and licenses, see the [CREDITS.md](CREDITS.md).
+GitTaur uses many additional open-source crates and packages from the Rust and JavaScript/React ecosystems. For a complete list of all libraries and licenses, see the [CREDITS.md](./CREDITS.md).

@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react";
 import style from './BaseModal.module.css';
+import React, { ReactNode } from "react";
 import { useAppContext } from "../../../context/AppContext";
 
 interface BaseModalProps {

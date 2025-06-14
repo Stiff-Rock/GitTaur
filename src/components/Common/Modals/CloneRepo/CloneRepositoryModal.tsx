@@ -6,9 +6,9 @@ import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import InputField from "../../InputField/InputField";
 import { selectDirectoryDialog } from "../../../../utils/FileExplorerDialog";
-//TODO: THIS MODAL AN OTHERS, PROPER LOADING INDICATORS AND BLOCKING
+
 const CloneRepositoryModal: React.FC = () => {
-  const { setActiveModal, setNotification, openNewRepo, config } = useAppContext();
+  const { setActiveModal, setNotification, openNewRepo, config, showLoadingDuringTask } = useAppContext();
 
   const [path, setParentFolder] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
@@ -23,7 +23,6 @@ const CloneRepositoryModal: React.FC = () => {
     if (path) setParentFolder(path);
   };
 
-  //TODO: LOADING SCREEN
   const handleClone = () => {
     if (!path && !repoUrl) {
       setNotification("You have to select a path and a Url");
@@ -40,7 +39,7 @@ const CloneRepositoryModal: React.FC = () => {
       return;
     }
 
-    invoke<[string, string]>("clone_repo", { repoPath: path, repoUrl })
+    const clonePromise = invoke<[string, string]>("clone_repo", { repoPath: path, repoUrl })
       .then((payload) => {
         const [repoPath, msg] = payload;
         openNewRepo(repoPath);
@@ -51,6 +50,11 @@ const CloneRepositoryModal: React.FC = () => {
         setNotification(e);
       })
       .finally(() => setActiveModal(""));
+
+    showLoadingDuringTask({
+      title: "Clonning repository",
+      liveFeedBack: true,
+    }, clonePromise);
   };
 
   return (
@@ -64,7 +68,7 @@ const CloneRepositoryModal: React.FC = () => {
         onButtonClick={chooseParentFolder}
       />
 
-      {/*TODO: ADD BUTTON THAT GETS YOU YOUR GITHUB REPOS TO CLONE*/}
+      {/*NODE: ADD BUTTON THAT GETS YOU YOUR GITHUB REPOS TO CLONE*/}
       <InputField
         type="url"
         placeholder="Repository URL"

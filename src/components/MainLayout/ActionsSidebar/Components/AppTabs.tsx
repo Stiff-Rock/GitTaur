@@ -28,6 +28,7 @@ const AppTabChooser: React.FC = () => {
       >
         <FileDiffIcon className={`${currentAppTab === "local-changes" ? styles.active : styles.inactive}`} />
         <span>Changes</span>
+
         {totalChanges > 0 && <div className={styles.changesStatusIndicator}>{totalChanges > 999 ? '+999' : totalChanges}</div>}
       </div>
 

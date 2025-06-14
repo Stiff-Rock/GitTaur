@@ -13,7 +13,7 @@ export interface CreateTagModalProps {
 };
 
 const TagBranchModal: React.FC = () => {
-  const { workspace, setNotification, setActiveModal, createTagModalProps } = useAppContext();
+  const { workspace, setNotification, setActiveModal, createTagModalProps, showLoadingDuringTask } = useAppContext();
   const { commitOid, branchName, isLocal } = createTagModalProps;
 
   const [tagName, setTagName] = useState("");
@@ -31,9 +31,9 @@ const TagBranchModal: React.FC = () => {
 
     let tagPromise;
     if (commitOid) {
-      tagPromise = invoke("tag_commit", { repoPath, commitOid, tagName, tagMsg });
+      tagPromise = invoke<void>("tag_commit", { repoPath, commitOid, tagName, tagMsg });
     } else if (branchName) {
-      tagPromise = invoke("tag_branch_tip", { repoPath, branchName, tagName, tagMsg, isLocal });
+      tagPromise = invoke<void>("tag_branch_tip", { repoPath, branchName, tagName, tagMsg, isLocal });
     } else {
       console.log("No commit oid nor branch name has been provided:", commitOid, branchName);
       setNotification("Internal error during tag creation, please report this issue")
@@ -44,6 +44,10 @@ const TagBranchModal: React.FC = () => {
       console.error(e);
       setNotification(e);
     }).finally(() => setActiveModal(""));
+
+    showLoadingDuringTask({
+      title: "Creating Tag",
+    }, tagPromise);
   };
 
   return (

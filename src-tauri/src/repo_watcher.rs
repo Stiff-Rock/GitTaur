@@ -192,7 +192,6 @@ pub async fn setup_watchers(
     Ok(())
 }
 
-//TODO: IMPROVE IN THE FUTURE WITH BETTER DYNAMIC PATHS HANDLING (but i dont remember what i had in mind)
 fn handle_dynamic_dirs(repo_path: &String) {
     let mut unwatched_dirs_map = match DYNAMIC_DIRS_MAP.lock() {
         Ok(guard) => guard,

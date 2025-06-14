@@ -108,7 +108,7 @@ export default function createCommitNodes(
   const commitsToFreeLane = new Set<string>;
   const branchStartLanes = new Map<string, Set<number>>;
 
-  /*TODO: FOR MORE ACCURATE BRANCH LANE ASSINGMENT, USE DATE SYSTEM, 
+  /*NODE: FOR MORE ACCURATE BRANCH LANE ASSINGMENT, USE DATE SYSTEM, 
    * WHERE IN A RECORD OF SOME KIND WE STORE WHAT LANES ARE OCCUPIED
    * AT THAT DATE RANGE, ALSO BETTER LANE ASSINGMENT */
 

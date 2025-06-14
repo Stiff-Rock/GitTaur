@@ -45,7 +45,7 @@ const ActionBar: React.FC = () => {
 
 
       <div className={`${styles.actions} ${styles.rightActions}`}>
-        {/*TODO: SYNC GITHUB ACCOUNT
+        {/*NOTE: SYNC GITHUB ACCOUNT
 
         <button className={`actionButton ${styles.actionButton}`}>
           <svg

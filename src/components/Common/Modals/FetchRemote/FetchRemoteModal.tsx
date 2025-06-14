@@ -7,7 +7,7 @@ import ComboBox from "../../ComboBox/ComboBox";
 import Checkbox from "../../CheckBox/Checkbox";
 
 const FetchRemoteModal: React.FC = () => {
-  const { workspace, setActiveModal, setNotification, activeRepoInfo } = useAppContext();
+  const { workspace, setActiveModal, setNotification, activeRepoInfo, showLoadingDuringTask } = useAppContext();
   const [remote, setRemote] = useState<string>("");
   const [fetchAll, setFetchAll] = useState<boolean>(false);
 
@@ -28,7 +28,6 @@ const FetchRemoteModal: React.FC = () => {
     setRemote(text);
   }, [activeRepoInfo]);
 
-  //TODO: LOADING INDICATOR
   const handleFetchRemote = () => {
     if (!workspace) return;
 
@@ -37,7 +36,7 @@ const FetchRemoteModal: React.FC = () => {
 
       const remotes: Array<string> = fetchAll ? Object.keys(activeRepoInfo!.remotes) : new Array(remote);
 
-      invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
+      const fecthPromise = invoke<string>("fetch_remote", { repoPath, remotes }).then((msg) => {
         setActiveModal("");
         setNotification(msg);
       }).catch((e) => {
@@ -46,6 +45,11 @@ const FetchRemoteModal: React.FC = () => {
           console.error(e);
         }
       });
+
+      showLoadingDuringTask({
+        title: "Fetching remote",
+        liveFeedBack: true,
+      }, fecthPromise);
     } else {
       setNotification("You must select a valid remote")
     }
