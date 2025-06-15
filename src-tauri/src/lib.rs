@@ -295,9 +295,9 @@ fn setup_logging(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
         Dispatch::new()
             .level(LevelFilter::Info)
             .level_for("notify", LevelFilter::Info)
-            .level_for("gittaur_lib::repo_manager", LevelFilter::Off)
-            .level_for("gittaur_lib::repo_reader", LevelFilter::Off)
-            .level_for("gittaur_lib::repo_watcher", LevelFilter::Trace)
+            .level_for("gittaur_lib::repo_manager", LevelFilter::Info)
+            .level_for("gittaur_lib::repo_reader", LevelFilter::Info)
+            .level_for("gittaur_lib::repo_watcher", LevelFilter::Info)
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}] {}",

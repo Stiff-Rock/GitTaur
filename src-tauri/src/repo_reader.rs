@@ -3,7 +3,7 @@ use git2::{
     Sort, Status, StatusOptions,
 };
 use indexmap::IndexMap;
-use log::{error, info, trace};
+use log::{info, trace};
 use std::collections::HashSet;
 use std::path::Path;
 use std::{collections::HashMap, num::TryFromIntError};
@@ -440,10 +440,7 @@ fn get_commit_obj(
 
     let body = current_commit.body().unwrap_or("").to_string();
 
-    let refs = ref_map.get(&id).cloned().unwrap_or_else(|| {
-        error!("Unable to find refs for commit with id <{id}>");
-        Vec::new()
-    });
+    let refs = ref_map.get(&id).cloned().unwrap_or(Vec::new());
 
     let is_remote_only = is_remote_only(&id, &ref_map, &repo)?;
 
