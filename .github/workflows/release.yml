@@ -1,0 +1,47 @@
+name: Deploy and Release on Tag
+
+on:
+  push:
+    tags:
+      - '*'  # This will trigger on any tag push
+
+jobs:
+  deploy-and-release:
+    runs-on: windows-latest  # Using windows-latest since the artifacts are Windows executables
+    permissions:
+      contents: write  # Needed for creating releases
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Deploy
+        run: npm run deploy
+      
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            ./src-tauri/target/release/GitTaur.exe
+            ./src-tauri/target/release/bundle/msi/GitTaur_0.1.0_x64_en-US.msi
+            ./src-tauri/target/release/bundle/nsis/GitTaur_0.1.0_x64-setup.exe
