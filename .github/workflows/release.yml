@@ -10,6 +10,9 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+    env:
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: -Ctarget-cpu=native
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,6 +21,27 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v2.3.6
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust@v1
+        with:
+          target: x86_64-pc-windows-msvc
+          profile: minimal
+          toolchain: stable
+      
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        id: rust-cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
       
       - name: Cache Deno dependencies
         uses: actions/cache@v3
@@ -31,6 +55,12 @@ jobs:
       
       - name: Install dependencies
         run: deno install
+        
+      - name: Build Tauri application
+        if: steps.rust-cache.outputs.cache-hit != 'true'
+        run: |
+          cd src-tauri
+          cargo build --release
       
       - name: Deploy
         run: deno task deploy
