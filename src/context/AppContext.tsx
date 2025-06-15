@@ -138,7 +138,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const [pullModalProps, setPullModalProps] = useState<PullModalProps>({
-    selectedRemoteBranch: "",
+    selectedRemote: "",
+    sourceBranch: "",
   })
   const openPullModal = (props: PullModalProps) => {
     setPullModalProps(props);

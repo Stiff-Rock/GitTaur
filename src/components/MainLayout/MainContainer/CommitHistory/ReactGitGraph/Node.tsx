@@ -8,10 +8,8 @@ const Node: React.FC<{ node: CommitNode }> = ({ node }) => {
     currentCommitId
   } = useGitGraphContext();
 
-  const refs = node.data.refs;
   let strokeColor: string;
-  const isRemoteOnly = !refs.some(r => r.includes("branch")) && refs.some(r => r.includes("remoteBranch"));
-  if (isRemoteOnly) {
+  if (node.data.isRemoteOnly) {
     strokeColor = makeMoreGray(node.nodeColor);
   } else {
     strokeColor = node.nodeColor;
@@ -37,7 +35,7 @@ const Node: React.FC<{ node: CommitNode }> = ({ node }) => {
         />
       }
 
-      {isRemoteOnly &&
+      {node.data.isRemoteOnly &&
         <circle
           fill={strokeColor}
           r={NODE_RADIUS * 0.3}

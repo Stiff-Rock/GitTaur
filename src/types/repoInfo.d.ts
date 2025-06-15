@@ -29,6 +29,7 @@ interface Commit {
   refs: string[];
   changes: FileChanges[]
   isFromMainBranch: boolean;
+  isRemoteOnly: boolean;
 }
 
 interface RepoHistory {

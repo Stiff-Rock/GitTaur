@@ -33,6 +33,7 @@ pub struct Commit {
     pub refs: Vec<String>,
     pub changes: Vec<FileChanges>,
     pub is_from_main_branch: bool,
+    pub is_remote_only: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

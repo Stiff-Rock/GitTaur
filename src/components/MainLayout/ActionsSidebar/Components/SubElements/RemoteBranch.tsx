@@ -3,13 +3,14 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { Menu } from "@tauri-apps/api/menu";
 import { invoke } from "@tauri-apps/api/core";
 
-const RemoteBranchElement: React.FC<{ branchName: string }> = ({ branchName }) => {
+const RemoteBranchElement: React.FC<{ remote: string, branchName: string }> = ({ remote, branchName }) => {
   const {
     workspace,
     setNotification,
     openContextMenu,
     setActiveModal,
     openConfirmationModal,
+    openPullModal,
     openCreateTagModal,
     openMergeBranchModal,
     openRebaseBranchModal
@@ -33,7 +34,10 @@ const RemoteBranchElement: React.FC<{ branchName: string }> = ({ branchName }) =
           id: "pullRemoteBranch",
           text: "Pull " + branchName,
           action: () => {
-
+            openPullModal({
+              selectedRemote: remote,
+              sourceBranch: branchName
+            });
           },
         },
         {

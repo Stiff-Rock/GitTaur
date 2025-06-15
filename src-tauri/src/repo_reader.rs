@@ -3,7 +3,7 @@ use git2::{
     Sort, Status, StatusOptions,
 };
 use indexmap::IndexMap;
-use log::{info, trace};
+use log::{error, info, trace};
 use std::collections::HashSet;
 use std::path::Path;
 use std::{collections::HashMap, num::TryFromIntError};
@@ -440,7 +440,12 @@ fn get_commit_obj(
 
     let body = current_commit.body().unwrap_or("").to_string();
 
-    let refs = ref_map.get(&id).cloned().unwrap_or_else(Vec::new);
+    let refs = ref_map.get(&id).cloned().unwrap_or_else(|| {
+        error!("Unable to find refs for commit with id <{id}>");
+        Vec::new()
+    });
+
+    let is_remote_only = is_remote_only(&id, &ref_map, &repo)?;
 
     let changes = get_commit_changes(repo, current_commit)?;
 
@@ -457,9 +462,48 @@ fn get_commit_obj(
         refs,
         changes,
         is_from_main_branch,
+        is_remote_only,
     };
 
     Ok(commit_obj)
+}
+
+fn is_remote_only(
+    commit_id: &str,
+    commit_ref_map: &HashMap<String, Vec<String>>,
+    repo: &git2::Repository,
+) -> Result<bool, git2::Error> {
+    let local_branch_tips: HashSet<_> = commit_ref_map
+        .iter()
+        .filter_map(|(commit_id, refs)| {
+            if refs.iter().any(|r| r.starts_with("branch:")) {
+                Some(commit_id.as_str())
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let has_only_remote_refs = match commit_ref_map.get(commit_id) {
+        Some(refs) => !refs.is_empty() && refs.iter().all(|r| r.starts_with("remoteBranch:")),
+        None => return Ok(false),
+    };
+
+    if !has_only_remote_refs {
+        return Ok(false);
+    }
+
+    let commit = repo.find_commit(git2::Oid::from_str(commit_id)?)?;
+
+    for branch_tip in local_branch_tips {
+        let branch_commit = repo.find_commit(git2::Oid::from_str(branch_tip)?)?;
+
+        if repo.graph_descendant_of(branch_commit.id(), commit.id())? {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
 }
 
 fn get_commit_changes(

@@ -65,10 +65,8 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
     const labelType = currentCommitId === node.id && index === 0 ? 'check' : parts[0];
     const labelText = parts[1];
 
-    const refs = node.data.refs;
     let strokeColor: string;
-    const isRemoteOnly = !refs.some(r => r.includes("branch")) && refs.some(r => r.includes("remoteBranch"));
-    if (isRemoteOnly) {
+    if (node.data.isRemoteOnly) {
       strokeColor = makeMoreGray(node.nodeColor);
     } else {
       strokeColor = node.nodeColor;
@@ -91,10 +89,10 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
           ref={containerRef}
           transform={`translate(${position.x + LABEL_X_PADDING / 2}, ${position.y + dimensions.height / 2})`}
         >
-          <LabelIcon type={labelType} disabled={isRemoteOnly} />
+          <LabelIcon type={labelType} disabled={node.data.isRemoteOnly} />
 
           <text
-            className={isRemoteOnly ? "disabledLabel" : "label"}
+            className={node.data.isRemoteOnly ? "disabledLabel" : "label"}
             ref={textRef}
             x={LABEL_ICON_SIZE + LABEL_TEXT_PADDING}
             y={0}

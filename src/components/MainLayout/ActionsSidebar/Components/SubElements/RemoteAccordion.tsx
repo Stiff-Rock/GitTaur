@@ -90,7 +90,7 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
       <ul>
         {branches.map((branchName, branchIndex) => (
           <li key={`${remote.name}-${branchName}-${branchIndex}`}>
-            <RemoteBranchElement branchName={branchName} />
+            <RemoteBranchElement remote={remote.name} branchName={branchName} />
           </li>
         ))}
       </ul>

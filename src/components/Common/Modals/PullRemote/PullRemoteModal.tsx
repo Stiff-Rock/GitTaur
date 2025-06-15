@@ -7,15 +7,16 @@ import ComboBox from "../../ComboBox/ComboBox";
 import Checkbox from "../../CheckBox/Checkbox";
 
 export interface PullModalProps {
-  selectedRemoteBranch?: string,
+  selectedRemote?: string,
+  sourceBranch?: string,
 }
 
 const PullRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo, pullModalProps, showLoadingDuringTask } = useAppContext();
-  const { selectedRemoteBranch } = pullModalProps;
+  const { selectedRemote = "", sourceBranch = "" } = pullModalProps;
 
-  const [remoteName, setRemoteName] = useState<string>("");
-  const [branch, setBranch] = useState<string>("");
+  const [remoteName, setRemoteName] = useState<string>(selectedRemote);
+  const [branch, setBranch] = useState<string>(sourceBranch);
   const [pullAll, setPullAll] = useState<boolean>(true);
 
   const remotePlaceHolder = "Choose a remote";
@@ -41,8 +42,8 @@ const PullRemoteModal: React.FC = () => {
     }
     setBranch(branchText)
 
-    if (selectedRemoteBranch) {
-      setBranch(selectedRemoteBranch);
+    if (selectedRemote) {
+      setBranch(selectedRemote);
       setPullAll(false);
     }
   }, [activeRepoInfo]);

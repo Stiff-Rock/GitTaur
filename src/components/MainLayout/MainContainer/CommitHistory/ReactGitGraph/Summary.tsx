@@ -41,13 +41,10 @@ const Summary: React.FC<{ node: CommitNode }> = ({ node }) => {
     }
   }, [x, y, node.data.subject, maxX, setMaxX]);
 
-  const refs = node.data.refs;
-  const isRemoteOnly = !refs.some(r => r.includes("branch")) && refs.some(r => r.includes("remoteBranch"));
-
   return (
     <text
       ref={textRef}
-      className={isRemoteOnly ? "disabledSummary" : "summary"}
+      className={node.data.isRemoteOnly ? "disabledSummary" : "summary"}
       key={`${node.id}-${node.data.subject}`}
       transform={`translate(${x}, ${y})`}
       dominantBaseline="middle"
