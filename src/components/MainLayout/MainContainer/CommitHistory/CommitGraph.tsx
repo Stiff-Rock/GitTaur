@@ -3,8 +3,8 @@ import { RepoTemplateIcon } from '@primer/octicons-react'
 import React, { useLayoutEffect, useState } from "react";
 import { useMainContext } from "../../../../context/MainContext.tsx";
 import { useAppContext } from "../../../../context/AppContext.tsx";
-import GitGraph from "./GitGraph/Gitgraph.tsx";
 import Throbber from "../../../Common/Throbber/Throbber.tsx";
+import GitGraph from "./ReactGitGraph/Gitgraph.tsx";
 
 const CommitGraph: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const { repoHistory, setSelectedCommit, setCommitInfo, scrollToCommit, currentAppTab } = useMainContext();
