@@ -39,19 +39,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deno-
       
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli
-      
-      - name: Install Windows dependencies
-        run: |
-          # Install Windows dependencies for Tauri
-          # This typically includes WebView2, but the GH Actions Windows runner should have it
-          choco install -y nsis  # For installer creation
-      
-      - name: Build with Tauri
-        run: |
-          cd src-tauri
-          cargo tauri build --verbose
+      - name: Deploy
+        run: deno task deploy
       
       - name: Create Release
         id: create_release
