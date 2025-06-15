@@ -4,7 +4,6 @@
     "npm:@primer/octicons-react@^19.15.1": "19.15.1_react@18.3.1",
     "npm:@tauri-apps/api@^2.3.0": "2.3.0",
     "npm:@tauri-apps/cli@2": "2.2.4",
-    "npm:@tauri-apps/plugin-dialog@2.2": "2.2.0",
     "npm:@tauri-apps/plugin-opener@~2.2.6": "2.2.6",
     "npm:@types/md5@^2.3.5": "2.3.5",
     "npm:@types/react-dom@^18.3.1": "18.3.5_@types+react@18.3.18",
@@ -482,12 +481,6 @@
       ],
       "bin": true
     },
-    "@tauri-apps/plugin-dialog@2.2.0": {
-      "integrity": "sha512-6bLkYK68zyK31418AK5fNccCdVuRnNpbxquCl8IqgFByOgWFivbiIlvb79wpSXi0O+8k8RCSsIpOquebusRVSg==",
-      "dependencies": [
-        "@tauri-apps/api"
-      ]
-    },
     "@tauri-apps/plugin-opener@2.2.6": {
       "integrity": "sha512-bSdkuP71ZQRepPOn8BOEdBKYJQvl6+jb160QtJX/i2H9BF6ZySY/kYljh76N2Ne5fJMQRge7rlKoStYQY5Jq1w==",
       "dependencies": [
@@ -876,12 +869,12 @@
         "npm:@primer/octicons-react@^19.15.1",
         "npm:@tauri-apps/api@^2.3.0",
         "npm:@tauri-apps/cli@2",
-        "npm:@tauri-apps/plugin-dialog@2.2",
+        "npm:@tauri-apps/plugin-dialog@~2.2.2",
         "npm:@tauri-apps/plugin-opener@~2.2.6",
         "npm:@types/md5@^2.3.5",
+        "npm:@types/node@^24.0.1",
         "npm:@types/react-dom@^18.3.1",
         "npm:@types/react@^18.3.1",
-        "npm:@uiw/react-md-editor@^4.0.7",
         "npm:@vitejs/plugin-react@^4.3.4",
         "npm:js-base64@^3.7.7",
         "npm:md5@^2.3.0",
@@ -891,6 +884,7 @@
         "npm:react-resizable-panels@^2.1.7",
         "npm:react-toastify@^11.0.5",
         "npm:react@^18.3.1",
+        "npm:stiff-rock-react-md-editor@1",
         "npm:typescript@~5.6.2",
         "npm:vite@^6.0.3"
       ]

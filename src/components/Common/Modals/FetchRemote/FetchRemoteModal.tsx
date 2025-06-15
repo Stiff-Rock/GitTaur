@@ -42,7 +42,6 @@ const FetchRemoteModal: React.FC = () => {
       }).catch((e) => {
         if (e) {
           setNotification(e);
-          console.error(e);
         }
       });
 

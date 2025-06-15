@@ -34,7 +34,7 @@ function WelcomePage() {
     event.preventDefault();
 
     if (!workspace) {
-      console.error("Error opening context menu: Unexpected null workspace");
+      console.warn("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
@@ -54,7 +54,6 @@ function WelcomePage() {
       text: "Open in file explorer",
       action: () => {
         openPath(repoPath).catch((e) => {
-          console.error(e);
           setNotification(e);
         })
       },
@@ -65,7 +64,6 @@ function WelcomePage() {
       text: "Open in terminal",
       action: () => {
         invoke("open_terminal", { path: repoPath }).catch((e) => {
-          console.error(e);
           setNotification(e);
         });
       },
@@ -76,9 +74,7 @@ function WelcomePage() {
       text: "Copy Path",
       action: () => {
         navigator.clipboard.writeText(repoPath).catch(e => {
-          const msg = `Failed to copy repository path: "${e}`;
-          setNotification(msg);
-          console.error(msg);
+          setNotification(`Falied to copy path: ${e}`);
         });
       },
     })

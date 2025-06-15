@@ -29,7 +29,6 @@ const LocalChangesInfoSidebar: React.FC = () => {
     invoke<string>("get_file_diff", { repoPath, filePath, status })
       .then(setFileDiff)
       .catch((e) => {
-        console.error(e);
         setNotification(e);
       });
   }, [lastSelectedChange])

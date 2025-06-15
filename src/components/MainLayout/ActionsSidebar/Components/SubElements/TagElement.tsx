@@ -16,7 +16,7 @@ const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
     event.preventDefault();
 
     if (!workspace) {
-      console.error("Error opening context menu: Unexpected null workspace");
+      console.warn("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
@@ -30,9 +30,7 @@ const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
           text: "Copy tag name",
           action: () => {
             navigator.clipboard.writeText(tagName).catch(e => {
-              const msg = `Failed to copy tag name: ${e}`;
-              setNotification(msg);
-              console.error(msg);
+              setNotification(`Failed to copy tag name: ${e}`);
             });
           },
         },
@@ -43,7 +41,6 @@ const TagElement: React.FC<{ tagName: string }> = ({ tagName }) => {
             openConfirmationModal({
               onConfirmed: () => {
                 invoke("delete_tag", { repoPath, tagName }).catch((e) => {
-                  console.error(e);
                   setNotification(e);
                 }).finally(() => setActiveModal(""))
               },

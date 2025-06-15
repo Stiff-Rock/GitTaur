@@ -41,7 +41,8 @@ async fn create_todo_file(repo_path: String) -> Result<String, String> {
     let file_path = path.join(TODO_FILE_NAME);
 
     if file_path.exists() {
-        let content = read_to_string(&file_path).map_err(|e| e.to_string())?;
+        let content = read_to_string(&file_path)
+            .map_err(|e| format!("Failed to read existent TO-DO file: {e}"))?;
         return Ok(content);
     }
 
@@ -53,16 +54,18 @@ async fn create_todo_file(repo_path: String) -> Result<String, String> {
     }
 
     info!("Creating todo-list file at location {repo_path}");
-    File::create(file_path).map_err(|e| e.to_string())?;
+    File::create(file_path).map_err(|e| format!("Failed to create TO-DO file: {e}"))?;
 
     let gitignore_path = Path::new(&repo_path).join(".gitignore");
     if gitignore_path.exists() {
-        let file = File::open(&gitignore_path).map_err(|e| e.to_string())?;
+        let file = File::open(&gitignore_path)
+            .map_err(|e| format!("Failed to open .gitignore file: {e}"))?;
         let reader = BufReader::new(file);
         let mut pattern_exists = false;
 
         for line in reader.lines() {
-            let line = line.map_err(|e| e.to_string())?;
+            let line = line
+                .map_err(|e| format!("Failed to read line while parsing .gitignore file: {e}"))?;
             if line.trim() == TODO_FILE_NAME {
                 pattern_exists = true;
                 break;
@@ -75,21 +78,26 @@ async fn create_todo_file(repo_path: String) -> Result<String, String> {
             let mut file = OpenOptions::new()
                 .append(true)
                 .open(&gitignore_path)
-                .map_err(|e| e.to_string())?;
+                .map_err(|e| format!("Failed to open .gitignore file: {e}"))?;
 
-            let content = read_to_string(&gitignore_path).map_err(|e| e.to_string())?;
+            let content = read_to_string(&gitignore_path)
+                .map_err(|e| format!("Failed to read .gitignore file: {e}"))?;
 
             if !content.is_empty() && !content.ends_with('\n') {
-                writeln!(file).map_err(|e| e.to_string())?;
+                writeln!(file)
+                    .map_err(|e| format!("Filed to write new entry to .gitignore file: {e}"))?;
             }
 
-            writeln!(file, "{}", TODO_FILE_NAME).map_err(|e| e.to_string())?;
+            writeln!(file, "{}", TODO_FILE_NAME)
+                .map_err(|e| format!("Failed to write new entry to .gitignore file: {e}"))?;
         }
     } else {
         info!("Creating .gitignore file to add a todo-list file entry");
 
-        let mut file = File::create(gitignore_path).map_err(|e| e.to_string())?;
-        writeln!(file, "{}", TODO_FILE_NAME).map_err(|e| e.to_string())?;
+        let mut file = File::create(gitignore_path)
+            .map_err(|e| format!("Failed to create .gitignore file: {e}"))?;
+        writeln!(file, "{}", TODO_FILE_NAME)
+            .map_err(|e| format!("Failed to write new entry to .gitignore file: {e}"))?;
     }
 
     Ok("".to_string())
@@ -119,14 +127,15 @@ async fn save_todo_file(repo_path: String, todo_text: String) -> Result<(), Stri
         .write(true)
         .truncate(true)
         .open(&file_path)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to open TO-DO file while saving: {e}"))?;
 
     info!("Saving todo-list file located at {repo_path}");
 
     file.write_all(todo_text.as_bytes())
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to write new content to TO-DO file: {e}"))?;
 
-    file.flush().map_err(|e| e.to_string())?;
+    file.flush()
+        .map_err(|e| format!("Failed to flush after writin to TO-DO file: {e}"))?;
 
     Ok(())
 }
@@ -192,18 +201,23 @@ fn init_app_paths(app: &mut App) -> Result<(), Box<dyn Error>> {
             app_handle
                 .path()
                 .resolve("workspace.json", BaseDirectory::AppLocalData)
-                .map_err(|e| format!("Error resolving Workspace path - {}", e.to_string()))?,
+                .map_err(|e| format!("Error resolving Workspace path - {}", format!(": {e}")))?,
         )
-        .map_err(|e| format!("Workspace path already initilized at {}", e.display()))?;
+        .map_err(|e| {
+            format!(
+                "Error: Workspace path already initilized at {}",
+                e.display()
+            )
+        })?;
 
     config_manager::CONFIG_PATH
         .set(
             app_handle
                 .path()
                 .resolve("config.json", BaseDirectory::AppConfig)
-                .map_err(|e| format!("Error resolving Config path - {}", e.to_string()))?,
+                .map_err(|e| format!("Error resolving Config path - {}", format!(": {e}")))?,
         )
-        .map_err(|e| format!("Config path already initilized at {}", e.display()))?;
+        .map_err(|e| format!("Error: Config path already initilized at {}", e.display()))?;
 
     Ok(())
 }

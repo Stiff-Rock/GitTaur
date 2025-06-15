@@ -19,9 +19,7 @@ const CopyShaButton: React.FC<CopyShaButtonProps> = ({ sha }) => {
         setTimeout(() => setCopied(false), 2000); // Hide after 2 seconds
       })
       .catch(e => {
-        const msg = `Falied to copy SHA: ${e}`;
-        setNotification(msg);
-        console.error(msg);
+        setNotification(`Falied to copy SHA: ${e}`);
       });
   };
 

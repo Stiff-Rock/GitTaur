@@ -74,7 +74,6 @@ const PushRemoteModal: React.FC = () => {
       }).catch((e) => {
         if (e) {
           setNotification(e);
-          console.error(e);
         }
       }).finally(() => setActiveModal(""));
 

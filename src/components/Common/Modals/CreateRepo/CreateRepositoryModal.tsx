@@ -25,7 +25,6 @@ const CreateRepositoryModal: React.FC = () => {
         setNotification(msg as string);
       }).catch((e) => {
         setNotification(e);
-        console.error(e)
       });
 
 

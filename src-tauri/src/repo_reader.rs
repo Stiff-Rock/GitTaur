@@ -29,10 +29,11 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
     if !is_repo(&repo_path, true)? {
-        return Err(format!("{} is not a repository", &repo_path));
+        return Err(format!("{repo_path} is not a repository"));
     }
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
     let name = repo_path.to_string();
 
     // Get current branch
@@ -41,14 +42,15 @@ pub async fn get_repo_info(repo_path: String) -> Result<RepoInfo, String> {
     // Get local branches
     let local_branches = repo
         .branches(Some(git2::BranchType::Local))
-        .map_err(|e| e.to_string())?
+        .map_err(|e| format!("Could not obtain local branches of repository: {e}"))?
         .filter_map(|b| b.ok())
         .filter_map(|(b, _)| b.name().ok().flatten().map(|s| s.to_owned()))
         .collect::<Vec<String>>();
 
+    // Get the tags
     let tags = repo
         .tag_names(None)
-        .map_err(|e| e.to_string())?
+        .map_err(|e| format!("Could not obtain tags of respository: {e}"))?
         .iter()
         .filter_map(|t| t.map(|s| s.to_string()))
         .collect::<Vec<String>>();
@@ -90,20 +92,27 @@ fn get_remote_branches(repo: &Repository) -> Result<HashMap<String, Remote>, Str
                 "Unexpectedly encountered None value while getting remote branches".to_string(),
             );
         };
-        let remote_ref = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
+        let remote_ref = repo
+            .find_remote(&remote_name)
+            .map_err(|e| format!("Could not find remote \"{remote_name}\": {e}"))?;
         let remote_url = remote_ref
             .url()
             .unwrap_or("Unkown Url: Please report this issue");
         let branches = repo
             .branches(Some(BranchType::Remote))
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Could not obtain remote branches of repository: {e}"))?;
 
         let mut remote_branches: Vec<String> = vec![];
         for branch_result in branches {
-            let (branch, _) = branch_result.map_err(|e| e.to_string())?;
+            let (branch, _) = if branch_result.is_ok() {
+                branch_result.expect("Unable to obtain remote branch reference")
+            } else {
+                continue;
+            };
+
             let branch_name = branch
                 .name()
-                .map_err(|e| e.to_string())?
+                .map_err(|e| format!("Could not get remote branch name: {e}"))?
                 .unwrap_or("[unknown]");
 
             if branch_name.starts_with(&format!("{}/", remote_name)) {
@@ -135,7 +144,8 @@ pub async fn get_commit_history(repo_path: String) -> Result<String, String> {
 
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     match repo.head() {
         Ok(head_ref) => match head_ref.target() {
@@ -145,37 +155,45 @@ pub async fn get_commit_history(repo_path: String) -> Result<String, String> {
         Err(_) => return Ok("".to_string()),
     }
 
-    let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
+    let mut revwalk = repo
+        .revwalk()
+        .map_err(|e| format!("Could not obtain revwalk while getting commit history: {e}"))?;
 
     revwalk
         .push_glob("refs/heads/*")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to add heads to revwalk: {e}"))?;
     revwalk
         .push_glob("refs/tags/*")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to add tags to revwalk: {e}"))?;
     revwalk
         .push_glob("refs/remotes/*")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to add remotes to revwalk: {e}"))?;
 
     revwalk
         .set_sorting(Sort::TIME | Sort::TOPOLOGICAL)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to set revwalk sorting: {e}"))?;
 
     let max_commits = get_config()?.max_commits as usize;
 
     // First, collect all references in the repository and create a mapping
-    let ref_map = get_refs_map(&repo).map_err(|e| e.to_string())?;
+    let ref_map = get_refs_map(&repo).map_err(|e| format!("Could not obtain refs map: {e}"))?;
 
     // Map the commit objects
-    let commit_history_map =
-        get_commit_history_map(&repo, revwalk, &ref_map, max_commits).map_err(|e| e.to_string())?;
+    let commit_history_map = get_commit_history_map(&repo, revwalk, &ref_map, max_commits)
+        .map_err(|e| format!("Could not obtain commit history map: {e}"))?;
 
     // Check if repo head is detached
-    let head_is_detached = repo.head_detached().map_err(|e| e.to_string())?;
+    let head_is_detached = repo
+        .head_detached()
+        .map_err(|e| format!("Could not determine head state: {e}"))?;
 
     // Get the current commit the repository is checked out on
-    let head = repo.head().map_err(|e| e.to_string())?;
-    let head_commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+    let head = repo
+        .head()
+        .map_err(|e| format!("Could not obtain head of repository: {e}"))?;
+    let head_commit = head
+        .peel_to_commit()
+        .map_err(|e| format!("Could not obtain head commit: {e}"))?;
     let current_commit_id = head_commit.id().to_string();
 
     let repo_history = RepoHistory {
@@ -184,7 +202,8 @@ pub async fn get_commit_history(repo_path: String) -> Result<String, String> {
         current_commit_id,
     };
 
-    let repo_history_json = serde_json::to_string(&repo_history).map_err(|e| e.to_string())?;
+    let repo_history_json = serde_json::to_string(&repo_history)
+        .map_err(|e| format!("Failed to serialize repo_history: {e}"))?;
 
     trace!("Finished getting commit history of repo {repo_path}");
 
@@ -497,7 +516,8 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
 
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let mut status_opts = StatusOptions::new();
     status_opts
@@ -509,7 +529,7 @@ pub async fn get_repo_status(repo_path: String) -> Result<RepoStatus, String> {
 
     let statuses = repo
         .statuses(Some(&mut status_opts))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not obtain repository statuses: {e}"))?;
 
     let mut unstaged_files: Vec<FileChanges> = Vec::new();
     let mut staged_files: Vec<FileChanges> = Vec::new();
@@ -581,7 +601,8 @@ pub async fn get_file_diff(
     status: String,
 ) -> Result<String, String> {
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     match status.as_str() {
         "unstaged" => get_unstaged_file_diff(repo, file_path),
@@ -600,7 +621,7 @@ fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String,
     // Get diff between index and working directory
     let diff = repo
         .diff_index_to_workdir(None, Some(&mut diff_opts))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not obtain diff between index and working directory: {e}"))?;
 
     let diff_text = get_diff_content(diff)?;
 
@@ -609,15 +630,21 @@ fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String,
 
 fn get_staged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
     // Get HEAD commit
-    let head = repo.head().map_err(|e| e.to_string())?;
+    let head = repo
+        .head()
+        .map_err(|e| format!("Could not obtain head of repository: {e}"))?;
     let head_target = if let Some(target) = head.target() {
         target
     } else {
         return Err("Unable to obtain head target".to_string());
     };
 
-    let head_commit = repo.find_commit(head_target).map_err(|e| e.to_string())?;
-    let head_tree = head_commit.tree().map_err(|e| e.to_string())?;
+    let head_commit = repo
+        .find_commit(head_target)
+        .map_err(|e| format!("Could not find head commit: {e}"))?;
+    let head_tree = head_commit
+        .tree()
+        .map_err(|e| format!("Could not get tree of head commit: {e}"))?;
 
     // Set up diff options
     let mut diff_opts = DiffOptions::new();
@@ -626,7 +653,7 @@ fn get_staged_file_diff(repo: Repository, file_path: String) -> Result<String, S
     // Get diff between HEAD and index
     let diff = repo
         .diff_tree_to_index(Some(&head_tree), None, Some(&mut diff_opts))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not obtain diff between head and index: {e}"))?;
 
     let diff_text = get_diff_content(diff)?;
 
@@ -640,7 +667,8 @@ pub async fn get_stashed_changes(repo_path: String) -> Result<Vec<Stash>, String
 
     let _repo_lock = RepoGuard::new(&repo_path, true)?;
 
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let mut repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let mut stash_entries: Vec<(String, usize, Oid)> = vec![];
     repo.stash_foreach(|index, name, stash_id| {
@@ -759,14 +787,20 @@ pub async fn get_file_diff_from_stash(
 ) -> Result<String, String> {
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     // Get the stash commit
-    let oid = Oid::from_str(&stash_id).map_err(|e| e.to_string())?;
-    let stash_commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+    let oid = Oid::from_str(&stash_id)
+        .map_err(|e| format!("Could not get stash id from string id \"{stash_id}\": {e}"))?;
+    let stash_commit = repo
+        .find_commit(oid)
+        .map_err(|e| format!("Could not obtain stash commit: {e}"))?;
 
     // Get the parent commit (what you were on when stashing)
-    let parent = stash_commit.parent(0).map_err(|e| e.to_string())?;
+    let parent = stash_commit
+        .parent(0)
+        .map_err(|e| format!("Could not obtain the origin commit of stash: {e}"))?;
 
     // Set up diff options to focus on this specific file
     let mut diff_opts = DiffOptions::new();
@@ -775,11 +809,19 @@ pub async fn get_file_diff_from_stash(
     // Create the diff between parent and stash
     let diff = repo
         .diff_tree_to_tree(
-            Some(&parent.tree().map_err(|e| e.to_string())?),
-            Some(&stash_commit.tree().map_err(|e| e.to_string())?),
+            Some(
+                &parent
+                    .tree()
+                    .map_err(|e| format!("Could not obtain origin commit tree: {e}"))?,
+            ),
+            Some(
+                &stash_commit
+                    .tree()
+                    .map_err(|e| format!("Could not obtain stash commit tree: {e}"))?,
+            ),
             Some(&mut diff_opts),
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not create diff between stash and origin commit: {e}"))?;
 
     let diff_text = get_diff_content(diff)?;
 
@@ -849,7 +891,7 @@ fn get_diff_content(diff: Diff<'_>) -> Result<String, String> {
         }
         true
     })
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| format!("Failed to parse diff content to text format: {e}"))?;
 
     if in_hunk {
         diff_html.push_str("</pre>");

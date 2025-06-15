@@ -14,7 +14,7 @@ use std::{
 use tauri::{command, AppHandle, Emitter};
 use tauri_plugin_shell::{self, ShellExt};
 
-//TODO: GitAuthenticator::set_prompter()
+//NOTE: GitAuthenticator::set_prompter()
 
 static LAST_UPDATE: LazyLock<Mutex<Instant>> = LazyLock::new(|| {
     Mutex::new(
@@ -155,7 +155,8 @@ pub async fn clone_repo(
         ));
     }
 
-    let git2_clone_result = GitAuthenticator::new().clone_repo(
+    let auth = GitAuthenticator::new();
+    let git2_clone_result = auth.clone_repo(
         &repo_url,
         &clone_path,
         live_update_transfer(app_handle.clone(), "Receiving objects".to_string()),
@@ -198,7 +199,8 @@ pub async fn tag_branch_tip(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let branch_type = if is_local {
         BranchType::Local
@@ -208,16 +210,17 @@ pub async fn tag_branch_tip(
 
     let branch = repo
         .find_branch(&branch_name, branch_type)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not find branch {branch_name} in repository: {e}"))?;
 
     let reference = branch.get();
 
     let oid = reference
         .target()
         .ok_or_else(|| git2::Error::from_str("Branch has no target"))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Unable to get id of branch reference: {e}"))?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     create_tag(repo, oid, tag_name, tag_msg)
 }
@@ -233,9 +236,11 @@ pub async fn tag_commit(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    let oid = Oid::from_str(&commit_oid).map_err(|e| e.to_string())?;
+    let oid = Oid::from_str(&commit_oid)
+        .map_err(|e| format!("Could not parse string as commit id: {e}"))?;
 
     create_tag(repo, oid, tag_name, tag_msg)
 }
@@ -246,13 +251,17 @@ fn create_tag(
     tag_name: String,
     tag_msg: String,
 ) -> Result<(), String> {
-    let commit = repo.find_commit(commit_oid).map_err(|e| e.to_string())?;
+    let commit = repo
+        .find_commit(commit_oid)
+        .map_err(|e| format!("Could not find commit on repository: {e}"))?;
 
-    let signature = repo.signature().map_err(|e| e.to_string())?;
+    let signature = repo
+        .signature()
+        .map_err(|e| format!("Could not find signature for tagging on repository: {e}"))?;
 
     if tag_msg.is_empty() {
         repo.tag_lightweight(&tag_name, &commit.into_object(), false)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Failed to create lightweight tag: {e}"))?;
     } else {
         repo.tag(
             &tag_name,
@@ -261,7 +270,7 @@ fn create_tag(
             &tag_msg,
             false,
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to create annotated tag: {e}"))?;
     }
 
     Ok(())
@@ -273,9 +282,11 @@ pub async fn delete_tag(repo_path: String, tag_name: String) -> Result<(), Strin
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    repo.tag_delete(&tag_name).map_err(|e| e.to_string())?;
+    repo.tag_delete(&tag_name)
+        .map_err(|e| format!("Failed to delete tag: {e}"))?;
 
     Ok(())
 }
@@ -314,32 +325,36 @@ pub async fn checkout_branch(repo_path: String, branch_name: String) -> Result<(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let branch = repo
         .find_branch(&branch_name, BranchType::Local)
         .or_else(|_| repo.find_branch(&branch_name, git2::BranchType::Remote))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not find branch {branch_name} in repository: {e}"))?;
 
     let reference = branch.get();
 
     let oid = reference
         .target()
         .ok_or_else(|| git2::Error::from_str("Branch has no target"))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not get id of the branch reference: {e}"))?;
 
-    let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+    let commit = repo
+        .find_commit(oid)
+        .map_err(|e| format!("Could not find commit in repository: {e}"))?;
     let object = commit.as_object();
 
     let mut checkout_builder = CheckoutBuilder::new();
     repo.checkout_tree(&object, Some(&mut checkout_builder))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to checkout tree: {e}"))?;
 
     let branch_ref_name = reference
         .name()
         .ok_or_else(|| "Invalid branch reference name".to_string())?;
 
-    repo.set_head(branch_ref_name).map_err(|e| e.to_string())?;
+    repo.set_head(branch_ref_name)
+        .map_err(|e| format!("Failed to set head to the new target: {e}"))?;
 
     Ok(())
 }
@@ -354,15 +369,16 @@ pub async fn rename_branch(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let mut branch = repo
         .find_branch(&old_branch_name, BranchType::Local)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not find branch {old_branch_name} in repository: {e}"))?;
 
-    branch
-        .rename(&new_branch_name, false)
-        .map_err(|e| e.to_string())?;
+    branch.rename(&new_branch_name, false).map_err(|e| {
+        format!("Failed to rename branch <{old_branch_name}> to <{new_branch_name}>: {e}")
+    })?;
 
     Ok(())
 }
@@ -377,7 +393,8 @@ pub async fn delete_branch(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let branch_type = if is_local {
         BranchType::Local
@@ -387,9 +404,11 @@ pub async fn delete_branch(
 
     let mut branch = repo
         .find_branch(&branch_name, branch_type)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not find branch {branch_name} in repository: {e}"))?;
 
-    branch.delete().map_err(|e| e.to_string())?;
+    branch
+        .delete()
+        .map_err(|e| format!("Failed to delete branch <{branch_name}>: {e}"))?;
 
     Ok(())
 }
@@ -400,29 +419,42 @@ pub async fn add_to_staging_area(repo_path: String, files: Vec<String>) -> Resul
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    let mut index = repo.index().map_err(|e| e.to_string())?;
+    let mut index = repo
+        .index()
+        .map_err(|e| format!("Could not get index reference of repository: {e}"))?;
 
     if files.is_empty() {
         index
             .add_all(["*"].iter(), IndexAddOption::DEFAULT, None)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Failed to add all changes to the staging area: {e}"))?;
     } else {
         for file in &files {
             let file_path = Path::new(&repo_path).join(file);
 
             if file_path.exists() {
-                index.add_path(Path::new(file)).map_err(|e| e.to_string())?;
+                index.add_path(Path::new(file)).map_err(|e| {
+                    format!(
+                        "Failed to add file <{:#?}> to staging area: {}",
+                        file_path, e
+                    )
+                })?;
             } else {
-                index
-                    .remove_path(Path::new(file))
-                    .map_err(|e| e.to_string())?;
+                index.remove_path(Path::new(file)).map_err(|e| {
+                    format!(
+                        "Failed to add file <{:#?}> to staging area: {}",
+                        file_path, e
+                    )
+                })?;
             }
         }
     }
 
-    index.write().map_err(|e| e.to_string())?;
+    index
+        .write()
+        .map_err(|e| format!("Failed to add file/s to staging area: {e}"))?;
 
     Ok(())
 }
@@ -433,38 +465,53 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    let mut index = repo.index().map_err(|e| e.to_string())?;
+    let mut index = repo
+        .index()
+        .map_err(|e| format!("Could not get the current index of the repository: {e}"))?;
 
     if files.is_empty() {
-        let head = repo.head().map_err(|e| e.to_string())?;
+        let head = repo
+            .head()
+            .map_err(|e| format!("Could not get the head of the repository: {e}"))?;
         let obj = head
             .peel(git2::ObjectType::Tree)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Could not get the tree reference of head: {e}"))?;
         let tree = obj.as_tree().ok_or("Could not find tree")?;
 
-        index.read_tree(&tree).map_err(|e| e.to_string())?;
+        index
+            .read_tree(&tree)
+            .map_err(|e| format!("Failed to read tree: {e}"))?;
     } else {
         if let Ok(head) = repo.head() {
-            let head_commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+            let head_commit = head
+                .peel_to_commit()
+                .map_err(|e| format!("Could not obtain head commit: {e}"))?;
 
             for file in &files {
                 let commit_obj = head_commit.as_object();
 
                 repo.reset_default(Some(commit_obj), &[Path::new(&file)])
-                    .map_err(|e| e.to_string())?;
+                    .map_err(|e| format!("Filed to remove files from staging area: {e}"))?;
             }
         } else {
             for file in &files {
-                index
-                    .remove_path(Path::new(file))
-                    .map_err(|e| e.to_string())?;
+                let file_path = Path::new(file);
+                index.remove_path(file_path).map_err(|e| {
+                    format!(
+                        "Failed to remove file <{:#?}> from staging area: {}",
+                        file_path, e
+                    )
+                })?;
             }
         }
     }
 
-    index.write().map_err(|e| e.to_string())?;
+    index
+        .write()
+        .map_err(|e| format!("Failed to remove file/s to staging area: {e}"))?;
 
     Ok(())
 }
@@ -475,17 +522,24 @@ pub async fn discard_changes(repo_path: String, files: Vec<String>) -> Result<()
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    let head = repo.head().map_err(|e| e.to_string())?;
-    let commit = head.peel_to_commit().map_err(|e| e.to_string())?;
-    let tree = commit.tree().map_err(|e| e.to_string())?;
+    let head = repo
+        .head()
+        .map_err(|e| format!("Could not get head of repository: {e}"))?;
+    let commit = head
+        .peel_to_commit()
+        .map_err(|e| format!("Could not get head commit: {e}"))?;
+    let tree = commit
+        .tree()
+        .map_err(|e| format!("Could not get tree of head commit: {e}"))?;
 
     let mut status_opts = git2::StatusOptions::new();
     status_opts.include_untracked(true);
     let statuses = repo
         .statuses(Some(&mut status_opts))
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not get statuses of changes of the repository: {e}"))?;
 
     let tree_obj = tree.as_object();
     for file in &files {
@@ -498,7 +552,9 @@ pub async fn discard_changes(repo_path: String, files: Vec<String>) -> Result<()
             // For untracked files, remove them directly
             let full_path = std::path::Path::new(&repo_path).join(file);
             if full_path.exists() {
-                std::fs::remove_file(&full_path).map_err(|e| e.to_string())?;
+                std::fs::remove_file(&full_path).map_err(|e| {
+                    format!("Failed no remove file change <{:#?}>: {}", full_path, e)
+                })?;
             }
         } else {
             // For tracked files, use checkout to restore from HEAD
@@ -589,13 +645,16 @@ pub async fn drop_stash(repo_path: String, index: i64) -> Result<(), String> {
     info!("Dropping stash with index {index} in repo {repo_path}");
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
-    let mut repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+
+    let mut repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     let index = index
         .try_into()
-        .map_err(|e: TryFromIntError| e.to_string())?;
+        .map_err(|e: TryFromIntError| format!(": {e}"))?;
 
-    repo.stash_drop(index).map_err(|e| e.to_string())?;
+    repo.stash_drop(index)
+        .map_err(|e| format!("Failed to drop stash: {e}"))?;
 
     Ok(())
 }
@@ -632,10 +691,11 @@ pub async fn add_remote(
 ) -> Result<(), String> {
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     repo.remote(&remote_name, &remote_url)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to add remote: {e}"))?;
 
     Ok(())
 }
@@ -644,10 +704,11 @@ pub async fn add_remote(
 pub async fn delete_remote(repo_path: String, remote_name: String) -> Result<(), String> {
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
     repo.remote_delete(&remote_name)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to delete repository: {e}"))?;
 
     Ok(())
 }
@@ -666,13 +727,17 @@ pub async fn fetch_remote(
 
     for remote_name in &remotes {
         let refs_before = {
-            let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+            let repo = Repository::open(&repo_path)
+                .map_err(|e| format!("Failed to open repository: {e}"))?;
             get_remote_refs(&repo, remote_name)?
         };
 
         let git2_fetch_success = {
-            let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-            let mut remote = repo.find_remote(remote_name).map_err(|e| e.to_string())?;
+            let repo = Repository::open(&repo_path)
+                .map_err(|e| format!("Failed to open repository: {e}"))?;
+            let mut remote = repo
+                .find_remote(remote_name)
+                .map_err(|e| format!("Could not find remote {remote_name} in repository: {e}"))?;
             let refspecs = &[] as &[&str];
             let auth = GitAuthenticator::new();
 
@@ -712,7 +777,8 @@ pub async fn fetch_remote(
 
         // Check for updates after fetching
         let refs_after = {
-            let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+            let repo = Repository::open(&repo_path)
+                .map_err(|e| format!("Failed to open repository: {e}"))?;
             get_remote_refs(&repo, remote_name)?
         };
 
@@ -735,13 +801,20 @@ fn get_remote_refs(
     let mut refs = HashMap::new();
     let remote_prefix = format!("refs/remotes/{}/", remote_name);
 
-    let references = repo.references().map_err(|e| e.to_string())?;
+    let references = repo
+        .references()
+        .map_err(|e| format!("Could not get references of repository: {e}"))?;
     for reference_result in references {
-        let reference = reference_result.map_err(|e| e.to_string())?;
+        let reference = if reference_result.is_ok() {
+            reference_result.expect("Error obtaining repository refs")
+        } else {
+            continue;
+        };
+
         if let Some(name) = reference.name() {
             if name.starts_with(&remote_prefix) {
                 if let Some(target) = reference.target() {
-                    refs.insert(name.to_string(), target);
+                    refs.insert(target.to_string(), target);
                 }
             }
         }
@@ -827,8 +900,12 @@ pub async fn push_remote(
     let refspec = format!("refs/heads/{}:refs/heads/{}", local_branch, remote_branch);
 
     let push_result = {
-        let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
-        let mut remote = repo.find_remote(&remote_name).map_err(|e| e.to_string())?;
+        let repo =
+            Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
+
+        let mut remote = repo
+            .find_remote(&remote_name)
+            .map_err(|e| format!("Failed to find remote \"{remote_name}\" in repository: {e}"))?;
 
         // Add "+" prefix to refspec if force_push is true
         let refspec = if force_push {
@@ -889,14 +966,19 @@ pub async fn create_branch(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    let head = repo.head().map_err(|e| e.to_string())?;
-    let commit = head.peel_to_commit().map_err(|e| e.to_string())?;
+    let head = repo
+        .head()
+        .map_err(|e| format!("Could not obtain head of repository: {e}"))?;
+    let commit = head
+        .peel_to_commit()
+        .map_err(|e| format!("Could not obtain head commit: {e}"))?;
 
     let branch_ref = repo
         .branch(&branch_name, &commit, false)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Could not create new branch \"{branch_name}\": {e}"))?;
 
     if checkout {
         let branch_ref = branch_ref
@@ -907,9 +989,10 @@ pub async fn create_branch(
 
         let mut checkout_builder = CheckoutBuilder::new();
 
-        repo.set_head(&branch_ref).map_err(|e| e.to_string())?;
+        repo.set_head(&branch_ref)
+            .map_err(|e| format!("Could not set head to new branch: {e}"))?;
         repo.checkout_head(Some(&mut checkout_builder))
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Failed to checkout to new head while creating branch: {e}"))?;
     }
 
     Ok(format!("Successfully created {} branch", branch_name))
@@ -925,12 +1008,16 @@ pub async fn commit(
 
     let _repo_lock = RepoGuard::new(&repo_path, false)?;
 
-    let repo = Repository::open(&repo_path).map_err(|e| e.to_string())?;
+    let repo =
+        Repository::open(&repo_path).map_err(|e| format!("Failed to open repository: {e}"))?;
 
-    let mut index = repo.index().map_err(|e| e.to_string())?;
+    let mut index = repo
+        .index()
+        .map_err(|e| format!("Could not obtain index of repository: {e}"))?;
 
     let config = config()?;
-    let signature = Signature::now(&config.username, &config.email).map_err(|e| e.to_string())?;
+    let signature = Signature::now(&config.username, &config.email)
+        .map_err(|e| format!("Could not get signature in repository: {e}"))?;
 
     let message = if commit_body.trim().is_empty() {
         commit_summary.to_string()
@@ -938,13 +1025,19 @@ pub async fn commit(
         format!("{}\n\n{}", commit_summary, commit_body)
     };
 
-    let tree_id = index.write_tree().map_err(|e| e.to_string())?;
-    let tree = repo.find_tree(tree_id).map_err(|e| e.to_string())?;
+    let tree_id = index
+        .write_tree()
+        .map_err(|e| format!("Failed to write tree to index: {e}"))?;
+    let tree = repo
+        .find_tree(tree_id)
+        .map_err(|e| format!("Failed to find written tree on repository: {e}"))?;
 
     let parents = match repo.head() {
         Ok(head) => {
             if let Some(oid) = head.target() {
-                vec![repo.find_commit(oid).map_err(|e| e.to_string())?]
+                vec![repo
+                    .find_commit(oid)
+                    .map_err(|e| format!("Failed to find head commit: {e}"))?]
             } else {
                 vec![]
             }
@@ -962,7 +1055,7 @@ pub async fn commit(
         &tree,
         &parent_refs,
     )
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| format!("Failed to create commit: {e}"))?;
 
     Ok(())
 }

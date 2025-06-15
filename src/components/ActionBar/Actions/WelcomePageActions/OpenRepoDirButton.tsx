@@ -14,8 +14,7 @@ const OpenRepoDirButton: React.FC = () => {
       const path = workspace.activeTab;
       await openPath(path);
     } catch (error) {
-      console.error('Error opening file explorer:', error);
-      setNotification('Error opening file explorer: ' + error);
+      setNotification(error as string);
     }
   };
 

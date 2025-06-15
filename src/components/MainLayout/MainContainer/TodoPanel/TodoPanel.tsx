@@ -1,8 +1,8 @@
 import styles from './TodoPanel.module.css';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMainContext } from "../../../../context/MainContext";
-import MDEditor, { ICommand } from '@uiw/react-md-editor';
 import { useAppContext } from '../../../../context/AppContext';
+import MDEditor, { ICommand } from 'stiff-rock-react-md-editor';
 import { invoke } from '@tauri-apps/api/core';
 
 const TodoPanel: React.FC<{ isAcitve: boolean }> = ({ isAcitve }) => {
@@ -29,7 +29,6 @@ const TodoPanel: React.FC<{ isAcitve: boolean }> = ({ isAcitve }) => {
     setTodoListLocation(location);
     invoke<string>("create_todo_file", { repoPath: workspace.activeTab }).then(setTodoText)
       .catch((e) => {
-        console.error(e);
         setNotification(e);
       });
   }, [config]);
@@ -39,7 +38,6 @@ const TodoPanel: React.FC<{ isAcitve: boolean }> = ({ isAcitve }) => {
   // Saving function, hooks and calls
   const saveTodoFile = (repoPath: string, todoText: string) => {
     invoke("save_todo_file", { repoPath, todoText }).catch((e) => {
-      console.error(e);
       setNotification(e);
     });
   }

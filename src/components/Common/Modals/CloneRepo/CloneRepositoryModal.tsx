@@ -46,7 +46,6 @@ const CloneRepositoryModal: React.FC = () => {
         setNotification(msg);
       })
       .catch((e) => {
-        console.error(e);
         setNotification(e);
       })
       .finally(() => setActiveModal(""));

@@ -4,7 +4,6 @@ import { Base64 } from 'js-base64';
 import { useAppContext } from './AppContext';
 import { invoke } from '@tauri-apps/api/core';
 import { FileItem } from '../components/MainLayout/MainContainer/LocalChanges/LocalChanges';
-import { LoadingIndicatorProps } from '../components/Common/Modals/LoadingIndicator/LoadingIndicator';
 
 interface MainContextType {
   // State 
@@ -173,7 +172,6 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     statusUpdatePromiseRef.current = invoke<RepoStatus>("get_repo_status", { repoPath })
       .then(setRepoStatus)
       .catch(e => {
-        console.error(e);
         setNotification(e);
       })
   };
@@ -182,7 +180,6 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     statusUpdatePromiseRef.current = invoke<Stash[]>("get_stashed_changes", { repoPath })
       .then(setRepoStashes)
       .catch(e => {
-        console.error(e);
         setNotification(e);
       }).finally(() => setIsStashLoading(false));
   };
@@ -200,9 +197,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     }))
 
     statusUpdatePromiseRef.current = invoke("add_to_staging_area", { repoPath, files }).catch((e) => {
-      const msg = `Error staging files - ${e}`
-      console.error(msg);
-      setNotification(msg);
+      setNotification(e);
     }).finally(() => setIsStageLoading(false));
   };
 
@@ -217,9 +212,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     }))
 
     statusUpdatePromiseRef.current = invoke("remove_from_staging_area", { repoPath, files }).catch((e) => {
-      const msg = `Error unstaging files - ${e}`
-      console.error(msg);
-      setNotification(msg);
+      setNotification(e);
     }).finally(() => setIsUnstageLoading(false));
   };
 
@@ -234,8 +227,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     }))
 
     statusUpdatePromiseRef.current = invoke("discard_changes", { repoPath, files }).catch((e) => {
-      console.error("Error discarding changes: ", e);
-      setNotification("Error discarding changes: " + e);
+      setNotification(e);
     }).finally(() => setIsUnstageLoading(false));
   };
 
@@ -263,8 +255,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     let includeUntracked = fileStatus === "unstaged";
 
     statusUpdatePromiseRef.current = invoke("stash_changes", { repoPath, stashMsg, files, includeUntracked }).catch((e) => {
-      console.error("Error stashing changes: ", e);
-      setNotification("Error stashing changes: " + e);
+      setNotification(e);
     }).finally(() => loadingIndicatorState(false));
   };
 
@@ -276,8 +267,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     setIsStashLoading(true);
 
     statusUpdatePromiseRef.current = invoke("apply_stash", { repoPath, index }).catch((e) => {
-      console.error("Error applying stash: ", e);
-      setNotification("Error applying stash: " + e);
+      setNotification(e);
     }).finally(() => setIsStashLoading(false));
   };
 
@@ -289,8 +279,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     setIsStashLoading(true);
 
     statusUpdatePromiseRef.current = invoke("drop_stash", { repoPath, index }).catch((e) => {
-      console.error("Error dropping stash: ", e);
-      setNotification("Error dropping stash: " + e);
+      setNotification(e);
     }).finally(() => setIsStashLoading(false));
   };
 
@@ -302,8 +291,7 @@ export const MainProvider: React.FC<MainProviderProps> = (props) => {
     setIsStashLoading(true);
 
     statusUpdatePromiseRef.current = invoke("pop_stash", { repoPath, index }).catch((e) => {
-      console.error("Error popping stash: ", e);
-      setNotification("Error popping stash: " + e);
+      setNotification(e);
     }).finally(() => setIsStashLoading(false));
   };
 

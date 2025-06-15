@@ -13,7 +13,6 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import ConfirmationModal from "./components/Common/Modals/ConfirmationModal/ConfirmationModal";
 import LoadingIndicator from "./components/Common/Modals/LoadingIndicator/LoadingIndicator";
 
-//TODO: FRONTEND LOGS?
 function App() {
   const { workspace, notification, setNotification, isType, activeModal, showLoadingIndicator } = useAppContext();
 
@@ -26,12 +25,18 @@ function App() {
     }, []);
   }
 
-  //TODO: ANY ERROR ALSO DO CONSOLE.ERROR
   useEffect(() => {
     if (!notification) return;
 
-    if (notification.toLowerCase().includes("error")) toast.error(notification);
-    else toast.info(notification);
+    const msg = notification.toLowerCase();
+    if (msg.includes("error") || msg.includes("failed") || msg.includes("could not") || msg.includes("unable")) {
+      console.error(notification);
+      toast.error(notification);
+    }
+    else {
+      console.log(notification);
+      toast.info(notification);
+    }
 
     setNotification("");
   }, [notification]);

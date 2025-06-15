@@ -41,7 +41,7 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
     const files = currentSelectedFiles.map(f => f.fileName);
 
     if (!workspace) {
-      console.error("Error opening context menu: Unexpected null workspace");
+      console.warn("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
@@ -84,8 +84,7 @@ const FileStatusChangeItem: React.FC<FileChangeItemProps> = (props) => {
         text: "Open in file explorer",
         action: () => {
           join(workspace.activeTab, fileName).then((full_path) => revealItemInDir(full_path)).catch((e) => {
-            console.error("Error while opening file in file explorer: ", e);
-            setNotification("Could not open file in file exlorer: " + e);
+            setNotification(e);
           })
         },
       })

@@ -31,7 +31,6 @@ const RebaseBranchModal: React.FC = () => {
       sourceBranch,
       targetBranch
     }).catch((e) => {
-      console.error(e);
       setNotification(e);
     }).finally(() => setActiveModal(""));
   };

@@ -32,13 +32,13 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
     event.preventDefault();
 
     if (!workspace) {
-      console.error("Error opening context menu: Unexpected null workspace");
+      console.warn("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
 
     if (!repoInfo) {
-      console.error("Error opening context menu: Unexpected null repoInfo");
+      console.warn("Error opening context menu: Unexpected null repoInfo");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
@@ -81,7 +81,6 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
           openConfirmationModal({
             onConfirmed() {
               invoke("checkout_branch", { repoPath, branchName }).catch((e) => {
-                console.error(e);
                 setNotification(e);
               }).finally(() => setActiveModal(""));
             },
@@ -98,7 +97,6 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
           openConfirmationModal({
             onConfirmed() {
               invoke("delete_branch", { repoPath, branchName, isLocal: true }).catch((e) => {
-                console.error(e);
                 setNotification(e);
               }).finally(() => setActiveModal(""));
             },
@@ -130,9 +128,7 @@ const LocalBranchElement: React.FC<LocalBranchElementProps> = (props) => {
       text: "Copy branch name",
       action: () => {
         navigator.clipboard.writeText(branchName).catch(e => {
-          const msg = `Failed to copy remote local branch name: ${e}`;
-          setNotification(msg);
-          console.error(msg);
+          setNotification(`Failed to copy remote local branch name: ${e}`);
         });
       },
     });

@@ -31,9 +31,7 @@ const CommitButton: React.FC<CommitButtonProps> = (props) => {
       setCommitSummary("");
       setCommitBody("");
     }).catch((e) => {
-      const msg = `Error during commit - ${e}`;
-      console.error(msg)
-      setNotification(msg);
+      setNotification(e);
     });
 
     const shortSummary = commitSummary.length > 25 ? commitSummary.slice(0, 25) + "..." : commitSummary;

@@ -1,5 +1,5 @@
 [package]
-name = "gittaur"
+name = "GitTaur"
 version = "0.1.0"
 description = "A Git GUI client made in tauri"
 authors = ["StiffRock"]

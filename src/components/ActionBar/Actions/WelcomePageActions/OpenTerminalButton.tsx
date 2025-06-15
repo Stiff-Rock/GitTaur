@@ -13,9 +13,7 @@ const OpenTerminalDirButton: React.FC = () => {
     const path = isType("Welcome") || isType("Config") ? "" : workspace.activeTab;
 
     invoke('open_terminal', { path }).catch((e) => {
-      const errMsg = `Failed to open terminal: ${e}`
-      console.error(errMsg);
-      setNotification(errMsg)
+      setNotification(e)
     });
   };
 

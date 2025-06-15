@@ -20,7 +20,6 @@ const RenameBranchModal: React.FC = () => {
     const repoPath = workspace.activeTab;
 
     invoke("rename_branch", { repoPath, oldBranchName, newBranchName }).catch((e) => {
-      console.error(e);
       setNotification(e);
     }).finally(() => setActiveModal(""));
   };

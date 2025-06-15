@@ -80,7 +80,6 @@ const StashesSection: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
     invoke<string>("get_file_diff_from_stash", { repoPath, stashId, filePath })
       .then(setFileDiff)
       .catch((e) => {
-        console.error(e);
         setNotification(e);
       });
   };

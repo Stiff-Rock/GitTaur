@@ -23,7 +23,6 @@ import RenameBranchModal from '../Common/Modals/RenameBranchModal/RenameBranchMo
 import TagBranchModal from '../Common/Modals/CreateTagModal/CreateTagModal';
 import MergeBranchModal from '../Common/Modals/MergeBranchModal/MergeBranchModal';
 import RebaseBranchModal from '../Common/Modals/RebaseBranchModal/RebaseBranchModal';
-import LoadingIndicator from '../Common/Modals/LoadingIndicator/LoadingIndicator';
 
 interface RepoEvents {
   headEvent: string,
@@ -64,7 +63,7 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     if (!workspace) return;
     invoke<RepoInfo>("get_repo_info", { repoPath })
       .then(setRepoInfo)
-      .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
+      .catch((e) => setNotification(e));
   }
 
   const getCommitHistory = async () => {
@@ -88,7 +87,7 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         };
         setRepoHistory(repoHistory);
       })
-      .catch((e) => { if (e) { console.error(e); setNotification("Error: " + e); } });
+      .catch((e) => setNotification(e));
   }
 
   // Fetch repo data on load and initilize repository watchers
@@ -113,7 +112,6 @@ const MainLayout: React.FC<{ isActive: boolean }> = ({ isActive }) => {
       const repoEvents: RepoEvents = { headEvent, fetchEvent, statusEvent };
       invoke("setup_watchers", { repoPath, repoEvents })
         .catch(e => {
-          console.error(e);
           setNotification(e);
         });
 

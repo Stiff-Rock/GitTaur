@@ -39,7 +39,6 @@ const ConfigPage: React.FC = () => {
 
       invoke("set_global_git_user_id", { username, email }).catch((e) => {
         const msg = `Error updating git global identification - ${e}`;
-        console.error(msg)
         setNotification(msg);
       });
     }
@@ -56,7 +55,6 @@ const ConfigPage: React.FC = () => {
     openConfirmationModal({
       onConfirmed: () => {
         invoke<Configuration>("restore_config_defaults").then(setConfig).catch((e) => {
-          console.error(e);
           setNotification(e);
         }).finally(() => setActiveModal(""));
       },
@@ -107,7 +105,7 @@ const ConfigPage: React.FC = () => {
 
           {configTab === "general" &&
             <div className={styles.configSection}>
-              {/*TODO: Internacionalización
+              {/*NOTE: Internacionalización
               <ComboBox
                 title="Language"
                 onItemSelected={(value) => { setNewConfig({ ...newConfig, lang: languageCodeFromName(value) }) }}
@@ -145,7 +143,7 @@ const ConfigPage: React.FC = () => {
                 className={styles.configInput}
               />
 
-              {/*NOTE: Maybe provide the path of the system default*/}
+              {/*Maybe provide the path of the system default*/}
               {/*<InputField
                 title="Terminal app"
                 type="text"

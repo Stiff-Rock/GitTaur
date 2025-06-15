@@ -3,6 +3,31 @@
 version = 4
 
 [[package]]
+name = "GitTaur"
+version = "0.1.0"
+dependencies = [
+ "auth-git2-pem",
+ "chrono",
+ "dirs 6.0.0",
+ "fern",
+ "git2",
+ "indexmap 2.9.0",
+ "log",
+ "notify",
+ "regex",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tauri-plugin-os",
+ "tauri-plugin-shell",
+ "tinyfiledialogs",
+ "tokio",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1533,31 +1558,6 @@ dependencies = [
  "openssl-probe",
  "openssl-sys",
  "url",
-]
-
-[[package]]
-name = "gittaur"
-version = "0.1.0"
-dependencies = [
- "auth-git2-pem",
- "chrono",
- "dirs 6.0.0",
- "fern",
- "git2",
- "indexmap 2.9.0",
- "log",
- "notify",
- "regex",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tauri-plugin-os",
- "tauri-plugin-shell",
- "tinyfiledialogs",
- "tokio",
 ]
 
 [[package]]

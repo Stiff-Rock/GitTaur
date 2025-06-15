@@ -5,68 +5,68 @@ Here you can find credited all the dependencies of this project. If yours is mis
 ## Frontend Dependencies
 
 [@ampproject/remapping@2.3.0](https://github.com/ampproject/remapping) - Apache-2.0<br>
-[@babel/code-frame@7.26.2](https://github.com/babel/babel) - MIT<br>
-[@babel/compat-data@7.26.8](https://github.com/babel/babel) - MIT<br>
-[@babel/core@7.26.9](https://github.com/babel/babel) - MIT<br>
-[@babel/generator@7.26.9](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-compilation-targets@7.26.5](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-module-imports@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-module-transforms@7.26.0](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-plugin-utils@7.26.5](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-string-parser@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-validator-identifier@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/helper-validator-option@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/helpers@7.26.10](https://github.com/babel/babel) - MIT<br>
-[@babel/parser@7.26.9](https://github.com/babel/babel) - MIT<br>
-[@babel/plugin-transform-react-jsx-self@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/plugin-transform-react-jsx-source@7.25.9](https://github.com/babel/babel) - MIT<br>
-[@babel/runtime@7.27.4](https://github.com/babel/babel) - MIT<br>
-[@babel/template@7.26.9](https://github.com/babel/babel) - MIT<br>
-[@babel/traverse@7.26.9](https://github.com/babel/babel) - MIT<br>
-[@babel/types@7.26.10](https://github.com/babel/babel) - MIT<br>
-[@esbuild/win32-x64@0.25.0](https://github.com/evanw/esbuild) - MIT<br>
+[@babel/code-frame@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/compat-data@7.27.5](https://github.com/babel/babel) - MIT<br>
+[@babel/core@7.27.4](https://github.com/babel/babel) - MIT<br>
+[@babel/generator@7.27.5](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-compilation-targets@7.27.2](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-module-imports@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-module-transforms@7.27.3](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-plugin-utils@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-string-parser@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-validator-identifier@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/helper-validator-option@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/helpers@7.27.6](https://github.com/babel/babel) - MIT<br>
+[@babel/parser@7.27.5](https://github.com/babel/babel) - MIT<br>
+[@babel/plugin-transform-react-jsx-self@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/plugin-transform-react-jsx-source@7.27.1](https://github.com/babel/babel) - MIT<br>
+[@babel/runtime@7.27.6](https://github.com/babel/babel) - MIT<br>
+[@babel/template@7.27.2](https://github.com/babel/babel) - MIT<br>
+[@babel/traverse@7.27.4](https://github.com/babel/babel) - MIT<br>
+[@babel/types@7.27.6](https://github.com/babel/babel) - MIT<br>
+[@esbuild/win32-x64@0.25.5](https://github.com/evanw/esbuild) - MIT<br>
 [@jridgewell/gen-mapping@0.3.8](https://github.com/jridgewell/gen-mapping) - MIT<br>
 [@jridgewell/resolve-uri@3.1.2](https://github.com/jridgewell/resolve-uri) - MIT<br>
 [@jridgewell/set-array@1.2.1](https://github.com/jridgewell/set-array) - MIT<br>
 [@jridgewell/sourcemap-codec@1.5.0](https://github.com/jridgewell/sourcemap-codec) - MIT<br>
 [@jridgewell/trace-mapping@0.3.25](https://github.com/jridgewell/trace-mapping) - MIT<br>
-[@primer/octicons-react@19.15.1](https://github.com/primer/octicons) - MIT<br>
-[@rollup/rollup-win32-x64-msvc@4.34.9](https://github.com/rollup/rollup) - MIT<br>
-[@tauri-apps/api@2.3.0](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
-[@tauri-apps/cli-win32-x64-msvc@2.3.1](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
-[@tauri-apps/cli@2.3.1](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
-[@tauri-apps/plugin-dialog@2.2.0](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
-[@tauri-apps/plugin-opener@2.2.6](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
+[@primer/octicons-react@19.15.2](https://github.com/primer/octicons) - MIT<br>
+[@rolldown/pluginutils@1.0.0-beta.11](https://github.com/rolldown/rolldown) - MIT<br>
+[@rollup/rollup-win32-x64-msvc@4.43.0](https://github.com/rollup/rollup) - MIT<br>
+[@tauri-apps/api@2.5.0](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
+[@tauri-apps/cli-win32-x64-msvc@2.5.0](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
+[@tauri-apps/cli@2.5.0](https://github.com/tauri-apps/tauri) - Apache-2.0 OR MIT<br>
+[@tauri-apps/plugin-dialog@2.2.2](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
+[@tauri-apps/plugin-opener@2.2.7](https://github.com/tauri-apps/plugins-workspace) - MIT OR Apache-2.0<br>
 [@types/babel__core@7.20.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/babel__generator@7.6.8](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/babel__generator@7.27.0](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/babel__template@7.4.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/babel__traverse@7.20.6](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/babel__traverse@7.20.7](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/debug@4.1.12](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/estree-jsx@1.0.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/estree@1.0.6](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/estree@1.0.7](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/hast@2.3.10](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/hast@3.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/md5@2.3.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/mdast@4.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/ms@2.1.0](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/node@22.15.18](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/node@24.0.1](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/prismjs@1.26.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/prop-types@15.7.14](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/react-dom@18.3.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
-[@types/react@18.3.18](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/prop-types@15.7.15](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/react-dom@18.3.7](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/react@18.3.23](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/unist@2.0.11](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/unist@3.0.3](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@uiw/copy-to-clipboard@1.0.17](https://github.com/uiwjs/copy-to-clipboard) - MIT<br>
 [@uiw/react-markdown-preview@5.1.4](https://github.com/uiwjs/react-markdown-preview) - MIT<br>
-[@uiw/react-md-editor@4.0.7](https://github.com/uiwjs/react-md-editor) - MIT<br>
 [@ungap/structured-clone@1.3.0](https://github.com/ungap/structured-clone) - ISC<br>
-[@vitejs/plugin-react@4.3.4](https://github.com/vitejs/vite-plugin-react) - MIT<br>
+[@vitejs/plugin-react@4.5.2](https://github.com/vitejs/vite-plugin-react) - MIT<br>
 [add-px-to-style@1.0.0](https://github.com/mikkoh/add-px-to-style) - MIT<br>
 [bail@2.0.2](https://github.com/wooorm/bail) - MIT<br>
 [bcp-47-match@2.0.3](https://github.com/wooorm/bcp-47-match) - MIT<br>
 [boolbase@1.0.0](https://github.com/fb55/boolbase) - ISC<br>
-[browserslist@4.24.4](https://github.com/browserslist/browserslist) - MIT<br>
-[caniuse-lite@1.0.30001701](https://github.com/browserslist/caniuse-lite) - CC-BY-4.0<br>
+[browserslist@4.25.0](https://github.com/browserslist/browserslist) - MIT<br>
+[caniuse-lite@1.0.30001723](https://github.com/browserslist/caniuse-lite) - CC-BY-4.0<br>
 [ccount@2.0.1](https://github.com/wooorm/ccount) - MIT<br>
 [character-entities-html4@2.1.0](https://github.com/wooorm/character-entities-html4) - MIT<br>
 [character-entities-legacy@3.0.0](https://github.com/wooorm/character-entities-legacy) - MIT<br>
@@ -79,20 +79,20 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [crypt@0.0.2](https://github.com/pvorb/node-crypt) - BSD-3-Clause<br>
 [css-selector-parser@3.1.2](https://github.com/mdevils/css-selector-parser) - MIT<br>
 [csstype@3.1.3](https://github.com/frenic/csstype) - MIT<br>
-[debug@4.4.0](https://github.com/debug-js/debug) - MIT<br>
-[decode-named-character-reference@1.1.0](https://github.com/wooorm/decode-named-character-reference) - MIT<br>
+[debug@4.4.1](https://github.com/debug-js/debug) - MIT<br>
+[decode-named-character-reference@1.2.0](https://github.com/wooorm/decode-named-character-reference) - MIT<br>
 [dequal@2.0.3](https://github.com/lukeed/dequal) - MIT<br>
 [devlop@1.1.0](https://github.com/wooorm/devlop) - MIT<br>
 [direction@2.0.1](https://github.com/wooorm/direction) - MIT<br>
 [dom-css@2.1.0](https://github.com/mattdesl/dom-css) - MIT<br>
-[electron-to-chromium@1.5.109](https://github.com/kilian/electron-to-chromium) - ISC<br>
-[entities@6.0.0](https://github.com/fb55/entities) - BSD-2-Clause<br>
-[esbuild@0.25.0](https://github.com/evanw/esbuild) - MIT<br>
+[electron-to-chromium@1.5.167](https://github.com/kilian/electron-to-chromium) - ISC<br>
+[entities@6.0.1](https://github.com/fb55/entities) - BSD-2-Clause<br>
+[esbuild@0.25.5](https://github.com/evanw/esbuild) - MIT<br>
 [escalade@3.2.0](https://github.com/lukeed/escalade) - MIT<br>
 [escape-string-regexp@5.0.0](https://github.com/sindresorhus/escape-string-regexp) - MIT<br>
 [estree-util-is-identifier-name@3.0.0](https://github.com/syntax-tree/estree-util-is-identifier-name) - MIT<br>
 [extend@3.0.2](https://github.com/justmoon/node-extend) - MIT<br>
-[fdir@6.4.4](https://github.com/thecodrr/fdir) - MIT<br>
+[fdir@6.4.6](https://github.com/thecodrr/fdir) - MIT<br>
 [gensync@1.0.0-beta.2](https://github.com/loganfsmyth/gensync) - MIT<br>
 [github-slugger@2.0.0](https://github.com/Flet/github-slugger) - ISC<br>
 [gittaur@0.1.0](undefined) - UNLICENSED<br>
@@ -175,7 +175,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [micromark-util-types@2.0.2](https://github.com/micromark/micromark/tree/main/packages/micromark-util-types) - MIT<br>
 [micromark@4.0.2](https://github.com/micromark/micromark/tree/main/packages/micromark) - MIT<br>
 [ms@2.1.3](https://github.com/vercel/ms) - MIT<br>
-[nanoid@3.3.8](https://github.com/ai/nanoid) - MIT<br>
+[nanoid@3.3.11](https://github.com/ai/nanoid) - MIT<br>
 [node-releases@2.0.19](https://github.com/chicoxyzzy/node-releases) - MIT<br>
 [nth-check@2.1.1](https://github.com/fb55/nth-check) - BSD-2-Clause<br>
 [object-assign@4.1.1](https://github.com/sindresorhus/object-assign) - MIT<br>
@@ -185,7 +185,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [performance-now@2.1.0](https://github.com/braveg1rl/performance-now) - MIT<br>
 [picocolors@1.1.1](https://github.com/alexeyraspopov/picocolors) - ISC<br>
 [picomatch@4.0.2](https://github.com/micromatch/picomatch) - MIT<br>
-[postcss@8.5.3](https://github.com/postcss/postcss) - MIT<br>
+[postcss@8.5.5](https://github.com/postcss/postcss) - MIT<br>
 [prefix-style@2.0.1](https://github.com/mattdesl/prefix-style) - MIT<br>
 [prop-types@15.8.1](https://github.com/facebook/prop-types) - MIT<br>
 [property-information@6.5.0](https://github.com/wooorm/property-information) - MIT<br>
@@ -196,8 +196,8 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [react-dom@18.3.1](https://github.com/facebook/react) - MIT<br>
 [react-is@16.13.1](https://github.com/facebook/react) - MIT<br>
 [react-markdown@9.0.3](https://github.com/remarkjs/react-markdown) - MIT<br>
-[react-refresh@0.14.2](https://github.com/facebook/react) - MIT<br>
-[react-resizable-panels@2.1.7](https://github.com/bvaughn/react-resizable-panels) - MIT<br>
+[react-refresh@0.17.0](https://github.com/facebook/react) - MIT<br>
+[react-resizable-panels@2.1.9](https://github.com/bvaughn/react-resizable-panels) - MIT<br>
 [react-toastify@11.0.5](https://github.com/fkhadra/react-toastify) - MIT<br>
 [react@18.3.1](https://github.com/facebook/react) - MIT<br>
 [refractor@4.9.0](https://github.com/wooorm/refractor) - MIT<br>
@@ -217,22 +217,23 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [remark-parse@11.0.0](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) - MIT<br>
 [remark-rehype@11.1.2](https://github.com/remarkjs/remark-rehype) - MIT<br>
 [remark-stringify@11.0.0](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify) - MIT<br>
-[rollup@4.34.9](https://github.com/rollup/rollup) - MIT<br>
+[rollup@4.43.0](https://github.com/rollup/rollup) - MIT<br>
 [scheduler@0.23.2](https://github.com/facebook/react) - MIT<br>
 [semver@6.3.1](https://github.com/npm/node-semver) - ISC<br>
 [source-map-js@1.2.1](https://github.com/7rulnik/source-map-js) - BSD-3-Clause<br>
 [space-separated-tokens@2.0.2](https://github.com/wooorm/space-separated-tokens) - MIT<br>
+[stiff-rock-react-md-editor@1.0.0](https://github.com/uiwjs/react-md-editor) - MIT<br>
 [stringify-entities@4.0.4](https://github.com/wooorm/stringify-entities) - MIT<br>
 [style-to-js@1.1.16](https://github.com/remarkablemark/style-to-js) - MIT<br>
 [style-to-object@1.0.8](https://github.com/remarkablemark/style-to-object) - MIT<br>
-[tinyglobby@0.2.13](https://github.com/SuperchupuDev/tinyglobby) - MIT<br>
+[tinyglobby@0.2.14](https://github.com/SuperchupuDev/tinyglobby) - MIT<br>
 [to-camel-case@1.0.0](https://github.com/ianstormtaylor/to-camel-case) - MIT<br>
 [to-no-case@1.0.2](https://github.com/ianstormtaylor/to-no-case) - MIT<br>
 [to-space-case@1.0.0](https://github.com/ianstormtaylor/to-space-case) - MIT<br>
 [trim-lines@3.0.1](https://github.com/wooorm/trim-lines) - MIT<br>
 [trough@2.2.0](https://github.com/wooorm/trough) - MIT<br>
 [typescript@5.6.3](https://github.com/microsoft/TypeScript) - Apache-2.0<br>
-[undici-types@6.21.0](https://github.com/nodejs/undici) - MIT<br>
+[undici-types@7.8.0](https://github.com/nodejs/undici) - MIT<br>
 [unified@11.0.5](https://github.com/unifiedjs/unified) - MIT<br>
 [unist-util-filter@5.0.1](https://github.com/syntax-tree/unist-util-filter) - MIT<br>
 [unist-util-is@6.0.0](https://github.com/syntax-tree/unist-util-is) - MIT<br>
@@ -244,7 +245,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [vfile-location@5.0.3](https://github.com/vfile/vfile-location) - MIT<br>
 [vfile-message@4.0.2](https://github.com/vfile/vfile-message) - MIT<br>
 [vfile@6.0.3](https://github.com/vfile/vfile) - MIT<br>
-[vite@6.3.4](https://github.com/vitejs/vite) - MIT<br>
+[vite@6.3.5](https://github.com/vitejs/vite) - MIT<br>
 [web-namespaces@2.0.1](https://github.com/wooorm/web-namespaces) - MIT<br>
 [yallist@3.1.1](https://github.com/isaacs/yallist) - ISC<br>
 [zwitch@2.0.4](https://github.com/wooorm/zwitch) - MIT<br>
@@ -253,13 +254,13 @@ Here you can find credited all the dependencies of this project. If yours is mis
 
 ## Backend Dependencies
 
-[target-lexicon@0.12.16](https://github.com/bytecodealliance/target-lexicon) - Apache License 2.0<br>
+[sync_wrapper@1.0.2](https://github.com/Actyx/sync_wrapper) - Apache License 2.0<br>
 [ryu@1.0.18](https://github.com/dtolnay/ryu) - Apache License 2.0<br>
 [gethostname@1.0.2](https://codeberg.org/swsnr/gethostname.rs.git) - Apache License 2.0<br>
 [dpi@0.1.1](https://github.com/rust-windowing/winit) - Apache License 2.0<br>
 [tao@0.31.1](https://github.com/tauri-apps/tao) - Apache License 2.0<br>
 [dunce@1.0.5](https://gitlab.com/kornelski/dunce) - Apache License 2.0<br>
-[sync_wrapper@1.0.2](https://github.com/Actyx/sync_wrapper) - Apache License 2.0<br>
+[target-lexicon@0.12.16](https://github.com/bytecodealliance/target-lexicon) - Apache License 2.0<br>
 [auth-git2-pem@0.5.7-pem](https://github.com/Stiff-Rock/auth-git2-rs) - BSD 2-Clause &quot;Simplified&quot; License<br>
 [terminal-prompt@0.2.3](https://github.com/de-vri-es/terminal-prompt-rs) - BSD 2-Clause &quot;Simplified&quot; License<br>
 [alloc-no-stdlib@2.0.4](https://github.com/dropbox/rust-alloc-no-stdlib) - BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License<br>
@@ -791,16 +792,6 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [option-ext@0.2.0](https://github.com/soc/option-ext.git) - Mozilla Public License 2.0<br>
 [selectors@0.22.0](https://github.com/servo/servo) - Mozilla Public License 2.0<br>
 [thin-slice@0.1.1](https://github.com/heycam/thin-slice) - Mozilla Public License 2.0<br>
-[litemap@0.7.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[tinystr@0.7.6](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[unicode-ident@1.0.14](https://github.com/dtolnay/unicode-ident) - Unicode License v3<br>
-[writeable@0.5.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[yoke-derive@0.7.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[yoke@0.7.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerofrom-derive@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerofrom@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerovec-derive@0.10.3](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerovec@0.10.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [icu_collections@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [icu_locid@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [icu_locid_transform@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
@@ -811,5 +802,15 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [icu_properties_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [icu_provider@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [icu_provider_macros@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[litemap@0.7.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[tinystr@0.7.6](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[unicode-ident@1.0.14](https://github.com/dtolnay/unicode-ident) - Unicode License v3<br>
+[writeable@0.5.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[yoke-derive@0.7.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[yoke@0.7.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerofrom-derive@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerofrom@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerovec-derive@0.10.3](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerovec@0.10.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [tinyfiledialogs@3.9.1](https://github.com/jdm/tinyfiledialogs-rs) - zlib/libpng License with Acknowledgement<br>
 

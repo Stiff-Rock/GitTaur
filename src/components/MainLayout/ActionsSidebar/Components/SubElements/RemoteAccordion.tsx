@@ -26,7 +26,7 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
     event.preventDefault();
 
     if (!workspace) {
-      console.error("Error opening context menu: Unexpected null workspace");
+      console.warn("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
@@ -44,7 +44,6 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
               setNotification(msg);
             }).catch((e) => {
               if (e) {
-                console.error(e);
                 setNotification(e);
               }
             });
@@ -57,7 +56,6 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
             openConfirmationModal({
               onConfirmed: () => {
                 invoke("delete_remote", { repoPath, remoteName: remote.name }).catch((e) => {
-                  console.error(e);
                   setNotification(e);
                 }).finally(() => setActiveModal(""));
               },
@@ -71,9 +69,7 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
           text: "Copy Url",
           action: () => {
             navigator.clipboard.writeText(remote.url).catch(e => {
-              const msg = `Failed to copy remote URL: ${e}`;
-              setNotification(msg);
-              console.error(msg);
+              setNotification(`Failed to copy remote URL: ${e}`);
             });
           },
         },

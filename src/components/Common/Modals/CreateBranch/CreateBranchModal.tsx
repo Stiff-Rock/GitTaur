@@ -22,7 +22,6 @@ const CreateBranchModal: React.FC = () => {
       setNotification(msg);
     }).catch((e) => {
       setNotification(e);
-      console.error(e)
     }).finally(() => setActiveModal(""));
   }
 

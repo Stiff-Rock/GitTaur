@@ -16,10 +16,11 @@ const RemoteBranchElement: React.FC<{ branchName: string }> = ({ branchName }) =
   } = useAppContext();
 
   const remoteBranchContextMenu = async (event: React.MouseEvent) => {
+    event.stopPropagation();
     event.preventDefault();
 
     if (!workspace) {
-      console.error("Error opening context menu: Unexpected null workspace");
+      console.warn("Error opening context menu: Unexpected null workspace");
       setNotification("An internal error has occurred, please report this issue");
       return;
     }
@@ -56,7 +57,6 @@ const RemoteBranchElement: React.FC<{ branchName: string }> = ({ branchName }) =
             openConfirmationModal({
               onConfirmed() {
                 invoke("delete_branch", { repoPath, branchName, isLocal: false }).catch((e) => {
-                  console.error(e);
                   setNotification(e);
                 }).finally(() => setActiveModal(""));
               },
@@ -78,7 +78,7 @@ const RemoteBranchElement: React.FC<{ branchName: string }> = ({ branchName }) =
           text: "Copy branch name",
           action: () => {
             navigator.clipboard.writeText(branchName).catch(e =>
-              console.error("Failed to copy remote branch name:", e)
+              setNotification(`Failed to copy remote branch name: ${e}`)
             );
           }
         },

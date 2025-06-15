@@ -16,7 +16,9 @@ pub static CONFIG_PATH: OnceLock<PathBuf> = OnceLock::new();
 
 #[command]
 pub fn save_config(new_config: Configuration) -> Result<(), String> {
-    let mut config = CONFIGUTARION.lock().map_err(|e| e.to_string())?;
+    let mut config = CONFIGUTARION
+        .lock()
+        .map_err(|e| format!("Failed to load configuration file while saving: {e}"))?;
 
     if *config == new_config {
         return Ok(());
@@ -24,14 +26,15 @@ pub fn save_config(new_config: Configuration) -> Result<(), String> {
 
     *config = new_config;
 
-    let json_data = serde_json::to_string_pretty(&*config).map_err(|e| e.to_string())?;
+    let json_data = serde_json::to_string_pretty(&*config)
+        .map_err(|e| format!("Failed to serialize configuration data: {e}"))?;
     let config_path = if let Some(path) = CONFIG_PATH.get() {
         path
     } else {
         return Err(format!("Unable to obtain config path during saving"));
     };
 
-    write(config_path, json_data).map_err(|e| format!("Failed to save: {}", e))?;
+    write(config_path, json_data).map_err(|e| format!("Failed to save configuration: {e}"))?;
 
     Ok(())
 }
@@ -58,13 +61,13 @@ pub async fn set_global_git_user_id(username: String, email: String) -> Result<(
     if !username.is_empty() {
         global_config
             .set_str("user.name", &username)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Could not update git user.name: {e}"))?;
     }
 
     if !email.is_empty() {
         global_config
             .set_str("user.email", &email)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Could not update git user.email: {e}"))?;
     }
 
     Ok(())
@@ -142,7 +145,9 @@ pub fn load_config() -> Result<String, String> {
 
 #[command]
 pub async fn restore_config_defaults() -> Result<Configuration, String> {
-    let mut config = CONFIGUTARION.lock().map_err(|e| e.to_string())?;
+    let mut config = CONFIGUTARION
+        .lock()
+        .map_err(|e| format!("Failed to load configuration file while restoring defaults: {e}"))?;
     *config = Configuration::default();
     Ok(config.clone())
 }

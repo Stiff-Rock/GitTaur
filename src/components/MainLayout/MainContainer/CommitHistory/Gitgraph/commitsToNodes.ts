@@ -153,7 +153,7 @@ export default function createCommitNodes(
 
                 // Other children (branching): new lane
               } else {
-                //HACK:
+                //HACK: Should implement date lane assingment system
                 currentLaneIndex = findFreeLane();
 
                 const occupiedLanesFromParent = branchStartLanes.get(firstParentId) ?? new Set();

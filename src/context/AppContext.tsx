@@ -104,6 +104,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [confirmationModalProps, setConfirmationModalProps] = useState<ConfirmationModalProps>({
     title: "",
     subTitle: "",
+    warning: "",
     onConfirmed: () => { },
   });
   const openConfirmationModal = (props: ConfirmationModalProps) => {
@@ -169,13 +170,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!initWorkspace) {
       invoke<WorkspaceDTO>("get_workspace")
         .then((dto) => setWorkspace(dtoToWorkspace(dto)))
-        .catch((e) => console.error("Could not get workspace - {}", e));
+        .catch((e) => setNotification(e));
     }
 
     if (!initConfig) {
       invoke<Configuration>("get_config")
         .then(setConfig)
-        .catch((e) => console.error("Could not get config - {}", e));
+        .catch((e) => setNotification(e));
     }
   }, []);
 
@@ -215,7 +216,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const workspaceDto = workspaceToDto(workspace);
 
     invoke<Workspace>("save_workspace", { workspaceDto })
-      .catch((e) => console.error('Error while saving workspace:', e));
+      .catch((e) => console.error(e));
   }, [workspace]);
 
   useLayoutEffect(() => {
@@ -238,7 +239,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       document.documentElement.style.setProperty('--active-color', config.accentColor);
 
     invoke("save_config", { newConfig: config })
-      .catch((e) => console.error('Error while saving config:', e));
+      .catch((e) => console.error(e));
   }, [config]);
 
   const setActiveTab = (tabKey: string) => {
@@ -267,9 +268,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } catch (e) {
       const error = e as string;
       setNotification(error);
-      if (!error.includes("not a repository")) {
-        console.error(e);
-      }
       return;
     }
 
@@ -303,17 +301,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (isType("Repo", tabKey)) {
       invoke("stop_git_watcher", { repoPath: tabKey }).catch((e) => {
-        const msg = `Error stopping status watcher - ${e}`;
-        console.error(msg);
-        setNotification(msg);
+        setNotification(e);
       });
     }
 
     // Gets the position that tab was in before removing it
     const removedTabIndex = [...tabs.keys()].indexOf(tabKey);
     if (removedTabIndex === -1) {
-      const msg = "Error: Could not find tab on workspace (returned -1): " + tabKey
-      console.error(msg)
+      console.error("Error: Could not find tab on workspace (returned -1): " + tabKey)
       return;
     }
 

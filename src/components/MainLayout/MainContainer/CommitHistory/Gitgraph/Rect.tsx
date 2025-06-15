@@ -43,16 +43,22 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
       id: "checkoutCommit",
       text: "Checkout",
       action: () => {
-        const checkoutPromise = invoke<void>("checkout_commit", { repoPath, commitOid: node.id }).then(() => {
-          setNotification("Successfully checked out to \"" + shortSubject + "\"")
-        }).catch((e) => {
-          console.error(e);
-          setNotification(e);
-        });
+        openConfirmationModal({
+          onConfirmed() {
+            const checkoutPromise = invoke<void>("checkout_commit", { repoPath, commitOid: node.id }).then(() => {
+              setNotification("Successfully checked out to \"" + shortSubject + "\"")
+            }).catch((e) => {
+              setNotification(e);
+            }).finally(() => setActiveModal(""));
 
-        showLoadingDuringTask({
-          title: "Checking out to " + shortSubject,
-        }, checkoutPromise);
+            showLoadingDuringTask({
+              title: "Checking out to " + shortSubject,
+            }, checkoutPromise);
+          },
+          title: "Checkout to commit",
+          subTitle: "Target: " + shortSubject,
+          warning: "Unsaved changes will be discarded!!"
+        });
       },
     });
 
@@ -63,7 +69,6 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
         openConfirmationModal({
           onConfirmed: () => {
             const revertPromise = invoke<void>("revert_commit", { repoPath, commitOid: node.id }).catch((e) => {
-              console.error(e);
               setNotification(e);
             }).finally(() => setActiveModal(""));
 
@@ -92,9 +97,7 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
       text: "Copy commit SHA",
       action: () => {
         navigator.clipboard.writeText(node.id).catch(e => {
-          const msg = `Failed to copy commit SHA: ${e}`;
-          setNotification(msg);
-          console.error(msg);
+          setNotification(`Failed to copy commit SHA: ${e}`);
         });
       },
     });
