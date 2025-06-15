@@ -19,16 +19,6 @@ jobs:
         with:
           deno-version: v2.3.6
       
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
-      
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-      
       - name: Cache Deno dependencies
         uses: actions/cache@v3
         with:
@@ -38,6 +28,9 @@ jobs:
           key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
           restore-keys: |
             ${{ runner.os }}-deno-
+      
+      - name: Install dependencies
+        run: deno install
       
       - name: Deploy
         run: deno task deploy
