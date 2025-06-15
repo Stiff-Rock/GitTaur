@@ -9,10 +9,10 @@ import { CreateTagModalProps as CreateTagModalProps } from '../components/Common
 import { PushModalProps } from '../components/Common/Modals/PushRemote/PushRemoteModal';
 import { RebaseBranchModalProps } from '../components/Common/Modals/RebaseBranchModal/RebaseBranchModal';
 import { MergeBranchModalProps } from '../components/Common/Modals/MergeBranchModal/MergeBranchModal';
-import { PullModalProps } from '../components/Common/Modals/PullRemote/PullRemoteModal';
 import { selectDirectoryDialog } from '../utils/FileExplorerDialog';
 import { LoadingIndicatorProps } from '../components/Common/Modals/LoadingIndicator/LoadingIndicator';
 import { listen } from '@tauri-apps/api/event';
+import { PullModalProps } from '../components/Common/Modals/PullRemote/PullRemoteModal';
 
 interface AppContextType {
   // State 

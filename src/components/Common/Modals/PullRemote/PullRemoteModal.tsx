@@ -42,8 +42,8 @@ const PullRemoteModal: React.FC = () => {
     }
     setBranch(branchText)
 
-    if (selectedRemote) {
-      setBranch(selectedRemote);
+    if (sourceBranch) {
+      setBranch(sourceBranch);
       setPullAll(false);
     }
   }, [activeRepoInfo]);

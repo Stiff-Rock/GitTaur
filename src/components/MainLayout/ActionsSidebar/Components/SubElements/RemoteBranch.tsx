@@ -3,7 +3,14 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { Menu } from "@tauri-apps/api/menu";
 import { invoke } from "@tauri-apps/api/core";
 
-const RemoteBranchElement: React.FC<{ remote: string, branchName: string }> = ({ remote, branchName }) => {
+interface RemoteBranchElementProps {
+  remote: string,
+  branchName: string
+};
+
+const RemoteBranchElement: React.FC<RemoteBranchElementProps> = (props) => {
+  const { remote, branchName } = props;
+
   const {
     workspace,
     setNotification,
