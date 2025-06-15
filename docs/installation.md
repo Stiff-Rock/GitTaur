@@ -8,9 +8,7 @@ Existen 3 formas de obtener GitTaur:
 - Instalador .exe: No requiere permisos de administrador, instala unicamente al usuario si se desea.
 - Apliación portable: No requiere instalación ninguna, se pude ejecutar directamente.
 
-Se pueden encontrar en [la página de releases del repositorio](https://github.com/Stiff-Rock/GitTaur/releases/latest)
-
-Elige la que mas se adecue a tus necesidades.
+Se pueden encontrar en [la página de releases del repositorio](https://github.com/Stiff-Rock/GitTaur/releases/latest), elige la que mas se adecue a tus necesidades.
 
 ### Para desarrolladores
 Si deseas ejecutar este proyecto en tu IDE, estos son los requisitos:
