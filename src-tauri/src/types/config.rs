@@ -24,6 +24,7 @@ pub enum Theme {
     GitTaur,
     Light,
     Dark,
+    Custom,
     System,
 }
 
@@ -55,6 +56,38 @@ impl Language {
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
+pub struct CustomTheme {
+    pub primary_bg: String,
+    pub secondary_bg: String,
+    pub tertiary_bg: String,
+    pub lighter_bg: String,
+    pub border_color: String,
+
+    pub primary_text: String,
+    pub secondary_text: String,
+    pub tertiary_text: String,
+    pub contrast_text: String,
+}
+
+impl CustomTheme {
+    pub fn default() -> Self {
+        Self {
+            primary_bg: "#0f172a".to_string(),
+            secondary_bg: "#1e293b".to_string(),
+            tertiary_bg: "#334155".to_string(),
+            lighter_bg: "#475569".to_string(),
+            border_color: "#64748b".to_string(),
+
+            primary_text: "#d1d5db".to_string(),
+            secondary_text: "#868e96".to_string(),
+            tertiary_text: "#404040".to_string(),
+            contrast_text: "#0f172a".to_string(),
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Configuration {
     // General configs
     #[serde(default)]
@@ -74,6 +107,7 @@ pub struct Configuration {
     pub theme_config: Theme,
     #[serde(default)]
     pub theme_value: Theme,
+    pub custom_theme: CustomTheme,
     pub accent_color: String,
 }
 
@@ -132,6 +166,7 @@ impl Configuration {
             clone_path: Self::get_default_clone_path(),
             theme_config: Theme::System,
             theme_value: Theme::System,
+            custom_theme: CustomTheme::default(),
             accent_color: "#50FA7B".to_string(),
         }
     }

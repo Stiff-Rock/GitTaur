@@ -222,23 +222,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useLayoutEffect(() => {
     if (!config) return;
-
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    if (config.themeValue !== currentTheme) {
-      let theme: string;
-      if (config.themeValue === "system") {
-        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      } else {
-        theme = config.themeValue;
-      }
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-
-    const currentAccentColor = getComputedStyle(document.documentElement)
-      .getPropertyValue('--active-color').trim();
-    if (config.accentColor !== currentAccentColor)
-      document.documentElement.style.setProperty('--active-color', config.accentColor);
-
     invoke("save_config", { newConfig: config })
       .catch((e) => console.error(e));
   }, [config]);

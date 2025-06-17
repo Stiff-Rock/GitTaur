@@ -8,7 +8,6 @@ export interface CommitNode {
   nodeColor: string
   branchColor: string
   data: Commit
-  branchPathOverlap: boolean
 }
 
 const COLORS = [
@@ -123,8 +122,6 @@ export default function createCommitNodes(
       const firstParentId = commit.parents[0] ?? null;
       const firstParentCommit = commitMap.get(firstParentId) ?? null;
 
-      let branchPathOverlap = false;
-
       // Root commit (no parents): find new lane (usually the first for master/main init commit)
       if (!firstParentCommit) {
         currentLaneIndex = findFreeLane();
@@ -184,11 +181,6 @@ export default function createCommitNodes(
               const mergeCommitId = commitsToFreeLane.get(commit.id)!;
               const margeCommit = commitMap.get(mergeCommitId)!;
               datesToFreeLane.set(margeCommit.date, currentLaneIndex);
-
-              // Determine whether there is a visual overlap of branches
-              if (commitMap.get(margeCommit.parents[0])!.children.length > 1) {
-                branchPathOverlap = true;
-              }
             } else {
               commitsToFreeLane.delete(commit.id)
             }
@@ -227,7 +219,6 @@ export default function createCommitNodes(
         nodeColor: color,
         branchColor: color,
         data: commit,
-        branchPathOverlap
       });
     });
 

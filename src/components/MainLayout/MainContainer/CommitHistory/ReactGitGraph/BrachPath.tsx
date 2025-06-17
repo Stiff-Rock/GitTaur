@@ -2,7 +2,7 @@ import { CommitNode } from "./commitsToNodes";
 import { useGitGraphContext } from "./GitGraphContext";
 
 const BranchPath: React.FC<{ node: CommitNode }> = ({ node }) => {
-  const { commitNodesMap, GRAPH_PADDING, X_SPACING, Y_SPACING, NODE_RADIUS } = useGitGraphContext();
+  const { commitNodesMap, GRAPH_PADDING, X_SPACING, Y_SPACING } = useGitGraphContext();
 
   const CURVE_Y_OFFSET_PERCETANGE = 60;
 
@@ -51,20 +51,7 @@ const BranchPath: React.FC<{ node: CommitNode }> = ({ node }) => {
         } else {
           const lineXtarget = endX - relativeXoffset;
           const curveYtarget = startY + relativeYoffset;
-          pathD = `M ${startX} ${startY}`;
-
-          if (parentNode.branchPathOverlap) {
-            const off = Y_SPACING / 4;
-            const yDiff = ((endY - startY) / 2) - (NODE_RADIUS / 2);
-            const yMiddle = startY + yDiff;
-
-            pathD += ` L ${endX + off} ${startY}`;
-            pathD += ` C ${endX + off * 3} ${startY}, ${endX + off * 3} ${yMiddle}, ${endX + off} ${yMiddle}`;
-            pathD += ` Q ${endX} ${yMiddle}, ${endX} ${yMiddle + yDiff / 3}`
-            pathD += ` L ${endX} ${endY}`
-          } else {
-            pathD += `L ${lineXtarget} ${startY} Q ${endX} ${startY}, ${endX} ${curveYtarget} L ${endX} ${endY}`;
-          }
+          pathD = `M ${startX} ${startY} L ${lineXtarget} ${startY} Q ${endX} ${startY}, ${endX} ${curveYtarget} L ${endX} ${endY}`;
         }
 
         return (

@@ -43,6 +43,33 @@ const ConfigPage: React.FC = () => {
       });
     }
 
+    if (newConfig.customTheme !== config.customTheme) {
+      const customTheme = newConfig.customTheme;
+      document.documentElement.style.setProperty('--custom-primary-bg', customTheme.primaryBg);
+      document.documentElement.style.setProperty('--custom-secondary-bg', customTheme.secondaryBg);
+      document.documentElement.style.setProperty('--custom-tertiary-bg', customTheme.tertiaryBg);
+      document.documentElement.style.setProperty('--custom-lighter-bg', customTheme.lighterBg);
+      document.documentElement.style.setProperty('--custom-border-color', customTheme.borderColor);
+      document.documentElement.style.setProperty('--custom-primary-text', customTheme.primaryText);
+      document.documentElement.style.setProperty('--custom-secondary-text', customTheme.secondaryText);
+      document.documentElement.style.setProperty('--custom-tertiary-text', customTheme.tertiaryText);
+      document.documentElement.style.setProperty('--custom-contrast-text', customTheme.contrastText);
+    }
+
+    if (newConfig.themeValue !== config.themeValue) {
+      let theme: string;
+      if (config.themeValue === "system") {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      } else {
+        theme = newConfig.themeValue;
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    if (newConfig.themeValue !== config.accentColor) {
+      document.documentElement.style.setProperty('--active-color', newConfig.accentColor);
+    }
+
     setConfig(newConfig);
     setNotification("Succesfully applied new configuration!");
   }
@@ -60,6 +87,7 @@ const ConfigPage: React.FC = () => {
       },
       title: "Restore default configuration",
       subTitle: "¿Are you sure you want to restore ALL the default configuration values?",
+      warning: "Application restart required for changes to take full effect"
     })
   };
 
@@ -219,8 +247,131 @@ const ConfigPage: React.FC = () => {
                     })
                   }
                 }}
-                optionsArray={["GitTaur", "Light", "Dark", "System"]}
+                optionsArray={["GitTaur", "Light", "Dark", "Custom", "System"]}
               />
+
+              {newConfig.themeConfig === 'custom' &&
+                <>
+                  {/* Background colors */}
+                  <InputField
+                    title="Background #1"
+                    type="color"
+                    placeholder="#0f172a"
+                    value={newConfig.customTheme.primaryBg}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.primaryBg = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Background #2"
+                    type="color"
+                    placeholder="#1e293b"
+                    value={newConfig.customTheme.secondaryBg}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.secondaryBg = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Background #3"
+                    type="color"
+                    placeholder="#334155"
+                    value={newConfig.customTheme.tertiaryBg}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.tertiaryBg = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Highlight background"
+                    type="color"
+                    placeholder="#475569"
+                    value={newConfig.customTheme.lighterBg}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.lighterBg = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Border color"
+                    type="color"
+                    placeholder="#64748b"
+                    value={newConfig.customTheme.borderColor}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.borderColor = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  {/* Text colors */}
+                  <InputField
+                    title="Primary text"
+                    type="color"
+                    placeholder="#d1d5db"
+                    value={newConfig.customTheme.primaryText}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.primaryText = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Secondary text"
+                    type="color"
+                    placeholder="#868e96"
+                    value={newConfig.customTheme.secondaryText}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.secondaryText = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Tertiary text"
+                    type="color"
+                    placeholder="#404040"
+                    value={newConfig.customTheme.tertiaryText}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.tertiaryText = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+
+                  <InputField
+                    title="Contrast text"
+                    type="color"
+                    placeholder="#0f172a"
+                    value={newConfig.customTheme.contrastText}
+                    onChange={(value) => {
+                      let newCustomTheme = { ...newConfig.customTheme };
+                      newCustomTheme.contrastText = value;
+                      setNewConfig({ ...newConfig, customTheme: newCustomTheme })
+                    }}
+                    className={styles.configInput}
+                  />
+                </>
+              }
 
               <InputField
                 title="Accent Color"

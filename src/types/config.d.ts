@@ -1,6 +1,19 @@
 type Language = 'en' | 'es';
 
-type Theme = 'gittaur' | 'light' | 'dark' | 'system';
+type Theme = 'gittaur' | 'light' | 'dark' | 'custom' | 'system';
+
+interface CustomTheme {
+  primaryBg: string,
+  secondaryBg: string,
+  tertiaryBg: string,
+  lighterBg: string,
+  borderColor: string,
+
+  primaryText: string,
+  secondaryText: string,
+  tertiaryText: string,
+  contrastText: string,
+}
 
 interface Configuration {
   // General configs
@@ -16,5 +29,6 @@ interface Configuration {
   // UI Customization
   themeConfig: Theme,
   themeValue: Theme,
+  customTheme: CustomTheme,
   accentColor: string,
 }

@@ -61,6 +61,18 @@
 
   /* OTHER */
   --app-font: 'CaskaydiaMonoNerdFont', 'Cascadia Code', 'Consolas', 'Courier New', 'Monaco', 'Andale Mono', 'Lucida Console', monospace;
+
+  /* CUSTOM THEME */
+  --custom-primary-bg: #0f172a;
+  --custom-secondary-bg: #1e293b;
+  --custom-tertiary-bg: #334155;
+  --custom-lighter-bg: #475569;
+  --custom-border-color: #64748b;
+
+  --custom-primary-text: #d1d5db;
+  --custom-secondary-text: #868e96;
+  --custom-tertiary-text: #404040;
+  --custom-contrast-text: #0f172a;
 }
 
 [data-theme="gittaur"] {
@@ -99,4 +111,17 @@
   --secondary-text: #555555;
   --tertiary-text: #666666;
   --contrast-text: #ffffff;
+}
+
+[data-theme="custom"] {
+  --primary-bg: var(--custom-primary-bg);
+  --secondary-bg: var(--custom-secondary-bg);
+  --tertiary-bg: var(--custom-tertiary-bg);
+  --lighter-bg: var(--custom-lighter-bg);
+  --border-color: var(--custom-border-color);
+
+  --primary-text: var(--custom-primary-text);
+  --secondary-text: var(--custom-secondary-text);
+  --tertiary-text: var(--custom-tertiary-text);
+  --contrast-text: var(--custom-contrast-text);
 }
