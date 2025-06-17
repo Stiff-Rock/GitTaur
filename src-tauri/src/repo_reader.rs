@@ -170,7 +170,7 @@ pub async fn get_commit_history(repo_path: String) -> Result<String, String> {
         .map_err(|e| format!("Failed to add remotes to revwalk: {e}"))?;
 
     revwalk
-        .set_sorting(Sort::TIME | Sort::TOPOLOGICAL)
+        .set_sorting(Sort::TIME | Sort::TOPOLOGICAL | Sort::REVERSE)
         .map_err(|e| format!("Failed to set revwalk sorting: {e}"))?;
 
     let max_commits = get_config()?.max_commits as usize;
@@ -304,7 +304,7 @@ fn get_commit_history_map(
     let mut commit_map: IndexMap<String, Commit> = IndexMap::with_capacity(max_commits);
 
     // Get the main branch first parent history
-    let master_history: HashSet<String> = get_main_branch_history(&repo, max_commits)?;
+    let main_history: HashSet<String> = get_main_branch_history(&repo, max_commits)?;
 
     for (i, oid) in revwalk.enumerate() {
         if i >= max_commits {
@@ -314,7 +314,7 @@ fn get_commit_history_map(
         let oid = oid?;
         let id = oid.to_string();
         let commit = repo.find_commit(oid)?;
-        let commit_obj = get_commit_obj(repo, &commit, &ref_map, &master_history)?;
+        let commit_obj = get_commit_obj(repo, &commit, &ref_map, &main_history)?;
         commit_map.insert(id, commit_obj);
     }
 
@@ -337,8 +337,6 @@ fn get_commit_history_map(
             parent_commit.children.extend(children);
         }
     }
-
-    commit_map.reverse();
 
     Ok(commit_map)
 }

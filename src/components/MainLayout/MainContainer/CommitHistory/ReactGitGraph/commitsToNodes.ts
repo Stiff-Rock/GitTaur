@@ -1,13 +1,14 @@
 
 export interface CommitNode {
-  id: string;
+  id: string
   position: {
-    x: number;
-    y: number;
+    x: number
+    y: number
   };
-  nodeColor: string,
-  branchColor: string,
-  data: Commit;
+  nodeColor: string
+  branchColor: string
+  data: Commit
+  branchPathOverlap: boolean
 }
 
 const COLORS = [
@@ -105,12 +106,11 @@ export default function createCommitNodes(
   const nodeMap: Map<string, CommitNode> = new Map();
   const commitLane = new Map<string, number>(); // Map of lanes and their commits
   const processedChildren = new Map<string, number>();
-  const commitsToFreeLane = new Set<string>;
-  const branchStartLanes = new Map<string, Set<number>>;
 
-  /*NODE: FOR MORE ACCURATE BRANCH LANE ASSINGMENT, USE DATE SYSTEM, 
-   * WHERE IN A RECORD OF SOME KIND WE STORE WHAT LANES ARE OCCUPIED
-   * AT THAT DATE RANGE, ALSO BETTER LANE ASSINGMENT */
+  const commitsToFreeLane = new Map<string, string>;
+  const datesToFreeLane = new Map<number, number>;
+
+  const branchStartLanes = new Map<string, Set<number>>;
 
   let proccessOnlyMasterBranch = true;
   // First procces only the main/master branch to ensure that it takes the first lane entirely, then process the rest
@@ -118,89 +118,94 @@ export default function createCommitNodes(
     commitHistory.forEach((commit, index) => {
       if (proccessOnlyMasterBranch !== commit.isFromMainBranch) return;
 
-      const commitId = commit.id;
-
       let currentLaneIndex: number = 0;
 
       const firstParentId = commit.parents[0] ?? null;
       const firstParentCommit = commitMap.get(firstParentId) ?? null;
 
+      let branchPathOverlap = false;
+
       // Root commit (no parents): find new lane (usually the first for master/main init commit)
       if (!firstParentCommit) {
         currentLaneIndex = findFreeLane();
-        addTipToLanes(currentLaneIndex, commitId);
+        addTipToLanes(currentLaneIndex, commit.id);
         // Normal commit: get first parent (main lineage)
       } else {
-        // Parent not in graph: treat as root (graph has been cut off)
-        if (!firstParentCommit) {
-          currentLaneIndex = findFreeLane();
-          addTipToLanes(currentLaneIndex, commitId);
+        const parentLane = commitLane.get(firstParentId);
 
-          // Has parent: position respective to parent
-        } else {
-          const parentLane = commitLane.get(firstParentId);
+        if (parentLane !== undefined) {
+          // Check for branching
+          if (firstParentCommit.children.length > 1) {
+            // Obtain how many children of that parent have been proccesed
+            const count = processedChildren.get(firstParentId) || 0;
 
-          if (parentLane !== undefined) {
-            // Check for branching
-            if (firstParentCommit.children.length > 1) {
-              // Obtain how many children of that parent have been proccesed
-              const count = processedChildren.get(firstParentId) || 0;
-
-              // First child (not branching): use parent's lane
-              if (count === 0) {
-                currentLaneIndex = parentLane;
-                processedChildren.set(firstParentId, 1);
-
-                // Other children (branching): new lane
-              } else {
-                //HACK: Should implement date lane assingment system
-                currentLaneIndex = findFreeLane();
-
-                const occupiedLanesFromParent = branchStartLanes.get(firstParentId) ?? new Set();
-                while (occupiedLanesFromParent.has(currentLaneIndex)) {
-                  currentLaneIndex++;
-                }
-                occupiedLanesFromParent.add(currentLaneIndex);
-                branchStartLanes.set(firstParentId, occupiedLanesFromParent)
-
-                processedChildren.set(firstParentId, count + 1);
-              }
-
-              // Only one child (no branching): use parent's lane
-            } else {
+            // First child (not branching): use parent's lane
+            if (count === 0) {
               currentLaneIndex = parentLane;
+              processedChildren.set(firstParentId, 1);
+
+              // Other children (branching): new lane
+            } else {
+              currentLaneIndex = findFreeLane();
+
+              const occupiedLanesFromParent = branchStartLanes.get(firstParentId) ?? new Set();
+              while (occupiedLanesFromParent.has(currentLaneIndex)) {
+                currentLaneIndex++;
+              }
+              occupiedLanesFromParent.add(currentLaneIndex);
+              branchStartLanes.set(firstParentId, occupiedLanesFromParent)
+
+              processedChildren.set(firstParentId, count + 1);
             }
+
+            // Only one child (no branching): use parent's lane
           } else {
-            currentLaneIndex = findFreeLane();
+            currentLaneIndex = parentLane;
+          }
+        } else {
+          currentLaneIndex = findFreeLane();
+        }
+
+        // Update lane tip with last proccesed commit
+        lanes[currentLaneIndex] = commit.id;
+
+        // Free merged branches' lanes
+        if (proccessOnlyMasterBranch) {
+          if (commit.parents.length > 1) {
+            const merge_parents = commit.parents.slice(1);
+
+            for (const parentId of merge_parents) {
+              commitsToFreeLane.set(parentId, commit.id);
+            }
+          }
+        } else {
+          if (commitsToFreeLane.has(commit.id)) {
+            if (commit.children.length === 1) {
+              const mergeCommitId = commitsToFreeLane.get(commit.id)!;
+              const margeCommit = commitMap.get(mergeCommitId)!;
+              datesToFreeLane.set(margeCommit.date, currentLaneIndex);
+
+              // Determine whether there is a visual overlap of branches
+              if (commitMap.get(margeCommit.parents[0])!.children.length > 1) {
+                branchPathOverlap = true;
+              }
+            } else {
+              commitsToFreeLane.delete(commit.id)
+            }
           }
 
-          // Update lane tip with last proccesed commit
-          lanes[currentLaneIndex] = commitId;
-
-          // Free merged branches' lanes
-          if (proccessOnlyMasterBranch) {
-            if (commit.parents.length > 1) {
-              const merge_parents = commit.parents.slice(1);
-
-              for (const parentId of merge_parents) {
-                if (!commitMap.has(parentId)) continue;
-                commitsToFreeLane.add(parentId);
-              }
-            }
-          } else if (commitsToFreeLane.has(commitId)) {
-            if (commit.children.length > 1) {
-              commitsToFreeLane.delete(commitId);
-              const secondChildId = commit.children[1];
-              commitsToFreeLane.add(secondChildId);
-            } else {
-              lanes[currentLaneIndex] = null;
+          const dates = [...datesToFreeLane];
+          for (const [timestamp, lane] of dates) {
+            if (commit.date > timestamp) {
+              datesToFreeLane.delete(timestamp);
+              lanes[lane] = null;
             }
           }
         }
       }
 
       // Record lane assignment
-      commitLane.set(commitId, currentLaneIndex);
+      commitLane.set(commit.id, currentLaneIndex);
 
       // Create node with position
       const x = currentLaneIndex * x_spacing;
@@ -213,15 +218,16 @@ export default function createCommitNodes(
         color = getColor();
       }
 
-      nodeMap.set(commitId, {
-        id: commitId,
+      nodeMap.set(commit.id, {
+        id: commit.id,
         position: {
           x,
           y
         },
         nodeColor: color,
         branchColor: color,
-        data: commit
+        data: commit,
+        branchPathOverlap
       });
     });
 
