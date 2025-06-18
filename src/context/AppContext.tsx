@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect, useLayoutEffect, Dispatch, SetStateAction, ReactNode } from 'react';
+import { createContext, useState, useContext, useEffect, useLayoutEffect, Dispatch, SetStateAction, ReactNode, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { dtoToWorkspace, workspaceToDto } from '../utils/workspaceUtils';
 import { Menu } from '@tauri-apps/api/menu';
@@ -45,6 +45,7 @@ interface AppContextType {
   openWelcomePage: () => void;
   openConfigPage: () => void;
   isType: (desiredType: "Config" | "Welcome" | "Repo", tabKey?: string) => boolean;
+  applyNewConfig: (updatedConfig: Configuration | null) => void;
 
   // Modal states and functions
   confirmationModalProps: ConfirmationModalProps;
@@ -220,12 +221,61 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       .catch((e) => console.error(e));
   }, [workspace]);
 
+  const firstLoad = useRef(false);
   useLayoutEffect(() => {
     if (!config) return;
-    console.log("SAVING UPDATED CONFIG: ", config)
+    applyNewConfig(config);
     invoke("save_config", { newConfig: config })
       .catch((e) => console.error(e));
   }, [config]);
+
+  const applyNewConfig = (updatedConfig: Configuration | null) => {
+    if (!config || !updatedConfig || (firstLoad.current && config === updatedConfig)) return;
+    if (updatedConfig.username != config.username || updatedConfig.email != config.email) {
+      const username = updatedConfig.username != config.username ? updatedConfig.username : "";
+      const email = updatedConfig.email != config.email ? updatedConfig.email : "";
+
+      invoke("set_global_git_user_id", { username, email }).catch((e) => {
+        const msg = `Error updating git global identification - ${e}`;
+        setNotification(msg);
+      });
+    }
+
+    if (!firstLoad.current || updatedConfig.customTheme !== config.customTheme) {
+      const customTheme = updatedConfig.customTheme;
+      document.documentElement.style.setProperty('--custom-primary-bg', customTheme.primaryBg);
+      document.documentElement.style.setProperty('--custom-secondary-bg', customTheme.secondaryBg);
+      document.documentElement.style.setProperty('--custom-tertiary-bg', customTheme.tertiaryBg);
+      document.documentElement.style.setProperty('--custom-lighter-bg', customTheme.lighterBg);
+      document.documentElement.style.setProperty('--custom-border-color', customTheme.borderColor);
+      document.documentElement.style.setProperty('--custom-primary-text', customTheme.primaryText);
+      document.documentElement.style.setProperty('--custom-secondary-text', customTheme.secondaryText);
+      document.documentElement.style.setProperty('--custom-tertiary-text', customTheme.tertiaryText);
+      document.documentElement.style.setProperty('--custom-contrast-text', customTheme.contrastText);
+    }
+
+    if (!firstLoad.current || updatedConfig.themeValue !== config.themeValue) {
+      let theme: string;
+      if (updatedConfig.themeValue === "system") {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      } else {
+        theme = updatedConfig.themeValue;
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    if (!firstLoad.current || updatedConfig.themeValue !== config.accentColor) {
+      document.documentElement.style.setProperty('--active-color', updatedConfig.accentColor);
+    }
+
+    setConfig(updatedConfig);
+    setNewConfig(updatedConfig);
+
+    if (firstLoad.current)
+      setNotification("Succesfully applied new configuration!");
+
+    if (!firstLoad.current) firstLoad.current = true;
+  }
 
   const setActiveTab = (tabKey: string) => {
     isType("Config", tabKey);
@@ -414,6 +464,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       openWelcomePage,
       openConfigPage,
       isType,
+      applyNewConfig,
 
       // Modal states and functions
       confirmationModalProps,

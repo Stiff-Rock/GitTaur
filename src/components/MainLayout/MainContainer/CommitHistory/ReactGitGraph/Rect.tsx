@@ -19,7 +19,7 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
     setActiveModal
   } = useAppContext();
 
-  const { selectedCommit, setSelectedCommit } = useMainContext();
+  const { selectedCommit, setSelectedCommit, repoInfo } = useMainContext();
 
   const [isHovered, setIsHovered] = React.useState(false);
 
@@ -41,7 +41,7 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
 
     menuItems.push({
       id: "checkoutCommit",
-      text: "Checkout",
+      text: "Checkout to commit",
       action: () => {
         openConfirmationModal({
           onConfirmed() {
@@ -62,13 +62,47 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
       },
     });
 
+    for (const ref of node.data.refs) {
+      const parts = ref.split(':');
+      const labelText = parts[1];
+
+      if (repoInfo?.currentBranch === labelText) continue;
+
+      menuItems.push({
+        id: "checkoutBranch" + labelText,
+        text: "Checkout to " + labelText,
+        action: () => {
+          openConfirmationModal({
+            onConfirmed() {
+              const checkoutPromise = invoke<void>("checkout_branch", { repoPath, branchName: labelText }).then(() => {
+                setNotification("Successfully checked out to \"" + labelText + "\"")
+              }).catch((e) => {
+                setNotification(e);
+              }).finally(() => setActiveModal(""));
+
+              showLoadingDuringTask({
+                title: "Checking out to " + labelText,
+              }, checkoutPromise);
+            },
+            title: "Checkout to branch",
+            subTitle: "Target: " + labelText,
+            warning: "Unsaved changes will be discarded!!"
+          });
+        },
+      });
+    }
+
     menuItems.push({
       id: "revertCommit",
       text: "Revert",
       action: () => {
         openConfirmationModal({
           onConfirmed: () => {
-            const revertPromise = invoke<void>("revert_commit", { repoPath, commitOid: node.id }).catch((e) => {
+            const revertPromise = invoke<void>("revert_commit", {
+              repoPath,
+              commitOid: node.id,
+              isMergeCommit: node.data.parents.length > 1
+            }).catch((e) => {
               setNotification(e);
             }).finally(() => setActiveModal(""));
 

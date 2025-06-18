@@ -28,7 +28,8 @@
 }
 
 .title,
-.option {
+.option,
+.noneFoundMsg {
   user-select: none;
 }
 

@@ -17,7 +17,7 @@ const ConfigPage: React.FC = () => {
     isType,
     workspace,
     config,
-    setConfig,
+    applyNewConfig,
     setNotification,
     openConfirmationModal,
     setActiveModal
@@ -30,51 +30,6 @@ const ConfigPage: React.FC = () => {
     setNewConfig(config);
   }, [config]);
 
-  const applyChanges = (updatedConfig: Configuration | null = newConfig) => {
-    if (!config || !updatedConfig || config === updatedConfig) return;
-
-    if (updatedConfig.username != config.username || updatedConfig.email != config.email) {
-      const username = updatedConfig.username != config.username ? updatedConfig.username : "";
-      const email = updatedConfig.email != config.email ? updatedConfig.email : "";
-
-      invoke("set_global_git_user_id", { username, email }).catch((e) => {
-        const msg = `Error updating git global identification - ${e}`;
-        setNotification(msg);
-      });
-    }
-
-    if (updatedConfig.customTheme !== config.customTheme) {
-      const customTheme = updatedConfig.customTheme;
-      document.documentElement.style.setProperty('--custom-primary-bg', customTheme.primaryBg);
-      document.documentElement.style.setProperty('--custom-secondary-bg', customTheme.secondaryBg);
-      document.documentElement.style.setProperty('--custom-tertiary-bg', customTheme.tertiaryBg);
-      document.documentElement.style.setProperty('--custom-lighter-bg', customTheme.lighterBg);
-      document.documentElement.style.setProperty('--custom-border-color', customTheme.borderColor);
-      document.documentElement.style.setProperty('--custom-primary-text', customTheme.primaryText);
-      document.documentElement.style.setProperty('--custom-secondary-text', customTheme.secondaryText);
-      document.documentElement.style.setProperty('--custom-tertiary-text', customTheme.tertiaryText);
-      document.documentElement.style.setProperty('--custom-contrast-text', customTheme.contrastText);
-    }
-
-    if (updatedConfig.themeValue !== config.themeValue) {
-      let theme: string;
-      if (config.themeValue === "system") {
-        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      } else {
-        theme = updatedConfig.themeValue;
-      }
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-
-    if (updatedConfig.themeValue !== config.accentColor) {
-      document.documentElement.style.setProperty('--active-color', updatedConfig.accentColor);
-    }
-
-    setConfig(updatedConfig);
-    setNewConfig(updatedConfig);
-    setNotification("Succesfully applied new configuration!");
-  }
-
   const cancel = () => {
     setNewConfig(config);
   }
@@ -82,7 +37,7 @@ const ConfigPage: React.FC = () => {
   const resetToDefault = () => {
     openConfirmationModal({
       onConfirmed: () => {
-        invoke<Configuration>("restore_config_defaults").then(applyChanges).catch((e) => {
+        invoke<Configuration>("restore_config_defaults").then(applyNewConfig).catch((e) => {
           setNotification(e);
         }).finally(() => setActiveModal(""));
       },
@@ -386,7 +341,7 @@ const ConfigPage: React.FC = () => {
 
           <div className={styles.buttonsContainer}>
             <button className='appButton' onClick={cancel}>Cancel</button>
-            <button className='appButton' onClick={() => applyChanges()}>Apply</button>
+            <button className='appButton' onClick={() => applyNewConfig(newConfig)}>Apply</button>
           </div>
         </section >
       }

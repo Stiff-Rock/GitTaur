@@ -35,7 +35,6 @@ const TagBranchModal: React.FC = () => {
     } else if (branchName) {
       tagPromise = invoke<void>("tag_branch_tip", { repoPath, branchName, tagName, tagMsg, isLocal });
     } else {
-      console.log("No commit oid nor branch name has been provided:", commitOid, branchName);
       setNotification("Internal error during tag creation, please report this issue")
       return;
     }

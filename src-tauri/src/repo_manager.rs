@@ -1065,6 +1065,7 @@ pub async fn revert_commit(
     app_handle: AppHandle,
     repo_path: String,
     commit_oid: String,
+    is_merge_commit: bool,
 ) -> Result<(), String> {
     info!("Reverting commit in repository at {}", repo_path);
 
@@ -1072,9 +1073,15 @@ pub async fn revert_commit(
 
     let shell = app_handle.shell();
 
-    let output = shell
-        .command("git")
-        .args(["revert", &commit_oid])
+    let mut command = shell.command("git").arg("revert");
+
+    if is_merge_commit {
+        command = command.args(["-m", "1"]);
+    }
+
+    command = command.arg(&commit_oid);
+
+    let output = command
         .current_dir(&repo_path)
         .output()
         .await

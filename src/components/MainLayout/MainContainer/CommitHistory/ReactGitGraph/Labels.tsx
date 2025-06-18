@@ -1,6 +1,7 @@
 import React from "react";
 import { Dimensions, Position, useGitGraphContext } from "./GitGraphContext";
 import { CommitNode, makeMoreGray } from "./commitsToNodes";
+import { useMainContext } from "../../../../../context/MainContext";
 
 const LABEL_ICON_SIZE = 14;
 const LABEL_TEXT_PADDING = 5;
@@ -15,7 +16,6 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
     LABEL_X_PADDING,
     LABEL_Y_PADDING,
     LABEL_SPACING,
-    currentCommitId
   } = useGitGraphContext();
 
   const labelXpos = BASE_LABEL_OFFSET + NODE_RADIUS + GRAPH_PADDING + maxHorizontalOffset - LABEL_X_PADDING;
@@ -37,6 +37,8 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
       labelYpos,
       refLabel
     } = props;
+
+    const { repoInfo } = useMainContext();
 
     const [dimensions, setDimensions] = React.useState<Dimensions>({ width: 0, height: 0 });
     const [position, setPosition] = React.useState<Position>({ x: 0, y: 0 });
@@ -62,8 +64,8 @@ const Labels: React.FC<{ node: CommitNode }> = ({ node }) => {
     }, [textRef.current]);
 
     const parts = refLabel.split(':');
-    const labelType = currentCommitId === node.id && index === 0 ? 'check' : parts[0];
     const labelText = parts[1];
+    const labelType = repoInfo?.currentBranch === labelText && index === 0 ? 'check' : parts[0];
 
     let strokeColor: string;
     if (node.data.isRemoteOnly) {

@@ -73,15 +73,6 @@ const RemoteAccordion: React.FC<RemoteAccordionProps> = (props) => {
             });
           },
         },
-        {
-          id: "TEST",
-          text: "TEST",
-          action: () => {
-            alert("Testing menu action"); // Simple test to see if ANY action works
-            console.log("Pull action executing");
-            // Add actual code after confirming alerts work
-          },
-        },
       ],
     });
 

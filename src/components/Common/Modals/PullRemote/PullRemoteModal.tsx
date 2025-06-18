@@ -1,10 +1,10 @@
 import baseStyle from "../BaseModal.module.css";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useAppContext } from "../../../../context/AppContext";
 import BaseModal from "../BaseModal";
 import { invoke } from "@tauri-apps/api/core";
 import ComboBox from "../../ComboBox/ComboBox";
-import Checkbox from "../../CheckBox/Checkbox";
+import { useMainContext } from "../../../../context/MainContext";
 
 export interface PullModalProps {
   selectedRemote?: string,
@@ -13,11 +13,11 @@ export interface PullModalProps {
 
 const PullRemoteModal: React.FC = () => {
   const { workspace, setActiveModal, setNotification, activeRepoInfo, pullModalProps, showLoadingDuringTask } = useAppContext();
+  const { repoInfo } = useMainContext();
   const { selectedRemote = "", sourceBranch = "" } = pullModalProps;
 
   const [remoteName, setRemoteName] = useState<string>(selectedRemote);
   const [branch, setBranch] = useState<string>(sourceBranch);
-  const [pullAll, setPullAll] = useState<boolean>(true);
 
   const remotePlaceHolder = "Choose a remote";
   const branchPlaceHolder = "Choose a branch";
@@ -29,22 +29,31 @@ const PullRemoteModal: React.FC = () => {
     const remotes = Object.values(activeRepoInfo.remotes);
 
     let remoteText = remotePlaceHolder;
-    if (remotes.length > 0) {
-      remoteText = remote_names.includes('origin')
-        ? "origin"
-        : remote_names[0];
+    if (!remoteName || remoteName.trim() === "") {
+      if (remotes.length > 0) {
+        remoteText = remote_names.includes('origin')
+          ? "origin"
+          : remote_names[0];
+      }
+      setRemoteName(remoteText);
     }
-    setRemoteName(remoteText);
 
-    let branchText = branchPlaceHolder;
-    if (!remoteText.includes(remotePlaceHolder)) {
-      branchText = activeRepoInfo.remotes[remoteText].branches[0];
+    if (!branch || branch.trim() === "") {
+      if (!remoteText.includes(remotePlaceHolder)) {
+        const availableRemoteBranches = activeRepoInfo.remotes[remoteText]?.branches || [];
+
+        const currentBranch = repoInfo?.currentBranch || "";
+        const branchExists = availableRemoteBranches.includes(currentBranch);
+
+        const branchText = branchExists ? currentBranch :
+          (availableRemoteBranches.length > 0 ? availableRemoteBranches[0] : branchPlaceHolder);
+
+        setBranch(branchText);
+      }
     }
-    setBranch(branchText)
 
-    if (sourceBranch) {
+    if (sourceBranch && activeRepoInfo.remotes[remoteText]?.branches.includes(sourceBranch)) {
       setBranch(sourceBranch);
-      setPullAll(false);
     }
   }, [activeRepoInfo]);
 
@@ -54,9 +63,7 @@ const PullRemoteModal: React.FC = () => {
     if (branch && !branch.includes(remotePlaceHolder)) {
       const repoPath = workspace.activeTab;
 
-      const b = pullAll ? "" : branch;
-
-      const pullPromise = invoke<string>("pull_remote", { repoPath, remoteName, branch: b }).then((msg) => {
+      const pullPromise = invoke<string>("pull_remote", { repoPath, remoteName, branch }).then((msg) => {
         setActiveModal("");
         setNotification(msg);
       }).catch((e) => {
@@ -87,16 +94,9 @@ const PullRemoteModal: React.FC = () => {
 
           <ComboBox
             title="Remote branch"
-            disableCondition={pullAll}
             onItemSelected={setBranch}
             value={branch}
             optionsArray={activeRepoInfo.remotes[remoteName]?.branches ?? []}
-          />
-
-          <Checkbox
-            checkedValue={pullAll}
-            onChecked={setPullAll}
-            label="Pull all branches"
           />
         </>
       ) : (
