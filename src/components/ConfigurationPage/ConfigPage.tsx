@@ -30,12 +30,12 @@ const ConfigPage: React.FC = () => {
     setNewConfig(config);
   }, [config]);
 
-  const applyChanges = () => {
-    if (!config || !newConfig || config === newConfig) return;
+  const applyChanges = (updatedConfig: Configuration | null = newConfig) => {
+    if (!config || !updatedConfig || config === updatedConfig) return;
 
-    if (newConfig.username != config.username || newConfig.email != config.email) {
-      const username = newConfig.username != config.username ? newConfig.username : "";
-      const email = newConfig.email != config.email ? newConfig.email : "";
+    if (updatedConfig.username != config.username || updatedConfig.email != config.email) {
+      const username = updatedConfig.username != config.username ? updatedConfig.username : "";
+      const email = updatedConfig.email != config.email ? updatedConfig.email : "";
 
       invoke("set_global_git_user_id", { username, email }).catch((e) => {
         const msg = `Error updating git global identification - ${e}`;
@@ -43,8 +43,8 @@ const ConfigPage: React.FC = () => {
       });
     }
 
-    if (newConfig.customTheme !== config.customTheme) {
-      const customTheme = newConfig.customTheme;
+    if (updatedConfig.customTheme !== config.customTheme) {
+      const customTheme = updatedConfig.customTheme;
       document.documentElement.style.setProperty('--custom-primary-bg', customTheme.primaryBg);
       document.documentElement.style.setProperty('--custom-secondary-bg', customTheme.secondaryBg);
       document.documentElement.style.setProperty('--custom-tertiary-bg', customTheme.tertiaryBg);
@@ -56,21 +56,22 @@ const ConfigPage: React.FC = () => {
       document.documentElement.style.setProperty('--custom-contrast-text', customTheme.contrastText);
     }
 
-    if (newConfig.themeValue !== config.themeValue) {
+    if (updatedConfig.themeValue !== config.themeValue) {
       let theme: string;
       if (config.themeValue === "system") {
         theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       } else {
-        theme = newConfig.themeValue;
+        theme = updatedConfig.themeValue;
       }
       document.documentElement.setAttribute('data-theme', theme);
     }
 
-    if (newConfig.themeValue !== config.accentColor) {
-      document.documentElement.style.setProperty('--active-color', newConfig.accentColor);
+    if (updatedConfig.themeValue !== config.accentColor) {
+      document.documentElement.style.setProperty('--active-color', updatedConfig.accentColor);
     }
 
-    setConfig(newConfig);
+    setConfig(updatedConfig);
+    setNewConfig(updatedConfig);
     setNotification("Succesfully applied new configuration!");
   }
 
@@ -78,16 +79,15 @@ const ConfigPage: React.FC = () => {
     setNewConfig(config);
   }
 
-  const handleResetToDefault = () => {
+  const resetToDefault = () => {
     openConfirmationModal({
       onConfirmed: () => {
-        invoke<Configuration>("restore_config_defaults").then(setConfig).catch((e) => {
+        invoke<Configuration>("restore_config_defaults").then(applyChanges).catch((e) => {
           setNotification(e);
         }).finally(() => setActiveModal(""));
       },
       title: "Restore default configuration",
       subTitle: "¿Are you sure you want to restore ALL the default configuration values?",
-      warning: "Application restart required for changes to take full effect"
     })
   };
 
@@ -117,7 +117,7 @@ const ConfigPage: React.FC = () => {
 
         <button
           className={`appButton ${styles.resetButton}`}
-          onClick={handleResetToDefault}
+          onClick={resetToDefault}
         >
           Reset to Default
         </button>
@@ -386,7 +386,7 @@ const ConfigPage: React.FC = () => {
 
           <div className={styles.buttonsContainer}>
             <button className='appButton' onClick={cancel}>Cancel</button>
-            <button className='appButton' onClick={applyChanges}>Apply</button>
+            <button className='appButton' onClick={() => applyChanges()}>Apply</button>
           </div>
         </section >
       }

@@ -24,7 +24,7 @@ pub fn save_config(new_config: Configuration) -> Result<(), String> {
         return Ok(());
     }
 
-    *config = new_config;
+    *config = new_config.clone();
 
     let json_data = serde_json::to_string_pretty(&*config)
         .map_err(|e| format!("Failed to serialize configuration data: {e}"))?;
@@ -145,9 +145,5 @@ pub fn load_config() -> Result<String, String> {
 
 #[command]
 pub async fn restore_config_defaults() -> Result<Configuration, String> {
-    let mut config = CONFIGUTARION
-        .lock()
-        .map_err(|e| format!("Failed to load configuration file while restoring defaults: {e}"))?;
-    *config = Configuration::default();
-    Ok(config.clone())
+    Ok(Configuration::default())
 }

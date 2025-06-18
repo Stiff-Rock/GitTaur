@@ -222,6 +222,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useLayoutEffect(() => {
     if (!config) return;
+    console.log("SAVING UPDATED CONFIG: ", config)
     invoke("save_config", { newConfig: config })
       .catch((e) => console.error(e));
   }, [config]);
