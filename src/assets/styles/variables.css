@@ -28,6 +28,10 @@
 
   --file-changed: #FF9800;
 
+  /* Diff colors */
+  --line-added: rgba(76, 175, 80, 0.4);
+
+  --line-deleted: rgba(244, 67, 54, 0.4);
 
   /* MISC COLORS */
   --link-color: #40afff;

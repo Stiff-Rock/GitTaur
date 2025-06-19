@@ -10,6 +10,7 @@ interface RemoteBranchElementProps {
 
 const RemoteBranchElement: React.FC<RemoteBranchElementProps> = (props) => {
   const { remote, branchName } = props;
+  const completeBranchName = remote + "/" + branchName;
 
   const {
     workspace,
@@ -39,11 +40,11 @@ const RemoteBranchElement: React.FC<RemoteBranchElementProps> = (props) => {
       items: [
         {
           id: "pullRemoteBranch",
-          text: "Pull " + branchName,
+          text: "Pull " + completeBranchName,
           action: () => {
             openPullModal({
               selectedRemote: remote,
-              sourceBranch: branchName
+              sourceBranch: completeBranchName
             });
           },
         },
@@ -51,28 +52,28 @@ const RemoteBranchElement: React.FC<RemoteBranchElementProps> = (props) => {
           id: "mergeRemoteBranch",
           text: "Merge",
           action: () => {
-            openMergeBranchModal({ sourceBranch: branchName });
+            openMergeBranchModal({ sourceBranch: completeBranchName });
           },
         },
         {
           id: "rebaseRemoteBranch",
           text: "Rebase",
           action: () => {
-            openRebaseBranchModal({ sourceBranch: branchName });
+            openRebaseBranchModal({ sourceBranch: completeBranchName });
           },
         },
         {
           id: "deleteRemoteBranch",
-          text: "Delete " + branchName,
+          text: "Delete " + completeBranchName,
           action: () => {
             openConfirmationModal({
               onConfirmed() {
-                invoke("delete_branch", { repoPath, branchName, isLocal: false }).catch((e) => {
+                invoke("delete_branch", { repoPath, branchName: completeBranchName, isLocal: false }).catch((e) => {
                   setNotification(e);
                 }).finally(() => setActiveModal(""));
               },
               title: "Delete branch",
-              subTitle: "Target: " + branchName,
+              subTitle: "Target: " + completeBranchName,
             });
 
           },
@@ -81,14 +82,14 @@ const RemoteBranchElement: React.FC<RemoteBranchElementProps> = (props) => {
           id: "createTagRemoteBranch",
           text: "Create tag",
           action: () => {
-            openCreateTagModal({ branchName, isLocal: false });
+            openCreateTagModal({ branchName: completeBranchName, isLocal: false });
           },
         },
         {
           id: "copyRemoteBranchName",
           text: "Copy branch name",
           action: () => {
-            navigator.clipboard.writeText(branchName).catch(e =>
+            navigator.clipboard.writeText(completeBranchName).catch(e =>
               setNotification(`Failed to copy remote branch name: ${e}`)
             );
           }

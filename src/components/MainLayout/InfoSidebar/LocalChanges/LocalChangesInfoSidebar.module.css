@@ -23,6 +23,12 @@
   overflow: auto;
 }
 
+.diffSection span {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 .stashChangesSection {
   border-bottom: none;
   height: 100%;

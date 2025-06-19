@@ -177,6 +177,14 @@ input[type="number"]::-webkit-outer-spin-button {
   font-size: var(--font-size-small);
 }
 
+.addition {
+  background-color: var(--line-added);
+}
+
+.deletion {
+  background-color: var(--line-deleted);
+}
+
 .context {
   display: none;
   visibility: hidden;
