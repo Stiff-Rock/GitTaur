@@ -473,17 +473,27 @@ pub async fn remove_from_staging_area(repo_path: String, files: Vec<String>) -> 
         .map_err(|e| format!("Could not get the current index of the repository: {e}"))?;
 
     if files.is_empty() {
-        let head = repo
-            .head()
-            .map_err(|e| format!("Could not get the head of the repository: {e}"))?;
-        let obj = head
-            .peel(git2::ObjectType::Tree)
-            .map_err(|e| format!("Could not get the tree reference of head: {e}"))?;
-        let tree = obj.as_tree().ok_or("Could not find tree")?;
+        let is_empty = repo
+            .is_empty()
+            .map_err(|e| format!("Could not determine if repository is empty: {e}"))?;
 
-        index
-            .read_tree(&tree)
-            .map_err(|e| format!("Failed to read tree: {e}"))?;
+        if is_empty {
+            index
+                .clear()
+                .map_err(|e| format!("Failed to clear the index: {e}"))?;
+        } else {
+            let head = repo
+                .head()
+                .map_err(|e| format!("Could not get the head of the repository: {e}"))?;
+            let obj = head
+                .peel(git2::ObjectType::Tree)
+                .map_err(|e| format!("Could not get the tree reference of head: {e}"))?;
+            let tree = obj.as_tree().ok_or("Could not find tree")?;
+
+            index
+                .read_tree(&tree)
+                .map_err(|e| format!("Failed to read tree: {e}"))?;
+        }
     } else {
         if let Ok(head) = repo.head() {
             let head_commit = head

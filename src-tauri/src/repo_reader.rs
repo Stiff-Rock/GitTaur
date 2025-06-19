@@ -1,14 +1,3 @@
-use git2::{
-    BranchType, Delta, Diff, DiffOptions, ObjectType, Oid, ReferenceType, Repository, Revwalk,
-    Sort, Status, StatusOptions,
-};
-use indexmap::IndexMap;
-use log::{info, trace};
-use std::collections::HashSet;
-use std::path::Path;
-use std::{collections::HashMap, num::TryFromIntError};
-use tauri::command;
-
 use crate::config_manager::get_config;
 use crate::types::repo_info::RepoHistory;
 use crate::{
@@ -20,6 +9,16 @@ use crate::{
         },
     },
 };
+use git2::{
+    BranchType, Delta, Diff, DiffOptions, ObjectType, Oid, ReferenceType, Repository, Revwalk,
+    Sort, Status, StatusOptions,
+};
+use indexmap::IndexMap;
+use log::{info, trace};
+use std::collections::HashSet;
+use std::path::Path;
+use std::{collections::HashMap, num::TryFromIntError};
+use tauri::command;
 
 /// Returns informatation about the repository, not including the commit history
 #[command]
@@ -668,6 +667,14 @@ fn get_unstaged_file_diff(repo: Repository, file_path: String) -> Result<String,
 }
 
 fn get_staged_file_diff(repo: Repository, file_path: String) -> Result<String, String> {
+    let is_empty = repo
+        .is_empty()
+        .map_err(|e| format!("Error while checking if repository is empty: {e}"))?;
+
+    if is_empty {
+        return Err("".to_string());
+    }
+
     // Get HEAD commit
     let head = repo
         .head()
