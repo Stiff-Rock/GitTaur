@@ -45,6 +45,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [@types/debug@4.1.12](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/estree-jsx@1.0.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/estree@1.0.7](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
+[@types/estree@1.0.8](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/hast@2.3.10](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/hast@3.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
 [@types/md5@2.3.5](https://github.com/DefinitelyTyped/DefinitelyTyped) - MIT<br>
@@ -254,13 +255,13 @@ Here you can find credited all the dependencies of this project. If yours is mis
 
 ## Backend Dependencies
 
-[sync_wrapper@1.0.2](https://github.com/Actyx/sync_wrapper) - Apache License 2.0<br>
-[ryu@1.0.18](https://github.com/dtolnay/ryu) - Apache License 2.0<br>
-[gethostname@1.0.2](https://codeberg.org/swsnr/gethostname.rs.git) - Apache License 2.0<br>
-[dpi@0.1.1](https://github.com/rust-windowing/winit) - Apache License 2.0<br>
-[tao@0.31.1](https://github.com/tauri-apps/tao) - Apache License 2.0<br>
-[dunce@1.0.5](https://gitlab.com/kornelski/dunce) - Apache License 2.0<br>
 [target-lexicon@0.12.16](https://github.com/bytecodealliance/target-lexicon) - Apache License 2.0<br>
+[gethostname@1.0.2](https://codeberg.org/swsnr/gethostname.rs.git) - Apache License 2.0<br>
+[dpi@0.1.2](https://github.com/rust-windowing/winit) - Apache License 2.0<br>
+[tao@0.33.0](https://github.com/tauri-apps/tao) - Apache License 2.0<br>
+[dunce@1.0.5](https://gitlab.com/kornelski/dunce) - Apache License 2.0<br>
+[ryu@1.0.20](https://github.com/dtolnay/ryu) - Apache License 2.0<br>
+[sync_wrapper@1.0.2](https://github.com/Actyx/sync_wrapper) - Apache License 2.0<br>
 [auth-git2-pem@0.5.7-pem](https://github.com/Stiff-Rock/auth-git2-rs) - BSD 2-Clause &quot;Simplified&quot; License<br>
 [terminal-prompt@0.2.3](https://github.com/de-vri-es/terminal-prompt-rs) - BSD 2-Clause &quot;Simplified&quot; License<br>
 [alloc-no-stdlib@2.0.4](https://github.com/dropbox/rust-alloc-no-stdlib) - BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License<br>
@@ -271,88 +272,35 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [notify@8.0.0](https://github.com/notify-rs/notify.git) - Creative Commons Zero v1.0 Universal<br>
 [inotify-sys@0.1.5](https://github.com/hannobraun/inotify-sys) - ISC License<br>
 [inotify@0.11.0](https://github.com/hannobraun/inotify) - ISC License<br>
-[windows-core@0.52.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-core@0.58.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-implement@0.58.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-interface@0.58.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-link@0.1.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-registry@0.2.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-result@0.2.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-strings@0.1.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-sys@0.45.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-sys@0.48.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-sys@0.52.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-sys@0.59.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-targets@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-targets@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-targets@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-targets@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows-version@0.1.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows@0.58.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_gnullvm@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_gnullvm@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_gnullvm@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_gnullvm@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_msvc@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_msvc@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_msvc@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_aarch64_msvc@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_gnu@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_gnu@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_gnu@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_gnu@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_gnullvm@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_gnullvm@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_msvc@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_msvc@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_msvc@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_i686_msvc@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnu@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnu@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnu@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnu@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnullvm@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnullvm@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnullvm@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_gnullvm@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_msvc@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_msvc@0.48.5](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_msvc@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
-[windows_x86_64_msvc@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
 [uds_windows@1.1.0](https://github.com/haraldh/rust_uds_windows) - MIT License<br>
-[winapi@0.3.9](https://github.com/retep998/winapi-rs) - MIT License<br>
-[sha2@0.10.8](https://github.com/RustCrypto/hashes) - MIT License<br>
+[sha2@0.10.9](https://github.com/RustCrypto/hashes) - MIT License<br>
 [brotli@7.0.0](https://github.com/dropbox/rust-brotli) - MIT License<br>
 [lazy_static@1.5.0](https://github.com/rust-lang-nursery/lazy-static.rs) - MIT License<br>
-[cocoa-foundation@0.2.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
-[cocoa@0.26.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
 [core-foundation-sys@0.8.7](https://github.com/servo/core-foundation-rs) - MIT License<br>
-[core-foundation@0.10.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
+[core-foundation@0.10.1](https://github.com/servo/core-foundation-rs) - MIT License<br>
 [core-graphics-types@0.2.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
 [core-graphics@0.24.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
-[string_cache@0.8.7](https://github.com/servo/string-cache) - MIT License<br>
-[string_cache_codegen@0.5.2](https://github.com/servo/string-cache) - MIT License<br>
+[string_cache@0.8.9](https://github.com/servo/string-cache) - MIT License<br>
+[string_cache_codegen@0.5.4](https://github.com/servo/string-cache) - MIT License<br>
 [hex@0.4.3](https://github.com/KokaKiwi/rust-hex) - MIT License<br>
 [form_urlencoded@1.2.1](https://github.com/servo/rust-url) - MIT License<br>
 [idna@1.0.3](https://github.com/servo/rust-url/) - MIT License<br>
 [percent-encoding@2.3.1](https://github.com/servo/rust-url/) - MIT License<br>
 [url@2.5.4](https://github.com/servo/rust-url) - MIT License<br>
-[backtrace@0.3.74](https://github.com/rust-lang/backtrace-rs) - MIT License<br>
-[cc@1.2.9](https://github.com/rust-lang/cc-rs) - MIT License<br>
-[cfg-if@1.0.0](https://github.com/alexcrichton/cfg-if) - MIT License<br>
+[backtrace@0.3.75](https://github.com/rust-lang/backtrace-rs) - MIT License<br>
+[cc@1.2.27](https://github.com/rust-lang/cc-rs) - MIT License<br>
+[cfg-if@1.0.1](https://github.com/rust-lang/cfg-if) - MIT License<br>
 [filetime@0.2.25](https://github.com/alexcrichton/filetime) - MIT License<br>
-[flate2@1.0.35](https://github.com/rust-lang/flate2-rs) - MIT License<br>
-[git2@0.20.0](https://github.com/rust-lang/git2-rs) - MIT License<br>
-[jobserver@0.1.32](https://github.com/rust-lang/jobserver-rs) - MIT License<br>
+[git2@0.20.2](https://github.com/rust-lang/git2-rs) - MIT License<br>
+[jobserver@0.1.33](https://github.com/rust-lang/jobserver-rs) - MIT License<br>
 [js-sys@0.3.77](https://github.com/rustwasm/wasm-bindgen/tree/master/crates/js-sys) - MIT License<br>
-[libgit2-sys@0.18.0+1.9.0](https://github.com/rust-lang/git2-rs) - MIT License<br>
 [libssh2-sys@0.3.1](https://github.com/alexcrichton/ssh2-rs) - MIT License<br>
 [openssl-probe@0.1.6](https://github.com/alexcrichton/openssl-probe) - MIT License<br>
-[openssl-src@300.4.2+3.4.1](https://github.com/alexcrichton/openssl-src-rs) - MIT License<br>
-[openssl-sys@0.9.106](https://github.com/sfackler/rust-openssl) - MIT License<br>
-[pkg-config@0.3.31](https://github.com/rust-lang/pkg-config-rs) - MIT License<br>
-[rustc-demangle@0.1.24](https://github.com/rust-lang/rustc-demangle) - MIT License<br>
-[socket2@0.5.8](https://github.com/rust-lang/socket2) - MIT License<br>
+[openssl-src@300.5.0+3.5.0](https://github.com/alexcrichton/openssl-src-rs) - MIT License<br>
+[openssl-sys@0.9.109](https://github.com/sfackler/rust-openssl) - MIT License<br>
+[pkg-config@0.3.32](https://github.com/rust-lang/pkg-config-rs) - MIT License<br>
+[rustc-demangle@0.1.25](https://github.com/rust-lang/rustc-demangle) - MIT License<br>
+[socket2@0.5.10](https://github.com/rust-lang/socket2) - MIT License<br>
 [wasm-bindgen-backend@0.2.100](https://github.com/rustwasm/wasm-bindgen/tree/master/crates/backend) - MIT License<br>
 [wasm-bindgen-futures@0.4.50](https://github.com/rustwasm/wasm-bindgen/tree/master/crates/futures) - MIT License<br>
 [wasm-bindgen-macro-support@0.2.100](https://github.com/rustwasm/wasm-bindgen/tree/master/crates/macro-support) - MIT License<br>
@@ -360,14 +308,14 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [wasm-bindgen-shared@0.2.100](https://github.com/rustwasm/wasm-bindgen/tree/master/crates/shared) - MIT License<br>
 [wasm-bindgen@0.2.100](https://github.com/rustwasm/wasm-bindgen) - MIT License<br>
 [web-sys@0.3.77](https://github.com/rustwasm/wasm-bindgen/tree/master/crates/web-sys) - MIT License<br>
-[libz-sys@1.1.21](https://github.com/rust-lang/libz-sys) - MIT License<br>
-[mio@1.0.3](https://github.com/tokio-rs/mio) - MIT License<br>
-[errno@0.3.10](https://github.com/lambda-fairy/rust-errno) - MIT License<br>
+[libz-sys@1.1.22](https://github.com/rust-lang/libz-sys) - MIT License<br>
+[mio@1.0.4](https://github.com/tokio-rs/mio) - MIT License<br>
+[errno@0.3.12](https://github.com/lambda-fairy/rust-errno) - MIT License<br>
 [mime@0.3.17](https://github.com/hyperium/mime) - MIT License<br>
-[base64ct@1.7.3](https://github.com/RustCrypto/formats) - MIT License<br>
+[base64ct@1.8.0](https://github.com/RustCrypto/formats) - MIT License<br>
 [base16ct@0.2.0](https://github.com/RustCrypto/formats/tree/master/base16ct) - MIT License<br>
 [bitflags@1.3.2](https://github.com/bitflags/bitflags) - MIT License<br>
-[bitflags@2.8.0](https://github.com/bitflags/bitflags) - MIT License<br>
+[bitflags@2.9.1](https://github.com/bitflags/bitflags) - MIT License<br>
 [glob@0.3.2](https://github.com/rust-lang/glob) - MIT License<br>
 [log@0.4.27](https://github.com/rust-lang/log) - MIT License<br>
 [num-bigint-dig@0.8.4](https://github.com/dignifiedquire/num-bigint) - MIT License<br>
@@ -377,22 +325,23 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [regex-automata@0.4.9](https://github.com/rust-lang/regex/tree/master/regex-automata) - MIT License<br>
 [regex-syntax@0.8.5](https://github.com/rust-lang/regex/tree/master/regex-syntax) - MIT License<br>
 [regex@1.11.1](https://github.com/rust-lang/regex) - MIT License<br>
-[uuid@1.12.0](https://github.com/uuid-rs/uuid) - MIT License<br>
+[uuid@1.17.0](https://github.com/uuid-rs/uuid) - MIT License<br>
 [html5ever@0.26.0](https://github.com/servo/html5ever) - MIT License<br>
 [markup5ever@0.11.0](https://github.com/servo/html5ever) - MIT License<br>
 [matches@0.1.10](https://github.com/SimonSapin/rust-std-candidates) - MIT License<br>
 [fern@0.7.1](https://github.com/daboross/fern) - MIT License<br>
 [rand_pcg@0.2.1](https://github.com/rust-random/rand) - MIT License<br>
-[libc@0.2.169](https://github.com/rust-lang/libc) - MIT License<br>
-[hyper@1.5.2](https://github.com/hyperium/hyper) - MIT License<br>
-[serde_with@3.12.0](https://github.com/jonasbb/serde_with/) - MIT License<br>
-[serde_with_macros@3.12.0](https://github.com/jonasbb/serde_with/) - MIT License<br>
-[plist@1.7.0](https://github.com/ebarnard/rust-plist/) - MIT License<br>
-[winreg@0.52.0](https://github.com/gentoo90/winreg-rs) - MIT License<br>
+[libc@0.2.173](https://github.com/rust-lang/libc) - MIT License<br>
+[flate2@1.1.2](https://github.com/rust-lang/flate2-rs) - MIT License<br>
+[hyper@1.6.0](https://github.com/hyperium/hyper) - MIT License<br>
+[serde_with@3.13.0](https://github.com/jonasbb/serde_with/) - MIT License<br>
+[serde_with_macros@3.13.0](https://github.com/jonasbb/serde_with/) - MIT License<br>
+[plist@1.7.2](https://github.com/ebarnard/rust-plist/) - MIT License<br>
+[winreg@0.55.0](https://github.com/gentoo90/winreg-rs) - MIT License<br>
 [new_debug_unreachable@1.0.6](https://github.com/mbrubeck/rust-debug-unreachable) - MIT License<br>
 [futf@0.1.5](https://github.com/servo/futf) - MIT License<br>
 [tendril@0.4.3](https://github.com/servo/tendril) - MIT License<br>
-[tempfile@3.15.0](https://github.com/Stebalien/tempfile) - MIT License<br>
+[tempfile@3.20.0](https://github.com/Stebalien/tempfile) - MIT License<br>
 [object@0.36.7](https://github.com/gimli-rs/object) - MIT License<br>
 [gimli@0.31.1](https://github.com/gimli-rs/gimli) - MIT License<br>
 [heck@0.4.1](https://github.com/withoutboats/heck) - MIT License<br>
@@ -401,7 +350,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [jni-sys@0.3.0](https://github.com/sfackler/rust-jni-sys) - MIT License<br>
 [png@0.17.16](https://github.com/image-rs/image-png) - MIT License<br>
 [winapi@0.3.9](https://github.com/retep998/winapi-rs) - MIT License<br>
-[httparse@1.9.5](https://github.com/seanmonstar/httparse) - MIT License<br>
+[httparse@1.10.1](https://github.com/seanmonstar/httparse) - MIT License<br>
 [futures-channel@0.3.31](https://github.com/rust-lang/futures-rs) - MIT License<br>
 [futures-core@0.3.31](https://github.com/rust-lang/futures-rs) - MIT License<br>
 [futures-executor@0.3.31](https://github.com/rust-lang/futures-rs) - MIT License<br>
@@ -411,71 +360,71 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [futures-task@0.3.31](https://github.com/rust-lang/futures-rs) - MIT License<br>
 [futures-util@0.3.31](https://github.com/rust-lang/futures-rs) - MIT License<br>
 [hashbrown@0.12.3](https://github.com/rust-lang/hashbrown) - MIT License<br>
-[hashbrown@0.15.2](https://github.com/rust-lang/hashbrown) - MIT License<br>
+[hashbrown@0.15.4](https://github.com/rust-lang/hashbrown) - MIT License<br>
 [serde_urlencoded@0.7.1](https://github.com/nox/serde_urlencoded) - MIT License<br>
 [webkit2gtk-sys@2.0.1](https://github.com/tauri-apps/webkit2gtk-rs) - MIT License<br>
 [webkit2gtk@2.0.1](https://github.com/tauri-apps/webkit2gtk-rs) - MIT License<br>
-[reqwest@0.12.12](https://github.com/seanmonstar/reqwest) - MIT License<br>
-[lock_api@0.4.12](https://github.com/Amanieu/parking_lot) - MIT License<br>
-[parking_lot@0.12.3](https://github.com/Amanieu/parking_lot) - MIT License<br>
-[parking_lot_core@0.9.10](https://github.com/Amanieu/parking_lot) - MIT License<br>
+[lock_api@0.4.13](https://github.com/Amanieu/parking_lot) - MIT License<br>
+[parking_lot@0.12.4](https://github.com/Amanieu/parking_lot) - MIT License<br>
+[parking_lot_core@0.9.11](https://github.com/Amanieu/parking_lot) - MIT License<br>
 [rustc_version@0.4.1](https://github.com/djc/rustc-version-rs) - MIT License<br>
 [kqueue-sys@1.0.4](https://gitlab.com/rust-kqueue/rust-kqueue-sys) - MIT License<br>
 [kqueue@1.1.1](https://gitlab.com/rust-kqueue/rust-kqueue) - MIT License<br>
 [indexmap@1.9.3](https://github.com/bluss/indexmap) - MIT License<br>
 [indexmap@2.9.0](https://github.com/indexmap-rs/indexmap) - MIT License<br>
-[equivalent@1.0.1](https://github.com/cuviper/equivalent) - MIT License<br>
+[equivalent@1.0.2](https://github.com/indexmap-rs/equivalent) - MIT License<br>
 [addr2line@0.24.2](https://github.com/gimli-rs/addr2line) - MIT License<br>
 [scopeguard@1.2.0](https://github.com/bluss/scopeguard) - MIT License<br>
 [cipher@0.4.4](https://github.com/RustCrypto/traits) - MIT License<br>
+[reqwest@0.12.20](https://github.com/seanmonstar/reqwest) - MIT License<br>
 [digest@0.10.7](https://github.com/RustCrypto/traits) - MIT License<br>
 [fnv@1.0.7](https://github.com/servo/rust-fnv) - MIT License<br>
 [memoffset@0.9.1](https://github.com/Gilnaa/memoffset) - MIT License<br>
 [vcpkg@0.2.15](https://github.com/mcgoo/vcpkg-rs) - MIT License<br>
-[enumflags2_derive@0.7.10](https://github.com/meithecatte/enumflags2) - MIT License<br>
+[enumflags2_derive@0.7.12](https://github.com/meithecatte/enumflags2) - MIT License<br>
 [keyboard-types@0.7.0](https://github.com/pyfisch/keyboard-types) - MIT License<br>
-[redox_syscall@0.5.8](https://gitlab.redox-os.org/redox-os/syscall) - MIT License<br>
+[redox_syscall@0.5.13](https://gitlab.redox-os.org/redox-os/syscall) - MIT License<br>
 [stable_deref_trait@1.2.0](https://github.com/storyyeller/stable_deref_trait) - MIT License<br>
 [cookie@0.18.1](https://github.com/SergioBenitez/cookie-rs) - MIT License<br>
 [foreign-types-macros@0.2.3](https://github.com/sfackler/foreign-types) - MIT License<br>
 [foreign-types-shared@0.3.1](https://github.com/sfackler/foreign-types) - MIT License<br>
 [foreign-types@0.5.0](https://github.com/sfackler/foreign-types) - MIT License<br>
 [version-compare@0.2.0](https://gitlab.com/timvisee/version-compare) - MIT License<br>
-[http@1.2.0](https://github.com/hyperium/http) - MIT License<br>
-[signal-hook-registry@1.4.2](https://github.com/vorner/signal-hook) - MIT License<br>
-[enumflags2@0.7.10](https://github.com/meithecatte/enumflags2) - MIT License<br>
-[bytes@1.9.0](https://github.com/tokio-rs/bytes) - MIT License<br>
+[http@1.3.1](https://github.com/hyperium/http) - MIT License<br>
+[signal-hook-registry@1.4.5](https://github.com/vorner/signal-hook) - MIT License<br>
+[enumflags2@0.7.12](https://github.com/meithecatte/enumflags2) - MIT License<br>
+[bytes@1.10.1](https://github.com/tokio-rs/bytes) - MIT License<br>
 [proc-macro-hack@0.5.20+deprecated](https://github.com/dtolnay/proc-macro-hack) - MIT License<br>
 [autocfg@1.4.0](https://github.com/cuviper/autocfg) - MIT License<br>
-[smallvec@1.13.2](https://github.com/servo/rust-smallvec) - MIT License<br>
+[smallvec@1.15.1](https://github.com/servo/rust-smallvec) - MIT License<br>
 [pin-utils@0.1.0](https://github.com/rust-lang-nursery/pin-utils) - MIT License<br>
 [want@0.3.1](https://github.com/seanmonstar/want) - MIT License<br>
 [block-buffer@0.10.4](https://github.com/RustCrypto/utils) - MIT License<br>
-[dirs-sys@0.4.1](https://github.com/dirs-dev/dirs-sys-rs) - MIT License<br>
 [dirs-sys@0.5.0](https://github.com/dirs-dev/dirs-sys-rs) - MIT License<br>
-[dirs@5.0.1](https://github.com/soc/dirs-rs) - MIT License<br>
 [dirs@6.0.0](https://github.com/soc/dirs-rs) - MIT License<br>
 [signature@2.2.0](https://github.com/RustCrypto/traits/tree/master/signature) - MIT License<br>
 [try-lock@0.2.5](https://github.com/seanmonstar/try-lock) - MIT License<br>
-[getrandom@0.2.15](https://github.com/rust-random/getrandom) - MIT License<br>
-[slab@0.4.9](https://github.com/tokio-rs/slab) - MIT License<br>
+[getrandom@0.2.16](https://github.com/rust-random/getrandom) - MIT License<br>
+[getrandom@0.3.3](https://github.com/rust-random/getrandom) - MIT License<br>
+[slab@0.4.10](https://github.com/tokio-rs/slab) - MIT License<br>
 [cfg-expr@0.15.8](https://github.com/EmbarkStudios/cfg-expr) - MIT License<br>
-[http-body-util@0.1.2](https://github.com/hyperium/http-body) - MIT License<br>
-[bumpalo@3.16.0](https://github.com/fitzgen/bumpalo) - MIT License<br>
-[ppv-lite86@0.2.20](https://github.com/cryptocorrosion/cryptocorrosion) - MIT License<br>
-[tracing-attributes@0.1.28](https://github.com/tokio-rs/tracing) - MIT License<br>
-[tracing-core@0.1.33](https://github.com/tokio-rs/tracing) - MIT License<br>
+[bumpalo@3.18.1](https://github.com/fitzgen/bumpalo) - MIT License<br>
+[ppv-lite86@0.2.21](https://github.com/cryptocorrosion/cryptocorrosion) - MIT License<br>
+[tracing-attributes@0.1.29](https://github.com/tokio-rs/tracing) - MIT License<br>
+[tracing-core@0.1.34](https://github.com/tokio-rs/tracing) - MIT License<br>
 [tracing@0.1.41](https://github.com/tokio-rs/tracing) - MIT License<br>
 [tower-layer@0.3.3](https://github.com/tower-rs/tower) - MIT License<br>
 [tower-service@0.3.3](https://github.com/tower-rs/tower) - MIT License<br>
 [tower@0.5.2](https://github.com/tower-rs/tower) - MIT License<br>
+[tower-http@0.6.6](https://github.com/tower-rs/tower-http) - MIT License<br>
 [http-body@1.0.1](https://github.com/hyperium/http-body) - MIT License<br>
+[http-body-util@0.1.3](https://github.com/hyperium/http-body) - MIT License<br>
 [iana-time-zone-haiku@0.1.2](https://github.com/strawlab/iana-time-zone) - MIT License<br>
-[iana-time-zone@0.1.61](https://github.com/strawlab/iana-time-zone) - MIT License<br>
-[cpufeatures@0.2.16](https://github.com/RustCrypto/utils) - MIT License<br>
+[iana-time-zone@0.1.63](https://github.com/strawlab/iana-time-zone) - MIT License<br>
 [const-oid@0.9.6](https://github.com/RustCrypto/formats/tree/master/const-oid) - MIT License<br>
 [der@0.7.10](https://github.com/RustCrypto/formats/tree/master/der) - MIT License<br>
 [pkcs8@0.10.2](https://github.com/RustCrypto/formats/tree/master/pkcs8) - MIT License<br>
+[cpufeatures@0.2.17](https://github.com/RustCrypto/utils) - MIT License<br>
 [crypto-common@0.1.6](https://github.com/RustCrypto/traits) - MIT License<br>
 [pem-rfc7468@0.7.0](https://github.com/RustCrypto/formats/tree/master/pem-rfc7468) - MIT License<br>
 [sec1@0.7.3](https://github.com/RustCrypto/formats/tree/master/sec1) - MIT License<br>
@@ -483,33 +432,33 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [spki@0.7.3](https://github.com/RustCrypto/formats/tree/master/spki) - MIT License<br>
 [ssh-encoding@0.2.0](https://github.com/RustCrypto/SSH/tree/master/ssh-encoding) - MIT License<br>
 [ssh-key@0.6.7](https://github.com/RustCrypto/SSH/tree/master/ssh-key) - MIT License<br>
-[deranged@0.3.11](https://github.com/jhpratt/deranged) - MIT License<br>
-[time-core@0.1.2](https://github.com/time-rs/time) - MIT License<br>
 [inout@0.1.4](https://github.com/RustCrypto/utils) - MIT License<br>
 [num-conv@0.1.0](https://github.com/jhpratt/num-conv) - MIT License<br>
 [powerfmt@0.2.0](https://github.com/jhpratt/powerfmt) - MIT License<br>
 [notify-types@2.0.0](https://github.com/notify-rs/notify.git) - MIT License<br>
-[hyper-util@0.1.10](https://github.com/hyperium/hyper-util) - MIT License<br>
 [ssh-cipher@0.2.0](https://github.com/RustCrypto/SSH/tree/master/ssh-cipher) - MIT License<br>
 [swift-rs@1.0.7](https://github.com/Brendonovich/swift-rs) - MIT License<br>
-[time-macros@0.2.19](https://github.com/time-rs/time) - MIT License<br>
-[time@0.3.37](https://github.com/time-rs/time) - MIT License<br>
-[zbus@5.3.0](https://github.com/dbus2/zbus/) - MIT License<br>
-[zbus_macros@5.3.0](https://github.com/dbus2/zbus/) - MIT License<br>
-[zbus_names@4.1.1](https://github.com/dbus2/zbus/) - MIT License<br>
-[zvariant@5.2.0](https://github.com/dbus2/zbus/) - MIT License<br>
-[zvariant_derive@5.2.0](https://github.com/dbus2/zbus/) - MIT License<br>
-[serde_spanned@0.6.8](https://github.com/toml-rs/toml) - MIT License<br>
-[toml@0.7.8](https://github.com/toml-rs/toml) - MIT License<br>
-[toml@0.8.19](https://github.com/toml-rs/toml) - MIT License<br>
-[toml_datetime@0.6.8](https://github.com/toml-rs/toml) - MIT License<br>
+[hyper-util@0.1.14](https://github.com/hyperium/hyper-util) - MIT License<br>
+[deranged@0.4.0](https://github.com/jhpratt/deranged) - MIT License<br>
+[zbus@5.7.1](https://github.com/dbus2/zbus/) - MIT License<br>
+[zbus_macros@5.7.1](https://github.com/dbus2/zbus/) - MIT License<br>
+[zbus_names@4.2.0](https://github.com/dbus2/zbus/) - MIT License<br>
+[zvariant@5.5.3](https://github.com/dbus2/zbus/) - MIT License<br>
+[zvariant_derive@5.5.3](https://github.com/dbus2/zbus/) - MIT License<br>
+[serde_spanned@0.6.9](https://github.com/toml-rs/toml) - MIT License<br>
+[toml@0.8.23](https://github.com/toml-rs/toml) - MIT License<br>
+[toml_datetime@0.6.11](https://github.com/toml-rs/toml) - MIT License<br>
 [toml_edit@0.19.15](https://github.com/toml-rs/toml) - MIT License<br>
 [toml_edit@0.20.7](https://github.com/toml-rs/toml) - MIT License<br>
-[toml_edit@0.22.22](https://github.com/toml-rs/toml) - MIT License<br>
-[idna_adapter@1.2.0](https://github.com/hsivonen/idna_adapter) - MIT License<br>
+[toml_edit@0.22.27](https://github.com/toml-rs/toml) - MIT License<br>
+[toml_write@0.1.2](https://github.com/toml-rs/toml) - MIT License<br>
+[time-core@0.1.4](https://github.com/time-rs/time) - MIT License<br>
+[time-macros@0.2.22](https://github.com/time-rs/time) - MIT License<br>
+[time@0.3.41](https://github.com/time-rs/time) - MIT License<br>
+[idna_adapter@1.2.1](https://github.com/hsivonen/idna_adapter) - MIT License<br>
 [nodrop@0.1.14](https://github.com/bluss/arrayvec) - MIT License<br>
-[synstructure@0.13.1](https://github.com/mystor/synstructure) - MIT License<br>
-[ipnet@2.10.1](https://github.com/krisprice/ipnet) - MIT License<br>
+[synstructure@0.13.2](https://github.com/mystor/synstructure) - MIT License<br>
+[ipnet@2.11.0](https://github.com/krisprice/ipnet) - MIT License<br>
 [rand_hc@0.2.0](https://github.com/rust-random/rand) - MIT License<br>
 [getrandom@0.1.16](https://github.com/rust-random/getrandom) - MIT License<br>
 [rand@0.7.3](https://github.com/rust-random/rand) - MIT License<br>
@@ -518,83 +467,79 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [rand_chacha@0.3.1](https://github.com/rust-random/rand) - MIT License<br>
 [rand_core@0.5.1](https://github.com/rust-random/rand) - MIT License<br>
 [rand_core@0.6.4](https://github.com/rust-random/rand) - MIT License<br>
+[iri-string@0.7.8](https://github.com/lo48576/iri-string) - MIT License<br>
 [softbuffer@0.4.6](https://github.com/rust-windowing/softbuffer) - MIT License<br>
-[zerocopy-derive@0.7.35](https://github.com/google/zerocopy) - MIT License<br>
-[zerocopy@0.7.35](https://github.com/google/zerocopy) - MIT License<br>
+[zerocopy@0.8.25](https://github.com/google/zerocopy) - MIT License<br>
 [encoding_rs@0.8.35](https://github.com/hsivonen/encoding_rs) - MIT License<br>
-[utf16_iter@1.0.5](https://github.com/hsivonen/utf16_iter) - MIT License<br>
 [utf8_iter@1.0.4](https://github.com/hsivonen/utf8_iter) - MIT License<br>
-[write16@1.0.0](https://github.com/hsivonen/write16) - MIT License<br>
-[unicode-segmentation@1.12.0](https://github.com/unicode-rs/unicode-segmentation) - MIT License<br>
-[cocoa@0.26.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
 [core-graphics@0.24.0](https://github.com/servo/core-foundation-rs) - MIT License<br>
 [field-offset@0.3.6](https://github.com/Diggsey/rust-field-offset) - MIT License<br>
-[tauri-plugin-dialog@2.2.0](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
-[tauri-plugin-fs@2.2.0](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
-[tauri-plugin-os@2.2.1](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
-[tauri-plugin-shell@2.2.0](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
-[tauri-build@2.0.5](https://github.com/tauri-apps/tauri) - MIT License<br>
-[tauri-codegen@2.0.4](https://github.com/tauri-apps/tauri) - MIT License<br>
-[tauri-runtime-wry@2.3.0](https://github.com/tauri-apps/tauri) - MIT License<br>
-[tauri-runtime@2.3.0](https://github.com/tauri-apps/tauri) - MIT License<br>
-[tauri-utils@2.1.1](https://github.com/tauri-apps/tauri) - MIT License<br>
-[tauri@2.2.2](https://github.com/tauri-apps/tauri) - MIT License<br>
 [precomputed-hash@0.1.1](https://github.com/emilio/precomputed-hash) - MIT License<br>
 [json-patch@3.0.1](https://github.com/idubrov/json-patch) - MIT License<br>
 [cfb@0.7.3](https://github.com/mdsteele/rust-cfb) - MIT License<br>
 [static_assertions@1.1.0](https://github.com/nvzqz/static-assertions-rs) - MIT License<br>
-[darling@0.20.10](https://github.com/TedDriggs/darling) - MIT License<br>
-[darling_core@0.20.10](https://github.com/TedDriggs/darling) - MIT License<br>
-[darling_macro@0.20.10](https://github.com/TedDriggs/darling) - MIT License<br>
-[ico@0.3.0](https://github.com/mdsteele/rust-ico) - MIT License<br>
+[dlopen2_derive@0.4.1](https://github.com/OpenByteDev/dlopen2) - MIT License<br>
+[darling@0.20.11](https://github.com/TedDriggs/darling) - MIT License<br>
+[darling_core@0.20.11](https://github.com/TedDriggs/darling) - MIT License<br>
+[darling_macro@0.20.11](https://github.com/TedDriggs/darling) - MIT License<br>
+[ico@0.4.0](https://github.com/mdsteele/rust-ico) - MIT License<br>
 [crc32fast@1.4.2](https://github.com/srijs/rust-crc32fast) - MIT License<br>
 [zeroize@1.8.1](https://github.com/RustCrypto/utils/tree/master/zeroize) - MIT License<br>
-[infer@0.16.0](https://github.com/bojand/infer) - MIT License<br>
-[schemars@0.8.21](https://github.com/GREsau/schemars) - MIT License<br>
-[schemars_derive@0.8.21](https://github.com/GREsau/schemars) - MIT License<br>
+[infer@0.19.0](https://github.com/bojand/infer) - MIT License<br>
+[bytemuck@1.23.1](https://github.com/Lokathor/bytemuck) - MIT License<br>
+[schemars@0.8.22](https://github.com/GREsau/schemars) - MIT License<br>
+[schemars_derive@0.8.22](https://github.com/GREsau/schemars) - MIT License<br>
 [raw-window-handle@0.6.2](https://github.com/rust-windowing/raw-window-handle) - MIT License<br>
 [proc-macro-error-attr@1.0.4](https://gitlab.com/CreepySkeleton/proc-macro-error) - MIT License<br>
 [proc-macro-error@1.0.4](https://gitlab.com/CreepySkeleton/proc-macro-error) - MIT License<br>
 [cfg_aliases@0.2.1](https://github.com/katharostech/cfg_aliases) - MIT License<br>
 [embed_plist@1.2.2](https://github.com/nvzqz/embed-plist-rs) - MIT License<br>
-[window-vibrancy@0.5.2](https://github.com/tauri-apps/tauri-plugin-vibrancy) - MIT License<br>
-[wry@0.48.1](https://github.com/tauri-apps/wry) - MIT License<br>
+[window-vibrancy@0.6.0](https://github.com/tauri-apps/tauri-plugin-vibrancy) - MIT License<br>
+[wry@0.51.2](https://github.com/tauri-apps/wry) - MIT License<br>
 [sys-locale@0.3.2](https://github.com/1Password/sys-locale) - MIT License<br>
 [serialize-to-javascript-impl@0.1.1](https://github.com/chippers/serialize-to-javascript) - MIT License<br>
 [serialize-to-javascript@0.1.1](https://github.com/chippers/serialize-to-javascript) - MIT License<br>
 [urlpattern@0.3.0](https://github.com/denoland/rust-urlpattern) - MIT License<br>
-[rfd@0.15.2](https://github.com/PolyMeilex/rfd) - MIT License<br>
+[rfd@0.15.3](https://github.com/PolyMeilex/rfd) - MIT License<br>
 [jsonptr@0.6.3](https://github.com/chanced/jsonptr) - MIT License<br>
-[muda@0.15.3](https://github.com/amrbashir/muda) - MIT License<br>
+[muda@0.16.1](https://github.com/amrbashir/muda) - MIT License<br>
 [libredox@0.1.3](https://gitlab.redox-os.org/redox-os/libredox.git) - MIT License<br>
 [is-docker@0.2.0](https://github.com/TheLarkInn/is-docker) - MIT License<br>
 [is-wsl@0.4.0](https://github.com/TheLarkInn/is-wsl) - MIT License<br>
-[gittaur@0.1.0](https://crates.io/crates/gittaur) - MIT License<br>
-[block2@0.5.1](https://github.com/madsmtm/objc2) - MIT License<br>
-[block@0.1.6](http://github.com/SSheldon/rust-block) - MIT License<br>
-[brotli-decompressor@4.0.1](https://github.com/dropbox/rust-brotli-decompressor) - MIT License<br>
-[cargo_toml@0.21.0](https://gitlab.com/lib.rs/cargo_toml) - MIT License<br>
+[GitTaur@1.0.0](https://crates.io/crates/GitTaur) - MIT License<br>
+[block2@0.6.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[brotli-decompressor@4.0.3](https://github.com/dropbox/rust-brotli-decompressor) - MIT License<br>
+[cargo_toml@0.22.1](https://gitlab.com/lib.rs/cargo_toml) - MIT License<br>
 [cesu8@1.1.0](https://github.com/emk/cesu8-rs) - MIT License<br>
-[chrono@0.4.40](https://github.com/chronotope/chrono) - MIT License<br>
+[chrono@0.4.41](https://github.com/chronotope/chrono) - MIT License<br>
 [convert_case@0.4.0](https://github.com/rutrum/convert-case) - MIT License<br>
+[dispatch2@0.2.0](https://github.com/madsmtm/objc2) - MIT License<br>
 [dispatch@0.2.0](http://github.com/SSheldon/rust-dispatch) - MIT License<br>
 [dlopen2@0.7.0](https://github.com/OpenByteDev/dlopen2) - MIT License<br>
-[dlopen2_derive@0.4.0](https://crates.io/crates/dlopen2_derive) - MIT License<br>
+[dpi@0.1.2](https://github.com/rust-windowing/winit) - MIT License<br>
 [fxhash@0.2.1](https://github.com/cbreeden/fxhash) - MIT License<br>
 [libm@0.2.15](https://github.com/rust-lang/compiler-builtins) - MIT License<br>
 [mac@0.1.1](https://github.com/reem/rust-mac.git) - MIT License<br>
-[malloc_buf@0.0.6](https://github.com/SSheldon/malloc_buf) - MIT License<br>
 [ndk-context@0.1.1](https://github.com/rust-windowing/android-ndk-rs) - MIT License<br>
 [ndk-sys@0.6.0+11769913](https://github.com/rust-mobile/ndk) - MIT License<br>
 [ndk@0.9.0](https://github.com/rust-mobile/ndk) - MIT License<br>
 [objc-sys@0.3.5](https://github.com/madsmtm/objc2) - MIT License<br>
-[objc2-app-kit@0.2.2](https://github.com/madsmtm/objc2) - MIT License<br>
-[objc2-encode@4.0.3](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-app-kit@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-cloud-kit@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-core-data@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-core-foundation@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-core-graphics@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-core-image@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-encode@4.1.0](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-exception-helper@0.1.1](https://github.com/madsmtm/objc2) - MIT License<br>
 [objc2-foundation@0.2.2](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-foundation@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
 [objc2-quartz-core@0.2.2](https://github.com/madsmtm/objc2) - MIT License<br>
-[objc2-ui-kit@0.2.2](https://github.com/madsmtm/objc2) - MIT License<br>
-[objc2-web-kit@0.2.2](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-quartz-core@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-ui-kit@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2-web-kit@0.3.1](https://github.com/madsmtm/objc2) - MIT License<br>
 [objc2@0.5.2](https://github.com/madsmtm/objc2) - MIT License<br>
+[objc2@0.6.1](https://github.com/madsmtm/objc2) - MIT License<br>
 [phf@0.10.1](https://github.com/sfackler/rust-phf) - MIT License<br>
 [phf@0.8.0](https://github.com/sfackler/rust-phf) - MIT License<br>
 [phf_codegen@0.10.0](https://github.com/sfackler/rust-phf) - MIT License<br>
@@ -604,113 +549,160 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [phf_macros@0.8.0](https://github.com/sfackler/rust-phf) - MIT License<br>
 [phf_shared@0.10.0](https://github.com/sfackler/rust-phf) - MIT License<br>
 [phf_shared@0.8.0](https://github.com/sfackler/rust-phf) - MIT License<br>
+[r-efi@5.2.0](https://github.com/r-efi/r-efi) - MIT License<br>
 [servo_arc@0.1.1](https://github.com/servo/servo) - MIT License<br>
 [siphasher@0.3.11](https://github.com/jedisct1/rust-siphash) - MIT License<br>
 [siphasher@1.0.1](https://github.com/jedisct1/rust-siphash) - MIT License<br>
 [tao-macros@0.1.3](https://github.com/tauri-apps/tao) - MIT License<br>
-[tauri-macros@2.0.4](https://github.com/tauri-apps/tauri) - MIT License<br>
-[tauri-plugin-opener@2.2.5](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
-[tauri-plugin@2.0.4](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-build@2.2.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-codegen@2.2.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-macros@2.2.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-plugin-dialog@2.2.2](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
+[tauri-plugin-fs@2.3.0](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
+[tauri-plugin-opener@2.2.7](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
+[tauri-plugin-os@2.2.1](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
+[tauri-plugin-shell@2.2.1](https://github.com/tauri-apps/plugins-workspace) - MIT License<br>
+[tauri-plugin@2.2.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-runtime-wry@2.6.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-runtime@2.6.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri-utils@2.4.0](https://github.com/tauri-apps/tauri) - MIT License<br>
+[tauri@2.5.1](https://github.com/tauri-apps/tauri) - MIT License<br>
 [unic-char-property@0.9.0](https://github.com/open-i18n/rust-unic/) - MIT License<br>
 [unic-char-range@0.9.0](https://github.com/open-i18n/rust-unic/) - MIT License<br>
 [unic-common@0.9.0](https://github.com/open-i18n/rust-unic/) - MIT License<br>
 [unic-ucd-ident@0.9.0](https://github.com/open-i18n/rust-unic/) - MIT License<br>
 [unic-ucd-version@0.9.0](https://github.com/open-i18n/rust-unic/) - MIT License<br>
 [webview2-com-macros@0.8.0](https://github.com/wravery/webview2-rs) - MIT License<br>
-[webview2-com-sys@0.34.0](https://github.com/wravery/webview2-rs) - MIT License<br>
-[webview2-com@0.34.0](https://github.com/wravery/webview2-rs) - MIT License<br>
+[webview2-com-sys@0.37.0](https://github.com/wravery/webview2-rs) - MIT License<br>
+[webview2-com@0.37.0](https://github.com/wravery/webview2-rs) - MIT License<br>
 [winapi-i686-pc-windows-gnu@0.4.0](https://github.com/retep998/winapi-rs) - MIT License<br>
 [winapi-x86_64-pc-windows-gnu@0.4.0](https://github.com/retep998/winapi-rs) - MIT License<br>
-[objc@0.2.7](http://github.com/SSheldon/rust-objc) - MIT License<br>
-[tokio-util@0.7.13](https://github.com/tokio-rs/tokio) - MIT License<br>
+[windows-collections@0.2.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-core@0.61.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-future@0.2.1](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-implement@0.60.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-interface@0.59.1](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-link@0.1.3](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-numerics@0.2.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-result@0.3.4](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-strings@0.4.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-sys@0.45.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-sys@0.52.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-sys@0.59.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-sys@0.60.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-targets@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-targets@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-targets@0.53.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-threading@0.1.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows-version@0.1.4](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows@0.61.3](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_aarch64_gnullvm@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_aarch64_gnullvm@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_aarch64_gnullvm@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_aarch64_msvc@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_aarch64_msvc@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_aarch64_msvc@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_gnu@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_gnu@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_gnu@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_gnullvm@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_gnullvm@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_msvc@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_msvc@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_i686_msvc@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_gnu@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_gnu@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_gnu@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_gnullvm@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_gnullvm@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_gnullvm@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_msvc@0.42.2](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_msvc@0.52.6](https://github.com/microsoft/windows-rs) - MIT License<br>
+[windows_x86_64_msvc@0.53.0](https://github.com/microsoft/windows-rs) - MIT License<br>
+[wit-bindgen-rt@0.39.0](https://github.com/bytecodealliance/wit-bindgen) - MIT License<br>
+[tokio-util@0.7.15](https://github.com/tokio-rs/tokio) - MIT License<br>
 [tokio@1.45.1](https://github.com/tokio-rs/tokio) - MIT License<br>
 [simd-adler32@0.3.7](https://github.com/mcountryman/simd-adler32) - MIT License<br>
 [android-tzdata@0.1.1](https://github.com/RumovZ/android-tzdata) - MIT License<br>
-[miniz_oxide@0.8.3](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) - MIT License<br>
-[miniz_oxide@0.8.3](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) - MIT License<br>
+[miniz_oxide@0.8.9](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) - MIT License<br>
+[miniz_oxide@0.8.9](https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide) - MIT License<br>
 [fdeflate@0.3.7](https://github.com/image-rs/fdeflate) - MIT License<br>
 [ident_case@1.0.1](https://github.com/TedDriggs/ident_case) - MIT License<br>
-[bytemuck@1.21.0](https://github.com/Lokathor/bytemuck) - MIT License<br>
 [libssh2-sys@0.3.1](https://github.com/alexcrichton/ssh2-rs) - MIT License<br>
-[typenum@1.17.0](https://github.com/paholg/typenum) - MIT License<br>
 [async-recursion@1.1.1](https://github.com/dcchut/async-recursion) - MIT License<br>
 [rsa@0.9.8](https://github.com/RustCrypto/RSA) - MIT License<br>
-[adler2@2.0.0](https://github.com/oyvindln/adler2) - MIT License<br>
-[anyhow@1.0.95](https://github.com/dtolnay/anyhow) - MIT License<br>
+[adler2@2.0.1](https://github.com/oyvindln/adler2) - MIT License<br>
+[anyhow@1.0.98](https://github.com/dtolnay/anyhow) - MIT License<br>
 [async-channel@2.3.1](https://github.com/smol-rs/async-channel) - MIT License<br>
-[async-executor@1.13.1](https://github.com/smol-rs/async-executor) - MIT License<br>
-[async-fs@2.1.2](https://github.com/smol-rs/async-fs) - MIT License<br>
-[async-io@2.4.0](https://github.com/smol-rs/async-io) - MIT License<br>
+[async-executor@1.13.2](https://github.com/smol-rs/async-executor) - MIT License<br>
+[async-io@2.4.1](https://github.com/smol-rs/async-io) - MIT License<br>
 [async-lock@3.4.0](https://github.com/smol-rs/async-lock) - MIT License<br>
-[async-process@2.3.0](https://github.com/smol-rs/async-process) - MIT License<br>
-[async-signal@0.2.10](https://github.com/smol-rs/async-signal) - MIT License<br>
+[async-process@2.3.1](https://github.com/smol-rs/async-process) - MIT License<br>
+[async-signal@0.2.11](https://github.com/smol-rs/async-signal) - MIT License<br>
 [async-task@4.7.1](https://github.com/smol-rs/async-task) - MIT License<br>
-[async-trait@0.1.85](https://github.com/dtolnay/async-trait) - MIT License<br>
+[async-trait@0.1.88](https://github.com/dtolnay/async-trait) - MIT License<br>
 [atomic-waker@1.1.2](https://github.com/smol-rs/atomic-waker) - MIT License<br>
 [blocking@1.6.1](https://github.com/smol-rs/blocking) - MIT License<br>
-[camino@1.1.9](https://github.com/camino-rs/camino) - MIT License<br>
+[camino@1.1.10](https://github.com/camino-rs/camino) - MIT License<br>
 [cargo-platform@0.1.9](https://github.com/rust-lang/cargo) - MIT License<br>
-[cargo_metadata@0.19.1](https://github.com/oli-obk/cargo_metadata) - MIT License<br>
+[cargo_metadata@0.19.2](https://github.com/oli-obk/cargo_metadata) - MIT License<br>
 [concurrent-queue@2.5.0](https://github.com/smol-rs/concurrent-queue) - MIT License<br>
 [displaydoc@0.2.5](https://github.com/yaahc/displaydoc) - MIT License<br>
-[dtoa@1.0.9](https://github.com/dtolnay/dtoa) - MIT License<br>
-[dyn-clone@1.0.17](https://github.com/dtolnay/dyn-clone) - MIT License<br>
+[dtoa@1.0.10](https://github.com/dtolnay/dtoa) - MIT License<br>
+[dyn-clone@1.0.19](https://github.com/dtolnay/dyn-clone) - MIT License<br>
 [endi@1.1.0](https://github.com/zeenix/endi) - MIT License<br>
-[erased-serde@0.4.5](https://github.com/dtolnay/erased-serde) - MIT License<br>
-[event-listener-strategy@0.5.3](https://github.com/smol-rs/event-listener-strategy) - MIT License<br>
+[erased-serde@0.4.6](https://github.com/dtolnay/erased-serde) - MIT License<br>
+[event-listener-strategy@0.5.4](https://github.com/smol-rs/event-listener-strategy) - MIT License<br>
 [event-listener@5.4.0](https://github.com/smol-rs/event-listener) - MIT License<br>
 [fastrand@2.3.0](https://github.com/smol-rs/fastrand) - MIT License<br>
 [futures-lite@2.6.0](https://github.com/smol-rs/futures-lite) - MIT License<br>
-[hermit-abi@0.4.0](https://github.com/hermit-os/hermit-rs) - MIT License<br>
+[hermit-abi@0.5.2](https://github.com/hermit-os/hermit-rs) - MIT License<br>
 [itoa@0.4.8](https://github.com/dtolnay/itoa) - MIT License<br>
-[itoa@1.0.14](https://github.com/dtolnay/itoa) - MIT License<br>
+[itoa@1.0.15](https://github.com/dtolnay/itoa) - MIT License<br>
 [kuchikiki@0.8.2](https://github.com/brave/kuchikiki) - MIT License<br>
-[linux-raw-sys@0.4.15](https://github.com/sunfishcode/linux-raw-sys) - MIT License<br>
 [linux-raw-sys@0.9.4](https://github.com/sunfishcode/linux-raw-sys) - MIT License<br>
 [num_enum@0.7.3](https://github.com/illicitonion/num_enum) - MIT License<br>
 [num_enum_derive@0.7.3](https://github.com/illicitonion/num_enum) - MIT License<br>
-[once_cell@1.20.2](https://github.com/matklad/once_cell) - MIT License<br>
+[once_cell@1.21.3](https://github.com/matklad/once_cell) - MIT License<br>
 [ordered-stream@0.2.0](https://github.com/danieldg/ordered-stream) - MIT License<br>
 [parking@2.2.1](https://github.com/smol-rs/parking) - MIT License<br>
 [pathdiff@0.2.3](https://github.com/Manishearth/pathdiff) - MIT License<br>
 [pin-project-lite@0.2.16](https://github.com/taiki-e/pin-project-lite) - MIT License<br>
 [piper@0.2.4](https://github.com/smol-rs/piper) - MIT License<br>
-[polling@3.7.4](https://github.com/smol-rs/polling) - MIT License<br>
+[polling@3.8.0](https://github.com/smol-rs/polling) - MIT License<br>
 [proc-macro-crate@1.3.1](https://github.com/bkchr/proc-macro-crate) - MIT License<br>
 [proc-macro-crate@2.0.0](https://github.com/bkchr/proc-macro-crate) - MIT License<br>
-[proc-macro-crate@3.2.0](https://github.com/bkchr/proc-macro-crate) - MIT License<br>
-[proc-macro2@1.0.93](https://github.com/dtolnay/proc-macro2) - MIT License<br>
-[quote@1.0.38](https://github.com/dtolnay/quote) - MIT License<br>
-[rustix@0.38.43](https://github.com/bytecodealliance/rustix) - MIT License<br>
+[proc-macro-crate@3.3.0](https://github.com/bkchr/proc-macro-crate) - MIT License<br>
+[proc-macro2@1.0.95](https://github.com/dtolnay/proc-macro2) - MIT License<br>
+[quote@1.0.40](https://github.com/dtolnay/quote) - MIT License<br>
 [rustix@1.0.7](https://github.com/bytecodealliance/rustix) - MIT License<br>
-[rustversion@1.0.19](https://github.com/dtolnay/rustversion) - MIT License<br>
-[semver@1.0.24](https://github.com/dtolnay/semver) - MIT License<br>
-[serde-untagged@0.1.6](https://github.com/dtolnay/serde-untagged) - MIT License<br>
-[serde@1.0.217](https://github.com/serde-rs/serde) - MIT License<br>
-[serde_derive@1.0.217](https://github.com/serde-rs/serde) - MIT License<br>
+[rustversion@1.0.21](https://github.com/dtolnay/rustversion) - MIT License<br>
+[semver@1.0.26](https://github.com/dtolnay/semver) - MIT License<br>
+[serde-untagged@0.1.7](https://github.com/dtolnay/serde-untagged) - MIT License<br>
+[serde@1.0.219](https://github.com/serde-rs/serde) - MIT License<br>
+[serde_derive@1.0.219](https://github.com/serde-rs/serde) - MIT License<br>
 [serde_derive_internals@0.29.1](https://github.com/serde-rs/serde) - MIT License<br>
-[serde_json@1.0.135](https://github.com/serde-rs/json) - MIT License<br>
-[serde_repr@0.1.19](https://github.com/dtolnay/serde-repr) - MIT License<br>
+[serde_json@1.0.140](https://github.com/serde-rs/json) - MIT License<br>
+[serde_repr@0.1.20](https://github.com/dtolnay/serde-repr) - MIT License<br>
 [syn@1.0.109](https://github.com/dtolnay/syn) - MIT License<br>
-[syn@2.0.96](https://github.com/dtolnay/syn) - MIT License<br>
+[syn@2.0.103](https://github.com/dtolnay/syn) - MIT License<br>
 [system-deps@6.2.2](https://github.com/gdesmott/system-deps) - MIT License<br>
 [thiserror-impl@1.0.69](https://github.com/dtolnay/thiserror) - MIT License<br>
-[thiserror-impl@2.0.11](https://github.com/dtolnay/thiserror) - MIT License<br>
+[thiserror-impl@2.0.12](https://github.com/dtolnay/thiserror) - MIT License<br>
 [thiserror@1.0.69](https://github.com/dtolnay/thiserror) - MIT License<br>
-[thiserror@2.0.11](https://github.com/dtolnay/thiserror) - MIT License<br>
-[typeid@1.0.2](https://github.com/dtolnay/typeid) - MIT License<br>
-[unicode-ident@1.0.14](https://github.com/dtolnay/unicode-ident) - MIT License<br>
+[thiserror@2.0.12](https://github.com/dtolnay/thiserror) - MIT License<br>
+[typeid@1.0.3](https://github.com/dtolnay/typeid) - MIT License<br>
+[unicode-ident@1.0.18](https://github.com/dtolnay/unicode-ident) - MIT License<br>
 [utf-8@0.7.6](https://github.com/SimonSapin/rust-utf8) - MIT License<br>
-[wasi@0.11.0+wasi-snapshot-preview1](https://github.com/bytecodealliance/wasi) - MIT License<br>
+[wasi@0.11.1+wasi-snapshot-preview1](https://github.com/bytecodealliance/wasi) - MIT License<br>
+[wasi@0.14.2+wasi-0.2.4](https://github.com/bytecodealliance/wasi-rs) - MIT License<br>
 [wasi@0.9.0+wasi-snapshot-preview1](https://github.com/bytecodealliance/wasi) - MIT License<br>
 [wasm-streams@0.4.2](https://github.com/MattiasBuelens/wasm-streams/) - MIT License<br>
 [x11-dl@2.21.0](https://github.com/AltF02/x11-rs.git) - MIT License<br>
 [x11@2.21.0](https://github.com/AltF02/x11-rs.git) - MIT License<br>
-[xdg-home@1.3.0](https://github.com/zeenix/xdg-home) - MIT License<br>
-[zerocopy@0.7.35](https://github.com/google/zerocopy) - MIT License<br>
-[zvariant_utils@3.1.0](https://github.com/dbus2/zbus/) - MIT License<br>
+[zvariant_utils@3.2.0](https://github.com/dbus2/zbus/) - MIT License<br>
 [winnow@0.5.40](https://github.com/winnow-rs/winnow) - MIT License<br>
-[winnow@0.6.24](https://github.com/winnow-rs/winnow) - MIT License<br>
+[winnow@0.7.11](https://github.com/winnow-rs/winnow) - MIT License<br>
 [atk-sys@0.18.2](https://github.com/gtk-rs/gtk3-rs) - MIT License<br>
 [atk@0.18.2](https://github.com/gtk-rs/gtk3-rs) - MIT License<br>
 [cairo-rs@0.18.5](https://github.com/gtk-rs/gtk-rs-core) - MIT License<br>
@@ -740,8 +732,7 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [soup3@0.5.0](https://gitlab.gnome.org/World/Rust/soup3-rs) - MIT License<br>
 [javascriptcore-rs@1.1.2](https://github.com/tauri-apps/javascriptcore-rs) - MIT License<br>
 [spin@0.9.8](https://github.com/mvdnes/spin-rs.git) - MIT License<br>
-[tracing-core@0.1.33](https://github.com/tokio-rs/tracing) - MIT License<br>
-[typenum@1.17.0](https://github.com/paholg/typenum) - MIT License<br>
+[typenum@1.18.0](https://github.com/paholg/typenum) - MIT License<br>
 [phf@0.11.3](https://github.com/rust-phf/rust-phf) - MIT License<br>
 [phf_generator@0.11.3](https://github.com/rust-phf/rust-phf) - MIT License<br>
 [phf_macros@0.11.3](https://github.com/rust-phf/rust-phf) - MIT License<br>
@@ -750,41 +741,36 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [base64@0.22.1](https://github.com/marshallpierce/rust-base64) - MIT License<br>
 [aho-corasick@1.1.3](https://github.com/BurntSushi/aho-corasick) - MIT License<br>
 [byteorder@1.5.0](https://github.com/BurntSushi/byteorder) - MIT License<br>
-[memchr@2.7.4](https://github.com/BurntSushi/memchr) - MIT License<br>
+[memchr@2.7.5](https://github.com/BurntSushi/memchr) - MIT License<br>
 [walkdir@2.5.0](https://github.com/BurntSushi/walkdir) - MIT License<br>
-[nix@0.29.0](https://github.com/nix-rust/nix) - MIT License<br>
+[nix@0.30.1](https://github.com/nix-rust/nix) - MIT License<br>
 [strsim@0.11.1](https://github.com/rapidfuzz/strsim-rs) - MIT License<br>
 [combine@4.6.7](https://github.com/Marwes/combine) - MIT License<br>
 [shlex@1.3.0](https://github.com/comex/rust-shlex) - MIT License<br>
 [fsevent-sys@4.1.0](https://github.com/octplane/fsevent-rust/tree/master/fsevent-sys) - MIT License<br>
-[derive_more@0.99.18](https://github.com/JelteF/derive_more) - MIT License<br>
+[derive_more@0.99.20](https://github.com/JelteF/derive_more) - MIT License<br>
 [jni@0.21.1](https://github.com/jni-rs/jni-rs) - MIT License<br>
 [same-file@1.0.6](https://github.com/BurntSushi/same-file) - MIT License<br>
 [winapi-util@0.1.9](https://github.com/BurntSushi/winapi-util) - MIT License<br>
-[redox_users@0.4.6](https://gitlab.redox-os.org/redox-os/users) - MIT License<br>
 [redox_users@0.5.0](https://gitlab.redox-os.org/redox-os/users) - MIT License<br>
-[os_info@3.11.0](https://github.com/stanislav-tkach/os_info) - MIT License<br>
-[embed-resource@2.5.1](https://github.com/nabijaczleweli/rust-embed-resource) - MIT License<br>
-[crossbeam-channel@0.5.14](https://github.com/crossbeam-rs/crossbeam) - MIT License<br>
+[os_info@3.12.0](https://github.com/stanislav-tkach/os_info) - MIT License<br>
+[embed-resource@3.0.3](https://github.com/nabijaczleweli/rust-embed-resource) - MIT License<br>
+[crossbeam-channel@0.5.15](https://github.com/crossbeam-rs/crossbeam) - MIT License<br>
 [crossbeam-utils@0.8.21](https://github.com/crossbeam-rs/crossbeam) - MIT License<br>
-[vswhom-sys@0.1.2](https://github.com/nabijaczleweli/vswhom-sys.rs) - MIT License<br>
+[vswhom-sys@0.1.3](https://github.com/nabijaczleweli/vswhom-sys.rs) - MIT License<br>
 [vswhom@0.1.0](https://github.com/nabijaczleweli/vswhom.rs) - MIT License<br>
 [async-broadcast@0.7.2](https://github.com/smol-rs/async-broadcast) - MIT License<br>
-[tauri-winres@0.1.1](https://github.com/tauri-apps/winres) - MIT License<br>
-[os_pipe@1.2.1](https://github.com/oconnor663/os_pipe.rs) - MIT License<br>
-[shared_child@1.0.1](https://github.com/oconnor663/shared_child.rs) - MIT License<br>
+[tauri-winres@0.3.1](https://github.com/tauri-apps/winres) - MIT License<br>
+[os_pipe@1.2.2](https://github.com/oconnor663/os_pipe.rs) - MIT License<br>
+[shared_child@1.0.2](https://github.com/oconnor663/shared_child.rs) - MIT License<br>
 [open@5.3.2](https://github.com/Byron/open-rs) - MIT License<br>
 [version_check@0.9.5](https://github.com/SergioBenitez/version_check) - MIT License<br>
 [generic-array@0.14.7](https://github.com/fizyk20/generic-array.git) - MIT License<br>
-[quick-xml@0.32.0](https://github.com/tafia/quick-xml) - MIT License<br>
-[uds_windows@1.1.0](https://github.com/haraldh/rust_uds_windows) - MIT License<br>
+[quick-xml@0.37.5](https://github.com/tafia/quick-xml) - MIT License<br>
 [aho-corasick@1.1.3](https://github.com/BurntSushi/aho-corasick) - MIT License<br>
 [byteorder@1.5.0](https://github.com/BurntSushi/byteorder) - MIT License<br>
-[memchr@2.7.4](https://github.com/BurntSushi/memchr) - MIT License<br>
-[same-file@1.0.6](https://github.com/BurntSushi/same-file) - MIT License<br>
-[walkdir@2.5.0](https://github.com/BurntSushi/walkdir) - MIT License<br>
-[winapi-util@0.1.9](https://github.com/BurntSushi/winapi-util) - MIT License<br>
-[libgit2-sys@0.18.0+1.9.0](https://github.com/rust-lang/git2-rs) - MIT License<br>
+[memchr@2.7.5](https://github.com/BurntSushi/memchr) - MIT License<br>
+[libgit2-sys@0.18.1+1.9.0](https://github.com/rust-lang/git2-rs) - MIT License<br>
 [dtoa-short@0.3.5](https://github.com/upsuper/dtoa-short) - Mozilla Public License 2.0<br>
 [colored@2.2.0](https://github.com/mackwic/colored) - Mozilla Public License 2.0<br>
 [cssparser-macros@0.6.1](https://github.com/servo/rust-cssparser) - Mozilla Public License 2.0<br>
@@ -792,25 +778,24 @@ Here you can find credited all the dependencies of this project. If yours is mis
 [option-ext@0.2.0](https://github.com/soc/option-ext.git) - Mozilla Public License 2.0<br>
 [selectors@0.22.0](https://github.com/servo/servo) - Mozilla Public License 2.0<br>
 [thin-slice@0.1.1](https://github.com/heycam/thin-slice) - Mozilla Public License 2.0<br>
-[icu_collections@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_locid@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_locid_transform@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_locid_transform_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_normalizer@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_normalizer_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_properties@1.5.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_properties_data@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_provider@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[icu_provider_macros@1.5.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[litemap@0.7.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[tinystr@0.7.6](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[unicode-ident@1.0.14](https://github.com/dtolnay/unicode-ident) - Unicode License v3<br>
-[writeable@0.5.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[yoke-derive@0.7.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[yoke@0.7.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerofrom-derive@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerofrom@0.1.5](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerovec-derive@0.10.3](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
-[zerovec@0.10.4](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[litemap@0.8.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[unicode-ident@1.0.18](https://github.com/dtolnay/unicode-ident) - Unicode License v3<br>
+[writeable@0.6.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[yoke-derive@0.8.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[yoke@0.8.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerofrom-derive@0.1.6](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerofrom@0.1.6](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerotrie@0.2.2](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerovec-derive@0.11.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[zerovec@0.11.2](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_collections@2.0.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_locale_core@2.0.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_normalizer@2.0.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_normalizer_data@2.0.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_properties@2.0.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_properties_data@2.0.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[icu_provider@2.0.0](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[potential_utf@0.1.2](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
+[tinystr@0.8.1](https://github.com/unicode-org/icu4x) - Unicode License v3<br>
 [tinyfiledialogs@3.9.1](https://github.com/jdm/tinyfiledialogs-rs) - zlib/libpng License with Acknowledgement<br>
 
