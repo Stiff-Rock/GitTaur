@@ -113,19 +113,22 @@ pub struct Configuration {
 
 impl Configuration {
     pub fn get_git_user_info() -> (String, String) {
+        let default_user_name = "exampleUserName".to_string();
+        let default_user_email = "exampleUserEmail".to_string();
+
         match Config::open_default() {
             Ok(config) => {
                 let username = config
                     .get_string("user.name")
-                    .unwrap_or_else(|_| String::new());
+                    .unwrap_or_else(|_| default_user_name);
 
                 let email = config
                     .get_string("user.email")
-                    .unwrap_or_else(|_| String::new());
+                    .unwrap_or_else(|_| default_user_email);
 
                 (username, email)
             }
-            Err(_) => (String::new(), String::new()),
+            Err(_) => (default_user_name, default_user_email),
         }
     }
 

@@ -41,7 +41,7 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
 
     menuItems.push({
       id: "checkoutCommit",
-      text: "Checkout to commit",
+      text: "Checkout to this commit",
       action: () => {
         openConfirmationModal({
           onConfirmed() {
@@ -64,6 +64,10 @@ const Rect: React.FC<{ node: CommitNode }> = ({ node }) => {
 
     for (const ref of node.data.refs) {
       const parts = ref.split(':');
+      const labelType = parts[0];
+
+      if (labelType === 'tag' || labelType === 'other') continue;
+
       const labelText = parts[1];
 
       if (repoInfo?.currentBranch === labelText) continue;

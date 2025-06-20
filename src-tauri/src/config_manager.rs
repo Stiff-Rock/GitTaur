@@ -44,7 +44,7 @@ pub fn get_config() -> Result<Configuration, String> {
     Ok(config()?.to_owned())
 }
 #[command]
-pub async fn set_global_git_user_id(username: String, email: String) -> Result<(), String> {
+pub fn set_global_git_user_id(username: String, email: String) -> Result<(), String> {
     let mut global_config = Config::open_default()
         .map_err(|e| {
             let msg = format!("Error while opening git config: {e}");
@@ -137,6 +137,13 @@ pub fn load_config() -> Result<String, String> {
             Ok(_) => trace!("Configuration loading complete!"),
             Err(e) => error!("{e}"),
         }
+    }
+
+    let default_user_name = "exampleUserName".to_string();
+    let default_user_email = "exampleUserEmail".to_string();
+
+    if config.username == default_user_name || config.email == default_user_email {
+        set_global_git_user_id(config.username.clone(), config.email.clone())?;
     }
 
     Ok(serde_json::to_string(&*config)
