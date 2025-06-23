@@ -51,3 +51,17 @@ features = ["vendored-openssl"]
 [target.'cfg(windows)'.dependencies.git2]
 version = "0.20.0"
 features = ["vendored-libgit2"]
+
+[profile.release]
+# Use more conservative optimization settings
+opt-level = 2
+# Avoid CPU-specific optimizations
+codegen-units = 16
+# These are good for performance while maintaining compatibility
+lto = "thin"
+panic = "abort"
+strip = true
+
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
