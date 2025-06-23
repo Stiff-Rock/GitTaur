@@ -3,9 +3,10 @@
 ### Para usuarios
 GitTaur esta disponile para Windows 10 en adelante, para su correcto funcionamiento será necesario disponer de [Git](https://git-scm.com/) instalado en tu sistema, puesto que la aplicación interactua con el para cualquier operacion relacionada con los repositorios.
 
-Existen instaladores de GitTaur:
+Existen 3 formas de obtener GitTaur:
 - Instalador .msi: Puede requerir permisos de administrador.
 - Instalador .exe: No requiere permisos de administrador, instala unicamente al usuario si se desea.
+- Apliación portable: No requiere instalación ninguna, se pude ejecutar directamente.
 
 Puedes usar cualquiera de las tres opciones accediendo [la página de releases del repositorio](https://github.com/Stiff-Rock/GitTaur/releases/latest).
 
