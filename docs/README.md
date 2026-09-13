@@ -1,4 +1,4 @@
-## <img src="./img/favicon.ico" alt="Icono de la aplicación" style="width: 30px; height: 30px; margin-bottom:4px; margin-right: 5px; vertical-align: middle;"> GitTaur - Una cliente de Git veloz y sencillo
+## <img src="./img/favicon.ico" alt="Icono de la aplicación" style="width: 30px; height: 30px; margin-bottom:4px; margin-right: 5px; vertical-align: middle;"> GitTaur - Un cliente de Git veloz y sencillo
 
 GitTaur es una GUI para Git diseñada para aprovechar la velocidad y eficiencia de Rust y la experiencia moderna de usuario de React.
 
